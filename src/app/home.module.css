@@ -28,6 +28,18 @@
   height: 62%;
   will-change: transform;
 }
+@media (max-width: 760px) {
+  .champ {
+    width: 78vw;
+    height: 58%;
+    bottom: 14%;
+  }
+  .crown {
+    top: 10%;
+    width: 86vw;
+    height: 40vh;
+  }
+}
 .champImg {
   position: absolute;
   inset: 0;
