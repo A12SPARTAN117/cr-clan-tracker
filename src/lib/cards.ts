@@ -47,3 +47,10 @@ export const LOCAL_CARD_ART = new Set([
   'archers', 'arrows', 'baby-dragon', 'barbarian-barrel', 'barbarian-hut', 'barbarians',
   'battle-healer', 'battle-ram', 'berserker', 'bomber', 'bomb-tower', 'boss-bandit',
 ]);
+
+/** The API reports rarity-relative levels (a max Champion is 6); convert to in-game levels. */
+export const realLevel = (level: number, maxLevel: number) => level + (16 - maxLevel);
+
+/** In a battle-log or current deck, evolutionLevel marks a card played in an evo/hero slot. */
+export const playedAsEvo = (evolutionLevel?: number) => evolutionLevel === 1 || evolutionLevel === 3;
+export const playedAsHero = (evolutionLevel?: number) => evolutionLevel === 2 || evolutionLevel === 3;

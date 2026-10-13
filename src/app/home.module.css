@@ -1,0 +1,270 @@
+/* ---------- hero ---------- */
+.hero {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 640px;
+  overflow: hidden;
+  background: #07080a;
+  color: #f3f4f6;
+}
+.sceneWrap {
+  position: absolute;
+  inset: -3%;
+  will-change: transform;
+}
+.scene {
+  position: absolute;
+  inset: 0;
+  background: url('/scenes/arena.jpg') center / cover no-repeat;
+  filter: grayscale(1) contrast(1.15) brightness(0.62);
+  animation: oaPush 22s ease-in-out infinite alternate;
+}
+.champ {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(44vw, 520px);
+  height: 62%;
+  will-change: transform;
+}
+.champImg {
+  position: absolute;
+  inset: 0;
+  background: url('/characters/champion_hires_golden_knight.png') bottom center / contain no-repeat;
+  filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(140, 203, 255, 0.75)) drop-shadow(0 0 30px rgba(58, 160, 255, 0.45));
+  transition: filter 0.6s ease-out;
+}
+.champImg:hover {
+  filter: grayscale(0) brightness(1) drop-shadow(-2px 0 0 rgba(140, 203, 255, 0.75)) drop-shadow(0 0 30px rgba(58, 160, 255, 0.45));
+}
+.crown {
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  width: min(70vw, 640px);
+  height: min(54vh, 520px);
+  pointer-events: none;
+  will-change: transform;
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(7, 8, 10, 0.6) 0%, rgba(7, 8, 10, 0) 22%, rgba(7, 8, 10, 0) 50%, rgba(7, 8, 10, 0.85) 82%, #07080a 100%),
+    radial-gradient(ellipse at 50% 45%, rgba(7, 8, 10, 0) 35%, rgba(7, 8, 10, 0.8) 100%);
+}
+.frame {
+  position: absolute;
+  inset: 78px 14px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.copy {
+  position: absolute;
+  inset: 78px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 26px;
+  padding: 0 clamp(18px, 4vw, 64px) clamp(28px, 6vh, 64px);
+  text-align: center;
+  pointer-events: none;
+  /* header scenes stay dark in both themes */
+  --text-1: #f3f4f6;
+  --text-2: #a4a9b4;
+  --text-3: #80868f;
+  --blue-hi: #8ccbff;
+  --ember: #ff5464;
+}
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 18px;
+  font: 500 10px/1.4 var(--mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a4a9b4;
+}
+.status b {
+  font-weight: 500;
+  color: #f3f4f6;
+}
+.title {
+  margin: 0;
+  font: 800 clamp(46px, 10.4vw, 164px) / 0.84 var(--mono);
+  letter-spacing: -0.065em;
+  text-wrap: balance;
+}
+.searchWrap {
+  width: min(100%, 640px);
+  pointer-events: auto;
+  text-align: left;
+}
+
+/* ---------- sections ---------- */
+.main {
+  position: relative;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: clamp(48px, 8vw, 96px) var(--gutter) 120px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(64px, 9vw, 120px);
+}
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* pinned */
+.pinGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 16px;
+}
+.pinCard {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: center;
+  padding: 22px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  color: var(--text-1);
+  background:
+    radial-gradient(300px circle at var(--mx, -500px) var(--my, -500px), rgba(58, 160, 255, 0.12), transparent 70%),
+    var(--charcoal);
+  transition: border-color 0.2s;
+}
+.pinCard:hover {
+  border-color: rgba(58, 160, 255, 0.5);
+  color: var(--text-1);
+}
+.pinName {
+  font: 800 28px/1 var(--mono);
+  letter-spacing: -0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pinMeta {
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.pinEmpty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px;
+  border: 1px dashed var(--hair);
+  border-radius: 8px;
+}
+
+/* two columns: PoL + news */
+.split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+  gap: clamp(40px, 5vw, 72px);
+}
+.polRow {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+  border-top: 1px solid var(--hair);
+  color: var(--text-1);
+  transition:
+    padding 0.2s,
+    box-shadow 0.2s;
+}
+.polRow:hover {
+  box-shadow: inset 2px 0 0 var(--blue);
+  padding-left: 12px;
+  color: var(--text-1);
+}
+.newsRow {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 18px;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--hair);
+  color: var(--text-1);
+}
+.newsRow:hover {
+  color: var(--blue-hi);
+}
+.newsThumb {
+  position: relative;
+  width: 120px;
+  height: 80px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  filter: grayscale(1) brightness(0.8);
+}
+.newsThumb::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+}
+
+/* CTA */
+.cta {
+  position: relative;
+  min-height: 420px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #07080a;
+  color: #f3f4f6;
+  --text-1: #f3f4f6;
+  --text-2: #a4a9b4;
+}
+.ctaScene {
+  position: absolute;
+  inset: 0;
+  background: url('/scenes/war-room.jpg') center / cover no-repeat;
+  filter: grayscale(1) brightness(0.55);
+}
+.ctaShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #07080a 10%, rgba(7, 8, 10, 0.4) 70%);
+  pointer-events: none;
+}
+.ctaCopy {
+  position: relative;
+  padding: clamp(36px, 6vw, 80px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 780px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .champImg:hover {
+    filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(140, 203, 255, 0.75));
+  }
+}
