@@ -376,6 +376,23 @@ img {
   background: linear-gradient(90deg, var(--blue) 0 2px, var(--slate) 2px);
 }
 
+.oa-portal-ring {
+  transform: translate(-50%, -50%) rotateX(72deg);
+  animation: oaSpin 24s linear infinite;
+}
+@keyframes oaSpin {
+  from {
+    transform: translate(-50%, -50%) rotateX(72deg) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotateX(72deg) rotate(360deg);
+  }
+}
+
+a.news-card:hover {
+  color: var(--blue-hi);
+}
+
 /* ---------- skeleton ---------- */
 .skeleton {
   border-radius: 3px;
