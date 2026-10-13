@@ -1,0 +1,76 @@
+import { date, index, integer, pgTable, primaryKey, serial, text, timestamp } from 'drizzle-orm/pg-core';
+
+/**
+ * History the official API cannot give us, built from our own snapshots.
+ * Tags are stored without the leading '#', upper case.
+ */
+
+/** Clans we snapshot. A clan is tracked from the first time its dashboard is opened. */
+export const trackedClans = pgTable('tracked_clans', {
+  tag: text('tag').primaryKey(),
+  name: text('name').notNull(),
+  trackedSince: timestamp('tracked_since', { withTimezone: true }).notNull().defaultNow(),
+  lastSnapshotAt: timestamp('last_snapshot_at', { withTimezone: true }),
+  lastViewedAt: timestamp('last_viewed_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Everyone we have seen in a tracked clan. leftAt is set once they disappear from the roster. */
+export const clanMembers = pgTable(
+  'clan_members',
+  {
+    clanTag: text('clan_tag').notNull(),
+    playerTag: text('player_tag').notNull(),
+    name: text('name').notNull(),
+    role: text('role').notNull(),
+    /** True only for members already present at the clan's first snapshot (join date unknown). */
+    baseline: integer('baseline').notNull().default(0),
+    firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    lastSeenInClanAt: timestamp('last_seen_in_clan_at', { withTimezone: true }).notNull().defaultNow(),
+    leftAt: timestamp('left_at', { withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.clanTag, t.playerTag] })],
+);
+
+/** Joins, leaves and role changes, newest first when read. */
+export const rosterEvents = pgTable(
+  'roster_events',
+  {
+    id: serial('id').primaryKey(),
+    clanTag: text('clan_tag').notNull(),
+    playerTag: text('player_tag').notNull(),
+    name: text('name').notNull(),
+    kind: text('kind').notNull(), // joined | left | kicked | promoted | demoted
+    detail: text('detail'),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('roster_events_clan_at').on(t.clanTag, t.at)],
+);
+
+/** One row per member per UTC day: trophies and weekly donations at the last snapshot of the day. */
+export const memberDaily = pgTable(
+  'member_daily',
+  {
+    clanTag: text('clan_tag').notNull(),
+    playerTag: text('player_tag').notNull(),
+    day: date('day').notNull(),
+    trophies: integer('trophies').notNull(),
+    donations: integer('donations').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.clanTag, t.playerTag, t.day] }), index('member_daily_player').on(t.playerTag, t.day)],
+);
+
+/**
+ * War decks per member per war day. week = date (YYYY-MM-DD) of the race week's first war
+ * day (Thursday). Each snapshot keeps the highest decksUsedToday seen for that day.
+ */
+export const warDays = pgTable(
+  'war_days',
+  {
+    clanTag: text('clan_tag').notNull(),
+    playerTag: text('player_tag').notNull(),
+    week: date('week').notNull(),
+    day: integer('day').notNull(), // 1–4
+    decks: integer('decks').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.clanTag, t.playerTag, t.week, t.day] })],
+);

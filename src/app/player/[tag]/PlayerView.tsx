@@ -9,6 +9,7 @@ import { Tabs } from '@/components/ui/Tabs';
 import { agoShort, fmt } from '@/lib/format';
 import { setPin, usePins } from '@/lib/pins';
 import type { PlayerProfile } from '@/lib/player/profile';
+import type { PlayerHistory } from '@/lib/history';
 import { refreshPlayer } from './actions';
 import { BadgesTab, CollectionTab, OverviewTab } from './TabsA';
 import { BattlesTab, DecksTab, HistoryTab, StatsTab } from './TabsB';
@@ -16,7 +17,7 @@ import s from './player.module.css';
 
 type Tab = 'overview' | 'collection' | 'badges' | 'stats' | 'battles' | 'decks' | 'history';
 
-export function PlayerView({ p }: { p: PlayerProfile }) {
+export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHistory | null }) {
   const [tab, setTab] = useState<Tab>('overview');
   const [toast, setToast] = useState('');
   const [syncing, startSync] = useTransition();
@@ -158,7 +159,7 @@ export function PlayerView({ p }: { p: PlayerProfile }) {
         {tab === 'stats' && <StatsTab p={p} />}
         {tab === 'battles' && <BattlesTab p={p} />}
         {tab === 'decks' && <DecksTab p={p} />}
-        {tab === 'history' && <HistoryTab p={p} />}
+        {tab === 'history' && <HistoryTab p={p} h={history} />}
       </main>
 
       {toast && (

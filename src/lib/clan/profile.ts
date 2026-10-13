@@ -2,7 +2,7 @@ import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getClan, getCurrentRiverRace, getRiverRaceLog, tags } from '../cr/api';
 import type { ApiRole, Clan } from '../cr/types';
-import { getClanHistory, type RosterEvent } from '../history';
+import type { RosterEvent } from '../history';
 import { parseApiDate } from '../format';
 
 export type ClanProfile = {
@@ -26,7 +26,7 @@ export type ClanProfile = {
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
 async function build(tag: string): Promise<ClanProfile | null> {
-  const [c, race, log, history] = await Promise.all([getClan(tag), getCurrentRiverRace(tag), getRiverRaceLog(tag, 10), getClanHistory(tag)]);
+  const [c, race, log] = await Promise.all([getClan(tag), getCurrentRiverRace(tag), getRiverRaceLog(tag, 10)]);
   if (!c.ok) return null;
   const clan = c.data;
   const ours = bare(clan.tag);
@@ -78,7 +78,7 @@ async function build(tag: string): Promise<ClanProfile | null> {
     })),
     race: raceInfo,
     past,
-    history: history ? { trackedSince: history.trackedSince, events: history.rosterEvents } : null,
+    history: null,
   };
 }
 

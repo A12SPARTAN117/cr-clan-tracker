@@ -3,7 +3,10 @@ import { Suspense } from 'react';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getClan } from '@/lib/cr/api';
-import { getDashboard } from '@/lib/clan/dashboard';
+import { after } from 'next/server';
+import { applyHistory, getDashboard } from '@/lib/clan/dashboard';
+import { getClanHistory } from '@/lib/history';
+import { trackClan } from '@/lib/history/snapshot';
 import { checkTag } from '@/lib/tags';
 import { ClanDashboard } from './ClanDashboard';
 
@@ -31,9 +34,11 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (c.kind !== 'valid') return <LostScene variant="clan" tag={raw.replace(/^#/, '').toUpperCase()} />;
   const clan = await getClan(c.tag);
   if (!clan.ok) return <LostScene variant={clan.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
-  const data = await getDashboard(c.tag);
+  const [data, history] = await Promise.all([getDashboard(c.tag), getClanHistory(c.tag)]);
   if (!data) return <LostScene variant="error" tag={c.tag} />;
-  return <ClanDashboard data={data} />;
+  // Opening a dashboard starts (or refreshes) history tracking for the clan.
+  after(() => trackClan(c.tag).catch((e) => console.error('[history] track failed:', e)));
+  return <ClanDashboard data={applyHistory(data, history)} />;
 }
 
 export default function ManagePage({ params }: PageProps<'/clan/[tag]/manage'>) {

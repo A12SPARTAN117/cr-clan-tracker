@@ -4,6 +4,7 @@ import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getClan } from '@/lib/cr/api';
 import { getClanProfile } from '@/lib/clan/profile';
+import { getClanHistory } from '@/lib/history';
 import { checkTag } from '@/lib/tags';
 import { ClanProfileView } from './ClanProfileView';
 
@@ -20,9 +21,9 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (c.kind !== 'valid') return <LostScene variant="clan" tag={raw.replace(/^#/, '').toUpperCase()} />;
   const r = await getClan(c.tag);
   if (!r.ok) return <LostScene variant={r.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
-  const data = await getClanProfile(c.tag);
+  const [data, history] = await Promise.all([getClanProfile(c.tag), getClanHistory(c.tag)]);
   if (!data) return <LostScene variant="error" tag={c.tag} />;
-  return <ClanProfileView c={data} />;
+  return <ClanProfileView c={history ? { ...data, history: { trackedSince: history.trackedSince, events: history.rosterEvents } } : data} />;
 }
 
 export default function ClanPage({ params }: PageProps<'/clan/[tag]'>) {

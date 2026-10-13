@@ -32,3 +32,6 @@ design-kit/prompts/
 next-env.d.ts
 *.tsbuildinfo
 /coverage
+
+# Local embedded Postgres (DATABASE_URL=pglite:./.data/pg)
+.data/
