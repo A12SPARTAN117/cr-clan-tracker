@@ -187,7 +187,7 @@ async function build(tag: string): Promise<Dashboard | null> {
   const war = raceInfo(race, ourTag, now);
 
   const memberTags = clan.memberList.map((m) => bare(m.tag));
-  const [players, logs] = await Promise.all([pool(memberTags, 8, (t) => getPlayer(t)), pool(memberTags, 8, (t) => getBattleLog(t))]);
+  const [players, logs] = await Promise.all([pool(memberTags, 16, (t) => getPlayer(t)), pool(memberTags, 16, (t) => getBattleLog(t))]);
 
   const ourRaceClan = race ? (race.clans.find((c) => bare(c.tag) === ourTag) ?? race.clan) : null;
   const curParts = new Map((ourRaceClan?.participants ?? []).map((p) => [bare(p.tag), p]));
