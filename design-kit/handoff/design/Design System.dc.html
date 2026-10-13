@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+@keyframes oaPulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(58,160,255,.7)}50%{opacity:.55;box-shadow:0 0 0 6px rgba(58,160,255,0)}}
+@keyframes oaBlink{50%{opacity:0}}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./cards.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:var(--void);color:var(--text-1)">
+<oa-grain></oa-grain>
+<div style="max-width:1280px;margin:0 auto;padding:clamp(32px,5vw,72px) clamp(16px,4vw,48px) 120px;display:flex;flex-direction:column;gap:96px">
+
+  <header style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:8px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-2)"><span style="width:7px;height:7px;border-radius:50%;background:var(--blue);animation:oaPulse 2s infinite"></span>CR CLAN TRACKER · DESIGN SYSTEM · V1</span>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="Home.dc.html" style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em">HOME →</a>
+        <a href="Clan Dashboard.dc.html" style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em">DASHBOARD →</a>
+        <a href="Player Profile.dc.html" style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em">PLAYER →</a>
+        <button onClick="{{ toggleTheme }}" style="height:30px;padding:0 10px;background:none;border:1px solid var(--hair);border-radius:4px;color:var(--text-1);font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;cursor:pointer">{{ themeLabel }}</button>
+      </div>
+    </div>
+    <h1 data-reveal="1" style="margin:0;font:800 clamp(56px,11vw,160px)/.84 'JetBrains Mono',monospace;letter-spacing:-.065em">OBSIDIAN<br>ARENA</h1>
+    <p style="margin:0;max-width:620px;font:400 18px/1.55 'Space Grotesk',sans-serif;color:var(--text-2);text-wrap:pretty">A monochrome world where light means data. Stone, marble, obsidian and glass in black, charcoal, grey and white. Blue light marks what is interactive, active or important. Real game art is the only full-colour element.</p>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:24px">
+    <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">01 · COLOUR TOKENS · {{ themeName }}</span>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:8px;overflow:hidden">
+      <sc-for list="{{ swatches }}" as="c" hint-placeholder-count="18">
+        <div style="display:flex;flex-direction:column;background:var(--charcoal)">
+          <div style="height:84px;background:var({{ c.v }});box-shadow:{{ c.sh }};border-bottom:1px solid var(--hair)"></div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:5px"><span style="font:600 13px/1.2 'Space Grotesk',sans-serif">{{ c.name }}</span><span style="font:500 10px/1.3 'JetBrains Mono',monospace;color:var(--text-2)">{{ c.hex }}</span><span style="font:500 9px/1.3 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--text-3)">{{ c.use }}</span></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+      <div style="padding:20px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:12px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">GLOW RECIPE</span><div style="height:56px;border-radius:6px;background:var(--obsidian);box-shadow:0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)"></div><code style="font:500 10px/1.5 'JetBrains Mono',monospace;color:var(--text-2)">0 0 0 1px rgba(58,160,255,.6), 0 0 18px rgba(58,160,255,.45), 0 0 48px rgba(58,160,255,.18). Focus, hover, active and "best" only.</code></div>
+      <div style="padding:20px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:12px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">SEMANTIC ACCENTS · ALWAYS WITH ICON OR LABEL</span>
+        <div style="display:flex;flex-direction:column;gap:10px;font:500 12px/1 'JetBrains Mono',monospace">
+          <span style="display:flex;gap:10px;align-items:center;color:var(--blue)">▲ WIN · ACTIVE · UP</span>
+          <span style="display:flex;gap:10px;align-items:center;color:var(--ember)">▼ LOSS · INACTIVE · DANGER (small text/icons only)</span>
+          <span style="display:flex;gap:10px;align-items:center;color:#C79BFF">◆ EVOLUTION</span>
+          <span style="display:flex;gap:10px;align-items:center;color:var(--gold)">I · HERO · #1 RANK</span>
+        </div>
+      </div>
+      <div style="position:relative;padding:20px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:12px;overflow:hidden"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">MATERIALS</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="height:56px;border-radius:6px;background:var(--obsidian);border:1px solid var(--hair);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);display:flex;align-items:flex-end;padding:6px;font:500 9px/1 'JetBrains Mono',monospace;color:var(--text-3)">OBSIDIAN</div>
+          <div style="height:56px;border-radius:6px;background:rgba(255,255,255,.06);backdrop-filter:blur(16px);border:1px solid var(--hair);display:flex;align-items:flex-end;padding:6px;font:500 9px/1 'JetBrains Mono',monospace;color:var(--text-3)">FROSTED GLASS</div>
+          <div style="position:relative;height:56px;border-radius:6px;background:var(--obsidian);display:flex;align-items:flex-end;padding:6px;font:500 9px/1 'JetBrains Mono',monospace;color:var(--text-3)"><span style="position:absolute;inset:6px;border:1px solid var(--frame);border-radius:2px"></span>INSET FRAME</div>
+          <div style="height:56px;border-radius:6px;background:var(--obsidian);display:flex;flex-direction:column;justify-content:space-between;padding:6px;font:500 9px/1 'JetBrains Mono',monospace;color:var(--text-3)"><span style="height:2px;border-radius:2px;background:#8CCBFF;box-shadow:0 0 6px #3AA0FF,0 0 16px rgba(58,160,255,.7)"></span>LIGHT STRIP</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:24px">
+    <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">02 · TYPE SCALE · JETBRAINS MONO 800 / SPACE GROTESK 500–700</span>
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ types }}" as="t" hint-placeholder-count="9">
+        <div style="display:grid;grid-template-columns:minmax(120px,180px) 1fr;gap:20px;align-items:baseline;padding:18px 0;border-top:1px solid var(--hair);overflow:hidden">
+          <span style="display:flex;flex-direction:column;gap:5px"><span style="font:600 13px/1.2 'Space Grotesk',sans-serif">{{ t.name }}</span><span style="font:500 9px/1.4 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--text-3)">{{ t.spec }}</span></span>
+          <span style="font:{{ t.font }};letter-spacing:{{ t.ls }};text-transform:{{ t.tt }};color:{{ t.fg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.sample }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+      <div style="padding:20px;border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:12px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">SPACING · 4PX BASE</span><div style="display:flex;align-items:flex-end;gap:8px"><sc-for list="{{ spacing }}" as="s" hint-placeholder-count="8"><span style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:{{ s.v }}px;height:{{ s.v }}px;background:var(--slate);border:1px solid var(--hair)"></span><span style="font:500 9px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ s.v }}</span></span></sc-for></div></div>
+      <div style="padding:20px;border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:12px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">RADII · STONE-CUT</span><div style="display:flex;gap:12px"><sc-for list="{{ radii }}" as="r" hint-placeholder-count="4"><span style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:48px;height:48px;border:1px solid var(--frame);border-radius:{{ r.v }}px"></span><span style="font:500 9px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ r.v }} · {{ r.use }}</span></span></sc-for></div></div>
+      <div style="padding:20px;border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:12px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">ELEVATION</span><div style="display:flex;gap:12px"><sc-for list="{{ elev }}" as="e" hint-placeholder-count="3"><span style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:56px;height:48px;border-radius:6px;background:{{ e.bg }};border:1px solid var(--hair);box-shadow:{{ e.sh }}"></span><span style="font:500 9px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ e.name }}</span></span></sc-for></div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:28px">
+    <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">03 · COMPONENTS</span>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:16px">
+      <div style="padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:16px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">BUTTONS</span>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+          <button data-magnet="1" style="height:44px;padding:0 20px;border:0;border-radius:6px;background:linear-gradient(110deg,var(--btn-bg) 40%,#fff 50%,var(--btn-bg) 60%) 120% 0/250% 100%;color:var(--btn-fg);font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer;transition:background-position .7s,box-shadow .3s" style-hover="background-position:-20% 0;box-shadow:0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)">PRIMARY</button>
+          <button style="height:44px;padding:0 18px;border:1px solid var(--hair);border-radius:6px;background:none;color:var(--text-1);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer" style-hover="border-color:var(--blue-hi)">SECONDARY</button>
+          <a href="#" style="font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em">TERTIARY →</a>
+          <button style="height:44px;padding:0 20px;border:0;border-radius:6px;background:var(--blue-deep);color:#fff;font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em">PRESSED</button>
+        </div>
+        <span style="font:400 12px/1.5 'Space Grotesk',sans-serif;color:var(--text-3)">Primary: magnetic pull (0.18×, 0.28×), light sweep 700ms on hover.</span>
+      </div>
+
+      <div style="padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:16px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">SEARCH INPUT · TAG VALIDATION</span>
+        <label style="position:relative;display:flex;align-items:center;gap:10px;height:56px;padding:0 10px;background:var(--obsidian);border:1px solid {{ sBd }};border-radius:8px;box-shadow:{{ sSh }}">
+          <span style="position:absolute;inset:4px;border:1px solid var(--hair);border-radius:5px;pointer-events:none"></span>
+          <span style="flex:none;width:34px;height:34px;border-radius:4px;background:var(--slate);display:flex;align-items:center;justify-content:center;font:800 15px/1 'JetBrains Mono',monospace;color:var(--blue-hi)">#</span>
+          <span style="position:relative;flex:1;display:flex;align-items:center"><input value="{{ tag }}" onChange="{{ onTag }}" onFocus="{{ onFocus }}" onBlur="{{ onBlur }}" aria-label="Tag" style="width:100%;background:none;border:0;outline:none;color:var(--text-1);font:700 16px/1 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;caret-color:var(--blue)"></input><sc-if value="{{ showBlock }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;left:0;width:10px;height:20px;background:var(--blue-hi);animation:oaBlink 1.05s steps(1) infinite"></span></sc-if></span>
+        </label>
+        <span style="font:500 10px/1.5 'JetBrains Mono',monospace;letter-spacing:.08em;color:{{ hintFg }}">{{ hint }}</span>
+      </div>
+
+      <div style="padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:16px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">TABS · LIGHT-TUBE UNDERLINE</span>
+        <div style="display:flex;border-bottom:1px solid var(--hair)">
+          <sc-for list="{{ demoTabs }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.onClick }}" style="height:44px;padding:0 14px;background:none;border:0;color:{{ t.fg }};box-shadow:{{ t.sh }};font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer">{{ t.label }}</button></sc-for>
+        </div>
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">ROLE CHIPS</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border:1px solid rgba(230,179,74,.6);border-radius:4px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--gold)"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,9 1,3 4,6 6,1 8,6 11,3 11,9 1,9" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"></polyline></svg>LEADER</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border:1px solid var(--frame);border-radius:4px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><svg width="10" height="10" viewBox="0 0 10 10"><polyline points="2,5 5,2 8,5" fill="none" stroke="currentColor" stroke-width="1.3"></polyline><polyline points="2,9 5,6 8,9" fill="none" stroke="currentColor" stroke-width="1.3"></polyline></svg>CO-LEADER</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border:1px solid var(--hair);border-radius:4px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><svg width="10" height="11" viewBox="0 0 10 11"><path d="M5 1 L9 2.5 V5.5 C9 7.8 7.2 9 5 10 C2.8 9 1 7.8 1 5.5 V2.5 Z" fill="none" stroke="currentColor" stroke-width="1.2"></path></svg>ELDER</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border:1px solid var(--hair);border-radius:4px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-2)"><svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="2.2" fill="currentColor"></circle></svg>MEMBER</span>
+        </div>
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">LAST SEEN PILLS</span>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;font:500 12px/1 'JetBrains Mono',monospace">
+          <span style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 6px rgba(58,160,255,.8)"></span>3h <span style="font-size:9px;color:var(--text-3)">ACTIVE</span></span>
+          <span style="display:flex;align-items:center;gap:7px;color:var(--text-2)"><span style="width:7px;height:7px;border-radius:50%;border:1.5px solid var(--text-2)"></span>2d <span style="font-size:9px;color:var(--text-3)">AT RISK</span></span>
+          <span style="display:flex;align-items:center;gap:7px;color:var(--ember)"><span style="width:7px;height:7px;border-radius:50%;border:1.5px solid var(--ember)"></span>9d <span style="font-size:9px;color:var(--text-3)">INACTIVE</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px">
+      <div data-spot="1" style="position:relative;padding:18px;background:radial-gradient(220px circle at var(--mx,-400px) var(--my,-400px),rgba(58,160,255,.10),transparent 70%),var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:16px">
+        <span style="position:absolute;top:-1px;left:-1px;width:10px;height:10px;border-top:1px solid var(--frame);border-left:1px solid var(--frame)"></span><span style="position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-bottom:1px solid var(--frame);border-right:1px solid var(--frame)"></span>
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">STAT TILE · WAR PARTICIPATION</span>
+        <span style="display:flex;align-items:baseline;gap:6px"><span data-decode="1" style="font:800 52px/1 'JetBrains Mono',monospace;letter-spacing:-.05em">82</span><span style="font:500 14px/1 'JetBrains Mono',monospace;color:var(--text-3)">%</span></span>
+        <span style="display:flex;justify-content:space-between;align-items:flex-end"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--blue)">▲ 4 VS LAST WEEK</span><svg width="80" height="22" viewBox="0 0 80 22"><polyline points="0,18 11,14 22,16 33,9 44,10 55,7 66,8 80,3" fill="none" stroke="var(--text-2)" stroke-width="1"></polyline></svg></span>
+      </div>
+      <div style="padding:18px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:14px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">ASSET SCORE GAUGE · INTENSITY SCALES WITH SCORE</span>
+        <div style="display:flex;justify-content:space-between">
+          <sc-for list="{{ gauges }}" as="g" hint-placeholder-count="3">
+            <span style="position:relative;width:84px;height:84px"><svg width="84" height="84" viewBox="0 0 120 120" style="filter:{{ g.glow }}"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--hair)" stroke-width="3"></circle><circle cx="60" cy="60" r="50" fill="none" stroke="var(--blue-hi)" stroke-opacity="{{ g.op }}" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ g.dash }}" transform="rotate(-90 60 60)"></circle></svg><span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 22px/1 'JetBrains Mono',monospace">{{ g.v }}</span></span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:18px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:14px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">WAR HEATMAP CELLS · 0–4 DECKS + PENDING + NOT IN CLAN</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <sc-for list="{{ heat }}" as="c" hint-placeholder-count="7"><span style="display:flex;flex-direction:column;align-items:center;gap:6px"><span style="width:40px;height:30px;border-radius:4px;background:{{ c.bg }};box-shadow:{{ c.sh }};border:{{ c.bd }};display:flex;align-items:center;justify-content:center;font:700 11px/1 'JetBrains Mono',monospace;color:{{ c.fg }}">{{ c.txt }}</span><span style="font:500 8px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-3)">{{ c.lab }}</span></span></sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:0;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:40px 1.4fr 1fr 1fr 1fr;padding:0 14px;background:var(--glass);border-bottom:1px solid var(--hair);font:500 10px/44px 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)"><span>#</span><span>MEMBER</span><span style="text-align:right">FAME</span><span style="text-align:right;color:var(--text-1)">ASSET <span style="color:var(--blue)">▼</span></span><span style="text-align:right">LAST SEEN</span></div>
+      <sc-for list="{{ tableRows }}" as="r" hint-placeholder-count="4">
+        <div tabindex="0" style="display:grid;grid-template-columns:40px 1.4fr 1fr 1fr 1fr;padding:0 14px;border-bottom:1px solid var(--hair);font:500 13px/46px 'JetBrains Mono',monospace;outline:none;cursor:pointer" style-hover="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px)" style-focus="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px)"><span style="color:var(--text-3)">{{ r.i }}</span><span style="font-family:'Space Grotesk',sans-serif;font-weight:600">{{ r.n }}</span><span style="text-align:right">{{ r.f }}</span><span style="text-align:right">{{ r.s }}</span><span style="text-align:right;color:var(--text-2)">{{ r.l }}</span></div>
+      </sc-for>
+      <div style="padding:12px 14px;font:500 10px/1.4 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--text-3)">DATA TABLE · sticky glass header · sorted column gets a blue arrow · hover/focus adds a 2px light strip · rows are tabbable, Enter opens detail.</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px">
+      <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">CARD TILE · RARITY MATERIALS · EVO / HERO / BOTH / NOT OWNED · HOVER FOR TILT + GLARE</span>
+      <div style="display:flex;flex-wrap:wrap;gap:22px 18px;align-items:flex-end">
+        <sc-for list="{{ tiles }}" as="c" hint-placeholder-count="10">
+          <dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.art }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" hero="{{ c.isHero }}" owned="{{ c.owned }}" level="{{ c.level }}" elixir="{{ c.elixir }}" split="{{ c.split }}" img2="{{ c.img2 }}" size="L" show-label="{{ true }}" hint-size="104px,190px"></dc-import>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap;padding-top:16px;border-top:1px solid var(--hair)">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">SIZES</span>
+        <dc-import name="CardTile" slug="bomber" label="Bomber" rarity="common" size="S" hint-size="44px,65px"></dc-import>
+        <dc-import name="CardTile" slug="bomber" label="Bomber" rarity="common" level="14" elixir="2" size="M" hint-size="68px,100px"></dc-import>
+        <dc-import name="CardTile" slug="bomber" label="Bomber" rarity="common" level="14" elixir="2" size="L" hint-size="104px,153px"></dc-import>
+        <dc-import name="CardTile" slug="bomber" label="Bomber" rarity="common" level="14" elixir="2" size="XL" hint-size="150px,221px"></dc-import>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:16px">
+      <div style="padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:16px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">BADGE TROPHY · GLASS ON LIGHT SHELF</span>
+        <div style="display:flex;gap:20px;padding-bottom:12px;border-bottom:2px solid rgba(140,203,255,.4);box-shadow:0 12px 20px -14px rgba(58,160,255,.8)">
+          <sc-for list="{{ trophies }}" as="b" hint-placeholder-count="3">
+            <div data-tilt="1" style="display:flex;flex-direction:column;align-items:center;gap:8px;width:96px">
+              <div style="position:relative;width:72px;height:84px;border-radius:10px 10px 4px 4px;background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.02) 45%,rgba(140,203,255,.10));border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 {{ b.glow }}px rgba(58,160,255,.4);display:flex;align-items:center;justify-content:center;font:800 20px/1 'JetBrains Mono',monospace">{{ b.g }}</div>
+              <span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-2)">{{ b.lv }}</span>
+              <span style="width:100%;height:2px;background:var(--well)"><span style="display:block;height:100%;width:{{ b.p }}%;background:#8CCBFF;box-shadow:0 0 6px rgba(58,160,255,.9)"></span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:14px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">STATES</span>
+        <div style="display:flex;gap:10px;align-items:center;padding:10px 14px;border:1px dashed rgba(58,160,255,.45);border-radius:6px;font:500 10px/1.5 'JetBrains Mono',monospace;color:var(--text-2)"><span style="width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>DATA SINCE 02 JUN 2026 · History builds up from then.</div>
+        <div style="display:flex;flex-direction:column;gap:8px"><span style="height:12px;width:60%;border-radius:3px;background:linear-gradient(90deg,var(--obsidian),var(--slate),var(--obsidian))"></span><span style="height:12px;width:85%;border-radius:3px;background:linear-gradient(90deg,var(--obsidian),var(--slate),var(--obsidian))"></span><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">SKELETON</span></div>
+        <div style="display:flex;align-items:center;gap:14px"><oa-portal size="40"></oa-portal><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-2)">PORTAL LOADER · LONG LOADS</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--ember)"><span style="width:18px;height:18px;border:1px solid currentColor;border-radius:50%;display:flex;align-items:center;justify-content:center">!</span>PLAYER NOT FOUND · CHECK THE TAG</div>
+        <div style="display:flex;align-items:center;gap:8px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-2)"><span style="width:7px;height:7px;border-radius:50%;background:var(--blue);animation:oaPulse 2s infinite"></span>LIVE · LAST SYNC 04:12 · ↻</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">04 · MOTION SPEC</span>
+    <div style="overflow-x:auto;border:1px solid var(--hair);border-radius:8px;background:var(--charcoal)">
+      <div style="min-width:880px;display:grid;grid-template-columns:1.2fr 1.3fr .7fr 1.2fr 1.4fr">
+        <sc-for list="{{ motionHead }}" as="h" hint-placeholder-count="5"><span style="padding:12px 14px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair);background:var(--glass)">{{ h }}</span></sc-for>
+        <sc-for list="{{ motion }}" as="m" hint-placeholder-count="12">
+          <span style="padding:12px 14px;border-bottom:1px solid var(--hair);font:600 13px/1.35 'Space Grotesk',sans-serif">{{ m.a }}</span>
+          <span style="padding:12px 14px;border-bottom:1px solid var(--hair);font:400 13px/1.35 'Space Grotesk',sans-serif;color:var(--text-2)">{{ m.t }}</span>
+          <span style="padding:12px 14px;border-bottom:1px solid var(--hair);font:500 12px/1.35 'JetBrains Mono',monospace">{{ m.d }}</span>
+          <span style="padding:12px 14px;border-bottom:1px solid var(--hair);font:500 11px/1.35 'JetBrains Mono',monospace;color:var(--text-2)">{{ m.e }}</span>
+          <span style="padding:12px 14px;border-bottom:1px solid var(--hair);font:400 13px/1.35 'Space Grotesk',sans-serif;color:var(--text-2)">{{ m.r }}</span>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">05 · BACKGROUND SCENES · FOR IMAGE / VIDEO GENERATION</span>
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ scenes }}" as="s" hint-placeholder-count="12">
+        <div style="display:grid;grid-template-columns:minmax(130px,200px) 1fr 1fr;gap:20px;padding:18px 0;border-top:1px solid var(--hair)">
+          <span style="display:flex;flex-direction:column;gap:6px"><span style="font:600 15px/1.2 'Space Grotesk',sans-serif">{{ s.page }}</span><span style="font:500 9px/1.3 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--blue-hi)">{{ s.size }}</span></span>
+          <span style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">STILL</span><span style="font:400 14px/1.5 'Space Grotesk',sans-serif;color:var(--text-2);text-wrap:pretty">{{ s.still }}</span></span>
+          <span style="display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">LOOP (8–12s, ≤3 MB, poster = still)</span><span style="font:400 14px/1.5 'Space Grotesk',sans-serif;color:var(--text-2);text-wrap:pretty">{{ s.loop }}</span></span>
+        </div>
+      </sc-for>
+    </div>
+    <p style="margin:0;font:400 13px/1.6 'Space Grotesk',sans-serif;color:var(--text-3);max-width:760px">Every scene ships with its still as the static fallback: used on data saver, low-power devices and prefers-reduced-motion. Scrim: scene → void over the bottom 40% plus a vignette. Nothing busy behind tables.</p>
+  </section>
+
+  <footer style="border-top:1px solid var(--hair);padding-top:28px"><p style="margin:0;max-width:640px;font:400 12px/1.6 'Space Grotesk',sans-serif;color:var(--text-3)">This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it. For more information see Supercell's Fan Content Policy.</p></footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SW=[['void','--void','#07080A','Page, behind scenes'],['charcoal','--charcoal','#121316','Main surface'],['obsidian','--obsidian','#1A1C20','Raised panels, rows'],['slate','--slate','#262930','Hover, inputs'],['hairline','--hair','rgba(255,255,255,.10)','Borders, dividers'],['frame','--frame','rgba(255,255,255,.55)','Inset white frames'],['text-1','--text-1','#F3F4F6','Primary text'],['text-2','--text-2','#A4A9B4','Secondary text'],['text-3','--text-3','#80868F','Muted labels'],['glow-blue','--blue','#3AA0FF','Accent, links, focus, wins'],['glow-blue-hi','--blue-hi','#8CCBFF','Highlights, light tubes'],['glow-blue-deep','--blue-deep','#0A48C9','Pressed, fills behind glow'],['evolution','--evo','#A35BFF','Evo only'],['hero / #1','--gold','#E6B34A','Hero, rank I'],['ember','--ember','#FF5464','Loss, inactive (small)']];
+const SWL={'--void':'#E7E7E4','--charcoal':'#F4F4F2','--obsidian':'#FFFFFF','--slate':'#ECECE9','--hair':'rgba(12,13,15,.12)','--frame':'rgba(12,13,15,.35)','--text-1':'#0C0D0F','--text-2':'#3E4249','--text-3':'#5F646C','--blue':'#0A6BDB','--blue-hi':'#0A6BDB','--ember':'#C8283A','--gold':'#946508','--evo':'#7A2FE0'};
+const heat=(n,pend,none)=>{if(pend)return{bg:'transparent',sh:'none',bd:'1px dashed var(--hair)',fg:'var(--text-3)',txt:'·',lab:'PENDING'};if(none)return{bg:'repeating-linear-gradient(135deg,var(--well) 0 3px,transparent 3px 6px)',sh:'none',bd:'1px solid var(--hair)',fg:'transparent',txt:'',lab:'NOT IN CLAN'};const a=[0,.22,.42,.66,1][n];return{bg:n?`rgba(58,160,255,${a})`:'var(--well)',sh:n===4?'0 0 10px rgba(58,160,255,.6),inset 0 0 0 1px rgba(140,203,255,.7)':n?'none':'inset 0 1px 2px rgba(0,0,0,.6)',bd:n?'0':'1px solid var(--hair)',fg:n>=3?'#07080A':n?'var(--text-1)':'var(--text-3)',txt:String(n),lab:n+(n===1?' DECK':' DECKS')}};
+class Component extends DCLogic {
+  state={theme:'dark',cards:null,tag:'',focus:false,dt:0};
+  componentDidMount(){this.setState({theme:window.OA?OA.theme():'dark'});(window.OACards||Promise.resolve([])).then(c=>this.setState({cards:c}))}
+  renderVals(){
+    const s=this.state,light=s.theme==='light',by={};(s.cards||[]).forEach(c=>by[c.slug]=c);
+    const pick=(sl,o={})=>{const c=by[sl]||{slug:sl,name:sl,rarity:'common'};const art=o.evo?c.evoImg:o.hero?c.heroImg:c.img;return{slug:c.slug,name:o.label||c.name,art:art||c.img,rarity:c.rarity,isEvo:!!o.evo,isHero:!!o.hero,owned:o.owned!==false,level:o.level??14,elixir:c.elixir}};
+    const tiles=s.cards?[pick('archers',{label:'Common · Archers'}),pick('battle-healer',{label:'Rare · Battle Healer'}),pick('baby-dragon',{label:'Epic · Baby Dragon'}),pick('the-log',{label:'Legendary · The Log'}),pick('boss-bandit',{label:'Champion · Boss Bandit'}),pick('bomber',{evo:1,label:'Evo · Bomber'}),pick('berserker',{hero:1,label:'Hero · Berserker'}),{...pick('knight',{evo:1,hero:1,label:'Evo + Hero · Knight'}),img2:(by['knight']||{}).heroImg,split:true},pick('rocket',{owned:false,label:'Not owned · Rocket',level:null})]:[];
+    const raw=s.tag.replace(/^#/,'').toUpperCase(),bad=[...raw].filter(c=>!'0289PYLQGRJCUV'.includes(c)),valid=raw.length>=3&&!bad.length;
+    const fs="'JetBrains Mono',monospace",gs="'Space Grotesk',sans-serif";
+    return {
+      themeName:light?'MARBLE DAY (LIGHT)':'OBSIDIAN (DARK, DEFAULT)',themeLabel:light?'◐ Marble Day':'◑ Obsidian',toggleTheme:()=>this.setState({theme:window.OA?OA.toggleTheme():'dark'}),
+      swatches:SW.map(([name,v,hex,use])=>({name,v,hex:light&&SWL[v]?SWL[v]:hex,use,sh:v==='--blue'||v==='--blue-hi'?'inset 0 0 30px rgba(255,255,255,.2)':'none'})),
+      types:[['Display XL','Mono 800 · 160/0.84 · −6.5%',`800 clamp(48px,9vw,140px)/.84 ${fs}`,'-.065em','none','var(--text-1)','IRON VEIL'],['Display L','Mono 800 · 96/0.88 · −6%',`800 clamp(40px,6vw,96px)/.88 ${fs}`,'-.06em','none','var(--text-1)','TOP DECKS'],['Display M','Mono 800 · 56/0.95 · −5%',`800 clamp(32px,4vw,56px)/.95 ${fs}`,'-.05em','none','var(--text-1)','WAR DAY 3/4'],['Number','Mono 800 · 46 · tabular',`800 46px/1 ${fs}`,'-.05em','none','var(--text-1)','8,420 · 47/50'],['Heading','Grotesk 600 · 24/1.2',`600 24px/1.2 ${gs}`,'0','none','var(--text-1)','Promotion candidates'],['Body','Grotesk 400 · 16/1.55',`400 16px/1.55 ${gs}`,'0','none','var(--text-2)','Leaders see who is active, who plays war and who left.'],['UI','Grotesk 600 · 14',`600 14px/1.2 ${gs}`,'0','none','var(--text-1)','NightHollow'],['Data','Mono 500 · 13 · tabular',`500 13px/1 ${fs}`,'0','none','var(--text-1)','2,184   16/16   63.6%'],['Label','Mono 500 · 10 · +12–16% · caps',`500 10px/1 ${fs}`,'.14em','uppercase','var(--text-3)','● LIVE · RIVER RACE DAY 3 · TAG #9Q2LUY · LAST SYNC 04:12']].map(([name,spec,font,ls,tt,fg,sample])=>({name,spec,font,ls,tt,fg,sample})),
+      spacing:[4,8,12,16,24,32,48,64].map(v=>({v})),radii:[[4,'chip'],[6,'button'],[8,'panel'],[10,'modal']].map(([v,use])=>({v,use})),
+      elev:[{name:'FLAT',bg:'var(--charcoal)',sh:'none'},{name:'RAISED',bg:'var(--obsidian)',sh:'inset 0 1px 0 rgba(255,255,255,.08),0 8px 20px rgba(0,0,0,.4)'},{name:'FLOAT',bg:'var(--glass)',sh:'0 30px 80px rgba(0,0,0,.6)'}],
+      tag:s.tag,onTag:e=>this.setState({tag:e.target.value}),onFocus:()=>this.setState({focus:true}),onBlur:()=>this.setState({focus:false}),showBlock:!s.tag&&!s.focus,
+      sBd:s.focus||valid?'rgba(58,160,255,.7)':bad.length?'rgba(255,84,100,.6)':'var(--hair)',sSh:s.focus?'0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)':'none',
+      hint:bad.length?`"${bad[0]}" is not allowed. Valid: 0 2 8 9 P Y L Q G R J C U V`:valid?`VALID · #${raw}`:'Type a tag. Try 9Q2LUY, then try an O.',hintFg:bad.length?'var(--ember)':valid?'var(--blue-hi)':'var(--text-3)',
+      demoTabs:['MEMBERS','WAR','ROSTER','SCORE'].map((label,i)=>({label,fg:s.dt===i?'var(--text-1)':'var(--text-3)',sh:s.dt===i?'inset 0 -2px 0 #8CCBFF,0 8px 16px -10px rgba(58,160,255,.9)':'none',onClick:()=>this.setState({dt:i})})),
+      gauges:[24,61,92].map(v=>({v,dash:`${v} 100`,op:(.35+v/100*.65).toFixed(2),glow:`drop-shadow(0 0 ${Math.round(v/8)}px rgba(58,160,255,.75))`})),
+      heat:[heat(0),heat(1),heat(2),heat(3),heat(4),heat(0,1),heat(0,0,1)],
+      tableRows:[['01','Vexor','3,410','94','2h'],['02','NightHollow','3,290','91','12m'],['03','Saffron','2,850','88','5h'],['04','Okonkwo','3,380','84','1d']].map(([i,n,f,s2,l])=>({i,n,f,s:s2,l})),
+      tiles,
+      trophies:[{g:'PoL',lv:'LV 8/10',p:95,glow:10},{g:'412',lv:'EMOTES',p:82,glow:6},{g:'CW',lv:'LV 10/10',p:100,glow:20}],
+      motionHead:['ANIMATION','TRIGGER','DURATION','EASING','REDUCED MOTION'],
+      motion:[['Smooth scroll','Wheel / touch','inertia 0.08 lerp','linear lerp','Native scroll'],['Title mask reveal','Enters viewport (15%)','900ms, 80ms/line stagger','cubic-bezier(.16,1,.3,1)','Opacity fade 200ms'],['Number decode','Stat enters viewport','420ms','left-to-right settle','Final value, no scramble'],['Hairline draw-in','Divider/frame enters viewport','1100ms','cubic-bezier(.65,0,.35,1)','Drawn at rest'],['Cursor light','Pointer over [data-spot] panel','follows pointer','none (direct)','Off'],['Card tilt + glare','Pointer over card','80ms follow, 500ms return','cubic-bezier(.16,1,.3,1)','Off; rarity glow only'],['Magnetic CTA','Pointer over primary','200ms in, 600ms out','cubic-bezier(.16,1,.3,1)','Off'],['Button light sweep','Hover primary','700ms','ease','Instant glow'],['Character comes alive','Hover / scroll focus','600ms colour in','ease-out','Stays greyscale'],['Hero push-in','Page load','22s alternate','ease-in-out','Static poster'],['Particle crown','Always; scroll scatters','0.0035 rad/frame; 8% lerp','lerp','Static, no scatter'],['Fog + motes','Always','continuous drift','linear','Static frame'],['Drawer open','Row click / Enter','450ms','cubic-bezier(.16,1,.3,1)','Fade 150ms'],['Page transition','Route change','fog wipe 500ms; portal >800ms','cubic-bezier(.65,0,.35,1)','Cross-fade 150ms'],['Live dot','Live data','2s loop','ease','Solid dot'],['Rune pulse (dashboard)','Refresh / sync','4s idle, 0.8s syncing','ease-in-out','Static ring']].map(([a,t,d,e,r])=>({a,t,d,e,r})),
+      scenes:[['Home hero','100vh full-bleed','Ruined marble arena at night under a full moon, fallen columns, torn flags, low fog. A champion stands in the fog (greyscale, blue rim).','Slow camera push-in, fog drifting left to right, flags fluttering, occasional moonlight flicker. Particle crown is a separate WebGL layer.'],['Player profile','55vh band','Dark castle silhouette, blue smoke between towers, faint elixir drop, sword and coin glyphs etched in stone.','Smoke curls between towers; glyphs breathe faintly. Favourite card render composited right.'],['Clan profile','50vh band','Castle wall with chained hanging shields and torn banners; central shield blank for the clan badge.','Torches flicker, chains sway slightly, banners ripple.'],['Clan dashboard','50vh band','War-room round stone table, glowing blue crown rune at centre, etched segments, skeleton parrot on the edge, battle plans pinned behind.','Rune pulses gently; candle flicker; parrot head-turn once per loop.'],['War tab','40vh band','Same war table, five clan markers on the table segments.','Markers glow in race order; rune ring rotates slowly.'],['Decks / Meta','40vh band','Obsidian table with recessed stone card slots edged in blue and violet light strips.','Slots light up one by one as deck cards fade in.'],['Leaderboards','45vh band','Obsidian podium with I / II / III numerals (gold I, blue-white II and III), translucent crown hanging above.','Crown turns slowly; dust in the light beams.'],['Badges tab','40vh band','Lit glass trophy shelf with light-strip shelves.','Light strips shimmer; glass reflections slide.'],['News','40vh band','Ember-edged scrolls on a stone ledge with the skeleton parrot.','Embers drift up; scroll edges glow and fade.'],['Card encyclopedia','45vh band','Circle of black marble obelisks around a glowing ring portal.','Portal ring rotates; mist pours outward.'],['Loading','Overlay','The obelisk ring on void.','Portal ring draws itself in blue light (1.8s loop).'],['404 · Route Lost','100vh','Ruined arena with a fallen pillar; a big monospace 404 carved into stone; a lone Skeleton.','Dust falls from the pillar; fog rolls in.'],['Empty states','Inline','Open treasure chest with ghostly white outline troops around it.','Outlines flicker softly; chest glow pulses.']].map(([page,size,still,loop])=>({page,size,still,loop}))
+    };
+  }
+}
+</script>
+</body>
+</html>

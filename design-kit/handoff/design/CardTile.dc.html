@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div data-tilt="1" style="position:relative;width:{{ w }}px;display:flex;flex-direction:column;gap:6px;transform-style:preserve-3d;opacity:{{ opacity }};filter:{{ filter }}">
+  <div style="position:relative;width:{{ w }}px;height:{{ h }}px;padding:2px;border-radius:7px;background:{{ frameBg }};box-shadow:{{ glow }}">
+    <div style="position:relative;width:100%;height:100%;border-radius:5px;overflow:hidden;background:#07080A">
+      <sc-if value="{{ hasImg }}" hint-placeholder-val="{{ true }}">
+        <img src="{{ src }}" alt="{{ name }}" onError="{{ onErr }}" style="width:100%;height:100%;object-fit:cover;display:block"></img>
+      </sc-if>
+      <sc-if value="{{ split }}" hint-placeholder-val="{{ false }}">
+        <img src="{{ img2 }}" alt="{{ name }} hero" onError="{{ onErr2 }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;clip-path:polygon(58% 0,100% 0,100% 100%,42% 100%)"></img>
+        <div style="position:absolute;inset:0;background:linear-gradient(112deg,transparent calc(50% - 1px),#F5D58A calc(50% - 1px),#F5D58A calc(50% + 1px),transparent calc(50% + 1px));filter:drop-shadow(0 0 4px #E6B34A);pointer-events:none"></div>
+      </sc-if>
+      <sc-if value="{{ noImg }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:4px;text-align:center;background:repeating-linear-gradient(135deg,#121316 0 6px,#1A1C20 6px 12px);font:600 {{ labelFs }}px/1.2 'JetBrains Mono',monospace;color:#62676F;text-transform:uppercase;letter-spacing:.06em">{{ name }}</div>
+      </sc-if>
+      <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.35),rgba(255,255,255,0) 45%);mix-blend-mode:overlay;opacity:var(--ga,0);transition:opacity .3s"></div>
+      <sc-if value="{{ showLevel }}" hint-placeholder-val="{{ true }}">
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:{{ lvlPad }};background:linear-gradient(to top,rgba(7,8,10,.92),rgba(7,8,10,0));font:700 {{ lvlFs }}px/1 'JetBrains Mono',monospace;color:#F3F4F6;text-align:center;letter-spacing:.04em;font-variant-numeric:tabular-nums">LV {{ level }}</div>
+      </sc-if>
+    </div>
+    <sc-if value="{{ showElixir }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;top:-6px;left:-6px;width:{{ dropSz }}px;height:{{ dropSz }}px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:#0A48C9;box-shadow:0 0 0 1px rgba(140,203,255,.7),0 0 10px rgba(58,160,255,.6);display:flex;align-items:center;justify-content:center">
+        <span style="transform:rotate(45deg);font:700 {{ dropFs }}px/1 'JetBrains Mono',monospace;color:#fff">{{ elixir }}</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ strip }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:8px;right:8px;bottom:-3px;height:2px;border-radius:2px;background:{{ stripBg }};box-shadow:{{ stripGlow }}"></div>
+    </sc-if>
+  </div>
+  <sc-if value="{{ showLabel }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <div style="font:500 12px/1.2 'Space Grotesk',sans-serif;color:var(--text-1,#F3F4F6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ name }}</div>
+      <div style="font:500 9px/1.2 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:{{ tagColor }}">{{ tag }}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:200,&quot;height&quot;:260},&quot;slug&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;bomber&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Bomber&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;rarity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;common&quot;,&quot;rare&quot;,&quot;epic&quot;,&quot;legendary&quot;,&quot;champion&quot;,&quot;tower&quot;],&quot;default&quot;:&quot;common&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;S&quot;,&quot;M&quot;,&quot;L&quot;,&quot;XL&quot;],&quot;default&quot;:&quot;L&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;level&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:14,&quot;tsType&quot;:&quot;number&quot;},&quot;elixir&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:2,&quot;tsType&quot;:&quot;number&quot;},&quot;evo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;hero&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;owned&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;active&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;showLabel&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const AVAIL = ['archers','arrows','baby-dragon','barbarian-barrel','barbarian-hut','barbarians','battle-healer','battle-ram','berserker','bomber','bomb-tower','boss-bandit'];
+const FRAMES = {
+  common: 'linear-gradient(135deg,#a9aeb6,#5b6068 30%,#c4c8ce 52%,#50555c 75%,#9aa0a8)',
+  rare: 'linear-gradient(135deg,#f6f6f4,#c9cac6 35%,#ffffff 50%,#b5b6b2 68%,#ededea)',
+  epic: 'linear-gradient(135deg,#141418,#2a1f3a 38%,#A35BFF 47%,#1a1424 55%,#3b2a55 80%,#141418)',
+  legendary: 'linear-gradient(135deg,#8CCBFF,#eef4ff 25%,#c9a8ff 45%,#a8ffe6 65%,#ffe3f2 82%,#8CCBFF)',
+  champion: 'linear-gradient(135deg,#E6B34A,#1A1C20 22%,#1A1C20 78%,#E6B34A)',
+  tower: 'linear-gradient(135deg,#62676F,#262930 50%,#62676F)'
+};
+const SIZES = { S: 44, M: 68, L: 104, XL: 150 };
+const baseOf = (u) => (u || '').replace('/cardheroes/', '/cards/').replace('/cardevolutions/', '/cards/');
+class Component extends DCLogic {
+  state = { fail: 0, fail2: 0, key: '' };
+  componentDidMount() { this.setState({ key: (this.props.img || '') + '|' + (this.props.slug || '') + '|' + (this.props.img2 || '') }); }
+  componentDidUpdate() { const k = (this.props.img || '') + '|' + (this.props.slug || '') + '|' + (this.props.img2 || ''); if (k !== this.state.key) this.setState({ key: k, fail: 0, fail2: 0 }); }
+  renderVals() {
+    const p = this.props;
+    const slug = p.slug || 'archers';
+    const rarity = (p.rarity || 'common').toLowerCase();
+    const size = p.size || 'M';
+    const w = SIZES[size] || 68, h = Math.round(w * 140 / 95);
+    const evo = !!p.evo, hero = !!p.hero, owned = p.owned !== false;
+    const local = AVAIL.includes(slug) ? 'images/cards/' + slug + '.png' : '';
+    const chain = [p.img, p.fallback, baseOf(p.img), local].filter((u, i, a) => u && a.indexOf(u) === i);
+    const st = this.state, cur = chain[st.fail] || '';
+    const hasImg = !!cur;
+    const img2Chain = [p.img2, baseOf(p.img2)].filter((u, i, a) => u && a.indexOf(u) === i), cur2 = img2Chain[st.fail2] || '';
+    let stripBg = '', stripGlow = '';
+    if (evo && hero) { stripBg = 'linear-gradient(90deg,#A35BFF 50%,#E6B34A 50%)'; stripGlow = '0 0 8px rgba(163,91,255,.8),0 0 8px rgba(230,179,74,.6)'; }
+    else if (evo) { stripBg = '#C79BFF'; stripGlow = '0 0 6px #A35BFF,0 0 16px rgba(163,91,255,.7)'; }
+    else if (hero) { stripBg = '#F5D58A'; stripGlow = '0 0 6px #E6B34A,0 0 16px rgba(230,179,74,.6)'; }
+    const glow = !owned ? 'none' : evo ? '0 0 0 1px rgba(163,91,255,.5),0 0 18px rgba(163,91,255,.28)' : hero ? '0 0 0 1px rgba(230,179,74,.5),0 0 18px rgba(230,179,74,.25)' : p.active ? '0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)' : '0 6px 18px rgba(0,0,0,.45)';
+    const tag = [rarity === 'tower' ? 'Tower' : rarity, evo ? 'Evo' : '', hero ? 'Hero' : '', owned ? '' : 'Not owned'].filter(Boolean).join(' · ');
+    return {
+      w, h, src: cur, onErr: () => this.setState(s => ({ fail: s.fail + 1 })), onErr2: () => this.setState(s => ({ fail2: s.fail2 + 1 })), name: p.label || slug.replace(/-/g, ' '), hasImg, noImg: !hasImg,
+      frameBg: FRAMES[rarity] || FRAMES.common, glow,
+      opacity: owned ? 1 : .3, filter: owned ? 'none' : 'grayscale(1)',
+      showLevel: p.level != null && size !== 'S', level: p.level,
+      lvlFs: size === 'L' || size === 'XL' ? 11 : 9, lvlPad: size === 'L' || size === 'XL' ? '14px 0 6px' : '10px 0 4px', labelFs: size === 'S' ? 6 : 8,
+      showElixir: p.elixir != null && size !== 'S', elixir: p.elixir, dropSz: size === 'L' || size === 'XL' ? 24 : 19, dropFs: size === 'L' || size === 'XL' ? 12 : 10,
+      strip: evo || hero, stripBg, stripGlow, split: !!(p.split && cur2), img2: cur2,
+      showLabel: !!p.showLabel, tag, tagColor: evo ? '#C79BFF' : hero ? '#E6B34A' : 'var(--text-3,#80868F)'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:#07080A;color:#F3F4F6;overflow:hidden">
+<oa-grain></oa-grain>
+<dc-import name="SiteNav" active="" hint-size="100%,64px"></dc-import>
+<section data-screen-label="404" style="position:relative;height:calc(100vh - 64px);min-height:560px;overflow:hidden">
+  <div style="position:absolute;inset:0;filter:grayscale(1) brightness(.5)"><image-slot id="scene-404" shape="rect" placeholder="Scene · ruined arena with a fallen pillar, 404 carved into stone"></image-slot></div>
+  <div style="position:absolute;left:50%;bottom:6%;width:min(22vw,200px);height:38%;transform:translateX(-50%);filter:grayscale(1) brightness(.8) drop-shadow(-2px 0 0 rgba(140,203,255,.75)) drop-shadow(0 0 26px rgba(58,160,255,.45));transition:filter .6s" style-hover="filter:grayscale(0) drop-shadow(-2px 0 0 rgba(140,203,255,.75)) drop-shadow(0 0 26px rgba(58,160,255,.45))"><image-slot id="lone-skeleton" shape="rect" fit="contain" placeholder="{{ renderPh }}"></image-slot></div>
+  <oa-fog density="1.4"></oa-fog>
+  <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(7,8,10,.4),rgba(7,8,10,0) 30%,rgba(7,8,10,.3) 70%,#07080A),radial-gradient(ellipse at center,rgba(7,8,10,0) 40%,rgba(7,8,10,.8) 100%)"></div>
+  <div style="position:absolute;inset:14px;border:1px solid rgba(255,255,255,.55);border-radius:4px;pointer-events:none"></div>
+  <div style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:0 24px 18vh;text-align:center;pointer-events:none">
+    <span style="font:500 10px/1.4 'JetBrains Mono',monospace;letter-spacing:.16em;color:{{ kickFg }}">{{ kicker }}</span>
+    <h1 data-reveal="1" style="margin:0;font:800 clamp(110px,24vw,340px)/.8 'JetBrains Mono',monospace;letter-spacing:-.08em;color:transparent;background:linear-gradient(180deg,#C9CCD2,#5A5E66);-webkit-background-clip:text;background-clip:text;text-shadow:0 2px 0 rgba(0,0,0,.6);filter:drop-shadow(0 0 30px rgba(58,160,255,.25))">{{ big }}</h1>
+    <h2 style="margin:0;font:700 clamp(22px,3vw,36px)/1.1 'JetBrains Mono',monospace;letter-spacing:-.03em">{{ headline }}</h2>
+    <p style="margin:0;max-width:440px;font:400 16px/1.55 'Space Grotesk',sans-serif;color:#A4A9B4;text-wrap:pretty">{{ body }}</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;pointer-events:auto">
+      <a href="Home.dc.html" data-magnet="1" style="display:flex;align-items:center;height:46px;padding:0 20px;border-radius:6px;background:#F3F4F6;color:#07080A;font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em" style-hover="color:#07080A;box-shadow:0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)">BACK TO THE ARENA</a>
+      <button onClick="{{ toggle }}" style="height:46px;padding:0 16px;border:1px solid rgba(255,255,255,.28);border-radius:6px;background:none;color:#F3F4F6;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer">{{ toggleLabel }}</button>
+    </div>
+  </div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;route&quot;,&quot;player&quot;],&quot;default&quot;:&quot;route&quot;,&quot;tsType&quot;:&quot;'route'|'player'&quot;}}">
+class Component extends DCLogic {
+  state={v:null};
+  renderVals(){
+    const v=this.state.v||this.props.variant||'route';const p=v==='player';
+    return {
+      kicker:p?'● LOOKUP FAILED · #8LQ0O2Y':'● ROUTE LOST',kickFg:p?'#FF5464':'#A4A9B4',big:p?'?':'404',
+      headline:p?'PLAYER NOT FOUND':'NOTHING STANDS HERE',
+      body:p?'No player has the tag #8LQ0O2Y. Tags only use 0 2 8 9 P Y L Q G R J C U V, so an O is usually a 0.':'This page fell with the pillar. Search a tag or head back to the arena.',
+      renderPh:p?'Character render · lone Skeleton':'Character render · lone Skeleton (royaleapi/characters)',
+      toggle:()=>this.setState({v:p?'route':'player'}),toggleLabel:p?'SHOW 404 STATE':'SHOW PLAYER-NOT-FOUND STATE'
+    };
+  }
+}
+</script>
+</body>
+</html>

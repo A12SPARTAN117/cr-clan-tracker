@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--glass:rgba(18,19,22,.72);--well:#0B0C0E;--ember:#FF5464;--gold:#E6B34A}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--glass:rgba(244,244,242,.8);--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+</style>
+<script src="./arena-fx.js"></script>
+</helmet>
+<div style="min-height:100vh;background:var(--void);color:var(--text-1)">
+<oa-grain></oa-grain>
+<dc-import name="SiteNav" active="" hint-size="100%,64px"></dc-import>
+<main style="max-width:1080px;margin:0 auto;padding:clamp(40px,6vw,80px) clamp(16px,4vw,40px) 80px;display:flex;flex-direction:column;gap:56px">
+  <header style="display:flex;flex-direction:column;gap:16px">
+    <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">SPEC · INTERACTION + ACCESSIBILITY</span>
+    <h1 style="margin:0;font:800 clamp(44px,7vw,104px)/.86 'JetBrains Mono',monospace;letter-spacing:-.06em">HOW IT<br>BEHAVES</h1>
+  </header>
+  <sc-for list="{{ sections }}" as="s" hint-placeholder-count="7">
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px 40px;padding-top:24px;border-top:1px solid var(--hair)">
+      <div style="display:flex;flex-direction:column;gap:10px"><span style="font:700 12px/1 'JetBrains Mono',monospace;color:var(--blue-hi)">{{ s.n }}</span><h2 style="margin:0;font:600 26px/1.15 'Space Grotesk',sans-serif">{{ s.t }}</h2><sc-if value="{{ s.hasLink }}" hint-placeholder-val="{{ false }}"><a href="{{ s.href }}" style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em">SEE IT →</a></sc-if></div>
+      <div style="grid-column:span 2;display:flex;flex-direction:column">
+        <sc-for list="{{ s.items }}" as="i" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:minmax(120px,170px) 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--hair)"><span style="font:500 11px/1.5 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--text-1)">{{ i.k }}</span><span style="font:400 15px/1.55 'Space Grotesk',sans-serif;color:var(--text-2);text-wrap:pretty">{{ i.v }}</span></div>
+        </sc-for>
+      </div>
+    </section>
+  </sc-for>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,140px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const S=[
+ ['01','Sorting','Clan Dashboard.dc.html',[['Click header','First click sorts the most useful way (numbers high→low, names A→Z, last seen most recent first). Second click reverses.'],['Indicator','Sorted header turns text-1 with a blue ▼/▲. aria-sort is set on the column.'],['Mobile','Column headers become a scrollable row of sort chips above the cards.'],['Persistence','Sort is per session. Filters and sort reset on reload, weights do not.']]],
+ ['02','Filtering','Clan Dashboard.dc.html',[['Chips','Role, activity, war and "new < 7d" are toggle chips. Choosing an active chip again clears it back to All.'],['Combined','Filters combine with AND. The count ("Showing 12 of 47") updates live.'],['Empty','No matches shows a plain message inside the table frame. Filters stay visible so they can be loosened.'],['Bulk','Select rows with checkboxes. An action bar slides in with Compare (2–4), Export CSV and Copy names.']]],
+ ['03','Member drawer','Clan Dashboard.dc.html',[['Open','Click a row, or focus it and press Enter or Space. The drawer slides in from the right over a dimmed backdrop (450ms).'],['Navigate','↑ / ↓ buttons move through the current filtered, sorted list without closing.'],['Close','Esc, the close button or a backdrop click. Focus returns to the row.'],['Mobile','Drawer becomes full width. Content order: score, breakdown, heatmap, friendlies, role history.']]],
+ ['04','Tabs and overflow','Player Profile.dc.html',[['Desktop','Tabs sit under the header scene and stick under the nav while scrolling.'],['Mobile','The tab bar scrolls sideways with no scrollbar. The active tab keeps its light-tube underline.'],['Keyboard','Tabs are buttons with role=tab and aria-selected. Tab moves between them, Enter activates.']]],
+ ['05','Search and tags','Home.dc.html',[['Validation','Tags use only 0 2 8 9 P Y L Q G R J C U V. A leading # is optional. Invalid characters turn the border ember and name the bad character.'],['Routing','Valid tag + Enter: long tags (8+) open a player, short tags open a clan. Text that is not a tag searches clan names.'],['Not found','Unknown tags land on the player-not-found state with the O-vs-0 hint.']]],
+ ['06','Theme switching','Design System.dc.html',[['Toggle','Obsidian (default) ↔ Marble Day. Stored on the device and applied before first paint on every page.'],['Scenes','Header scenes stay dark in both themes; they are images. Content below switches to marble surfaces and #0A6BDB blue.'],['Game art','Card art, badges and league icons never change with theme.']]],
+ ['07','Accessibility','',[['Contrast','Body and data text meet WCAG AA in both themes. Muted labels were raised from #62676F to #80868F in dark mode to pass 4.5:1 on charcoal.'],['Not colour alone','Wins/losses use W/L letters and ▲▼. Last seen uses filled / half / hollow dots plus ACTIVE / AT RISK / INACTIVE. Heatmap cells print the deck count.'],['Keyboard tables','Rows are focusable (tabindex 0) with a visible light-strip focus state. Enter opens detail. Sort headers are real buttons.'],['Motion','prefers-reduced-motion turns off parallax, particle scatter, number scramble, tilt, magnetic pull and fog drift. Reveals become simple fades.'],['Targets','Mobile tap targets are at least 44px. The bottom tab bar is 64px tall.']]]
+];
+class Component extends DCLogic {
+  renderVals(){return{sections:S.map(([n,t,href,items])=>({n,t,href,hasLink:!!href,items:items.map(([k,v])=>({k,v}))}))}}
+}
+</script>
+</body>
+</html>

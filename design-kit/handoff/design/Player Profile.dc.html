@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+@keyframes oaPulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(58,160,255,.7)}50%{opacity:.55;box-shadow:0 0 0 6px rgba(58,160,255,0)}}
+@keyframes oaFade{from{opacity:0}to{opacity:1}}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./cards.js"></script>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:var(--void);color:var(--text-1);overflow-x:hidden">
+<oa-grain></oa-grain>
+
+<header style="position:sticky;top:0;z-index:50;height:64px;display:flex;align-items:center;gap:24px;padding:0 clamp(16px,3vw,40px);background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hair)">
+  <a href="Home.dc.html" style="display:flex;align-items:center;gap:10px;color:var(--text-1);flex:none">
+    <svg width="30" height="26" viewBox="0 0 30 26" style="filter:drop-shadow(0 0 6px rgba(58,160,255,.6))"><polyline points="2,22 2,8 8,14 12,4 16,14 22,8 22,22 2,22" fill="none" stroke="#A4A9B4" stroke-width="1.4" stroke-linejoin="round"></polyline><polyline points="8,24 8,10 14,16 18,6 22,16 28,10 28,24 8,24" fill="none" stroke="#8CCBFF" stroke-width="1.4" stroke-linejoin="round"></polyline></svg>
+    <span style="font:800 13px/1 'JetBrains Mono',monospace;letter-spacing:.04em">CR·CLAN<span style="color:var(--text-3)">/</span>TRACKER</span>
+  </a>
+  <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+    <nav style="display:flex;gap:22px;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase">
+      <a href="Player Profile.dc.html" style="color:var(--text-1);padding-bottom:6px;margin-bottom:-6px;box-shadow:0 2px 0 0 #8CCBFF,0 4px 10px rgba(58,160,255,.6)">Players</a>
+      <a href="Clans.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">Clans</a>
+      <a href="Clan Dashboard.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">My Clan</a>
+      <a href="Decks.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">Decks</a>
+      <a href="Leaderboards.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">Leaderboards</a>
+      <a href="News.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">News</a>
+    </nav>
+  </sc-if>
+  <div style="flex:1"></div>
+  <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="flex:none;height:36px;padding:0 12px;background:none;border:1px solid var(--hair);border-radius:6px;color:var(--text-2);font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer" style-hover="color:var(--text-1);border-color:rgba(58,160,255,.6)">{{ themeLabel }}</button>
+</header>
+
+<section data-screen-label="Player header" style="position:relative;height:clamp(440px,55vh,600px);overflow:hidden;background:#07080A;color:#F3F4F6">
+  <div style="position:absolute;inset:0;filter:grayscale(1) contrast(1.1) brightness(.6)">
+    <image-slot id="scene-castle" shape="rect" placeholder="Scene · dark castle silhouette, blue smoke between towers"></image-slot>
+  </div>
+  <oa-fog density="1.2"></oa-fog>
+  <div style="position:absolute;right:clamp(0px,6vw,120px);bottom:0;width:min(42vw,440px);height:86%;filter:grayscale(1) brightness(.85) drop-shadow(-2px 0 0 rgba(140,203,255,.75)) drop-shadow(0 0 36px rgba(58,160,255,.45));transition:filter .6s" style-hover="filter:grayscale(0) drop-shadow(-2px 0 0 rgba(140,203,255,.75)) drop-shadow(0 0 36px rgba(58,160,255,.45))">
+    <image-slot id="fav-render" shape="rect" fit="contain" placeholder="Character render · favourite card (Boss Bandit) from royaleapi/characters"></image-slot>
+  </div>
+  <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(7,8,10,.85) 0%,rgba(7,8,10,.3) 55%,rgba(7,8,10,0) 80%),linear-gradient(to bottom,rgba(7,8,10,.5) 0%,rgba(7,8,10,0) 30%,rgba(7,8,10,.4) 65%,#07080A 100%)"></div>
+  <div style="position:absolute;inset:14px;border:1px solid rgba(255,255,255,.55);border-radius:4px;pointer-events:none"></div>
+  <div style="position:relative;height:100%;max-width:1440px;margin:0 auto;padding:40px clamp(28px,4vw,64px) 40px;display:flex;flex-direction:column;justify-content:space-between;gap:20px;pointer-events:none">
+    <div style="display:flex;flex-wrap:wrap;gap:8px 20px;font:500 10px/1.4 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#A4A9B4">
+      <span style="display:flex;align-items:center;gap:8px;color:#F3F4F6"><span style="width:7px;height:7px;border-radius:50%;background:#3AA0FF;animation:oaPulse 2s infinite"></span>Seen 12 min ago</span>
+      <span>Last sync {{ lastSync }}</span><span>Tracking since 02 Jun 2026</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px;max-width:880px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;pointer-events:auto">
+        <button onClick="{{ copyTag }}" style="display:flex;align-items:center;gap:8px;background:none;border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:5px 8px;color:#F3F4F6;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;cursor:pointer" style-hover="border-color:#3AA0FF">#LQ2V9R0Y <span style="color:#62676F">COPY</span></button>
+        <a href="Clan Dashboard.dc.html" style="display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid rgba(255,255,255,.2);border-radius:4px;color:#F3F4F6;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em" style-hover="color:#fff;border-color:#3AA0FF">IRON VEIL <span style="display:inline-flex;align-items:center;gap:5px;color:#F3F4F6"><svg width="10" height="10" viewBox="0 0 10 10"><polyline points="2,5 5,2 8,5" fill="none" stroke="currentColor" stroke-width="1.3"></polyline><polyline points="2,9 5,6 8,9" fill="none" stroke="currentColor" stroke-width="1.3"></polyline></svg>CO-LEADER</span></a>
+      </div>
+      <h1 data-reveal="1" style="margin:0;font:800 clamp(48px,9vw,140px)/.84 'JetBrains Mono',monospace;letter-spacing:-.06em;word-break:break-word">NIGHT<br>HOLLOW</h1>
+      <div style="display:flex;flex-wrap:wrap;gap:0;border-top:1px solid rgba(255,255,255,.14);pointer-events:auto">
+        <sc-for list="{{ facts }}" as="f" hint-placeholder-count="6">
+          <div style="display:flex;flex-direction:column;gap:7px;padding:14px 22px 0 0;margin-right:22px;border-right:1px solid rgba(255,255,255,.1)">
+            <span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#62676F">{{ f.k }}</span>
+            <span style="display:flex;align-items:center;gap:7px;font:700 18px/1 'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:{{ f.fg }}"><sc-if value="{{ f.league }}" hint-placeholder-val="{{ false }}"><span title="League icon" style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;font-size:9px">10</span></sc-if><span data-decode="1">{{ f.v }}</span><span style="font:500 11px/1 'JetBrains Mono',monospace;color:#62676F">{{ f.sub }}</span></span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;pointer-events:auto">
+      <button data-magnet="1" onClick="{{ togglePin }}" style="height:44px;padding:0 20px;border:0;border-radius:6px;background:{{ pinBg }};color:{{ pinFg }};font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer;box-shadow:{{ pinSh }}" style-hover="box-shadow:0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)">{{ pinLabel }}</button>
+      <button onClick="{{ refresh }}" style="display:flex;align-items:center;gap:10px;height:44px;padding:0 16px;border:1px solid rgba(255,255,255,.28);border-radius:6px;background:none;color:#F3F4F6;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer" style-hover="border-color:#8CCBFF">{{ refreshLabel }}</button>
+    </div>
+  </div>
+</section>
+
+<main style="position:relative;max-width:1440px;margin:0 auto;padding:0 clamp(16px,3vw,40px) 120px;display:flex;flex-direction:column;gap:28px">
+  <div role="tablist" style="position:sticky;top:64px;z-index:20;display:flex;gap:2px;overflow-x:auto;background:var(--void);border-bottom:1px solid var(--hair);scrollbar-width:none;margin:0 calc(-1 * clamp(16px,3vw,40px));padding:0 clamp(16px,3vw,40px)">
+    <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="7">
+      <button role="tab" aria-selected="{{ tb.active }}" onClick="{{ tb.onClick }}" style="flex:none;height:48px;padding:0 16px;background:none;border:0;color:{{ tb.fg }};font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:{{ tb.sh }}" style-hover="color:var(--text-1)">{{ tb.label }}</button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:80px 0"><oa-portal size="72"></oa-portal><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">LOADING CARD DATA</span></div>
+  </sc-if>
+
+  <sc-if value="{{ tOverview }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:40px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:8px;overflow:hidden">
+        <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="9">
+          <div data-spot="1" style="display:flex;flex-direction:column;gap:14px;padding:16px 18px;min-height:112px;justify-content:space-between;background:radial-gradient(220px circle at var(--mx,-400px) var(--my,-400px),rgba(58,160,255,.10),transparent 70%),var(--charcoal)">
+            <span style="font:500 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)">{{ t.k }}</span>
+            <span style="display:flex;align-items:baseline;gap:6px"><span data-decode="1" style="font:800 clamp(28px,2.6vw,38px)/1 'JetBrains Mono',monospace;letter-spacing:-.05em;font-variant-numeric:tabular-nums">{{ t.v }}</span><span style="font:500 11px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ t.sub }}</span></span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="position:relative;display:flex;flex-direction:column;gap:20px;padding:clamp(20px,3vw,32px);background:var(--charcoal);border:1px solid var(--hair);border-radius:8px">
+        <div style="position:absolute;inset:10px;border:1px solid var(--hair);border-radius:4px;pointer-events:none"></div>
+        <div style="position:relative;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">CURRENT DECK</span><h2 style="margin:0;font:600 24px/1.2 'Space Grotesk',sans-serif">Ram Bridge Bandit</h2></div>
+          <div style="display:flex;gap:20px;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-2)"><span>AVG ELIXIR <b style="color:var(--text-1)">3.3</b></span><span>4-CARD CYCLE <b style="color:var(--text-1)">9</b></span><button onClick="{{ copyDeck }}" style="background:none;border:0;padding:0;color:var(--blue);font:inherit;letter-spacing:inherit;cursor:pointer">COPY DECK →</button></div>
+        </div>
+        <div style="position:relative;display:flex;flex-wrap:wrap;gap:{{ deckGap }}px;align-items:flex-end">
+          <sc-for list="{{ deck }}" as="c" hint-placeholder-count="8">
+            <dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.art }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" hero="{{ c.isHero }}" level="{{ c.level }}" elixir="{{ c.elixir }}" size="{{ deckSize }}" hint-size="{{ deckHint }}"></dc-import>
+          </sc-for>
+          <span style="width:1px;height:110px;background:var(--hair);margin:0 6px"></span>
+          <dc-import name="CardTile" slug="tower-princess" label="Tower Princess" img="{{ towerImg }}" rarity="tower" level="16" size="{{ deckSize }}" hint-size="{{ deckHint }}"></dc-import>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">RECENT FORM · LAST 30 BATTLES</span><span style="font:500 11px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ formSummary }}</span></div>
+        <div style="display:grid;grid-template-columns:repeat(30,minmax(0,1fr));gap:3px">
+          <sc-for list="{{ form }}" as="r" hint-placeholder-count="30">
+            <span title="{{ r.title }}" style="height:40px;border-radius:3px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;background:{{ r.bg }};box-shadow:{{ r.sh }};border:{{ r.bd }};font:700 9px/1 'JetBrains Mono',monospace;color:{{ r.fg }}">{{ r.t }}</span>
+          </sc-for>
+        </div>
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-3)">← OLDEST · NEWEST →</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tCollection }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:28px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px">
+        <sc-for list="{{ completion }}" as="p" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="display:flex;justify-content:space-between;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)"><span>{{ p.k }}</span><span style="color:var(--text-1)">{{ p.v }}</span></span>
+            <span style="height:3px;border-radius:2px;background:var(--well)"><span style="display:block;height:100%;width:{{ p.pct }}%;border-radius:2px;background:{{ p.c }};box-shadow:{{ p.sh }}"></span></span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:14px 0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)">
+        <sc-for list="{{ colFilters }}" as="g" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">{{ g.label }}</span>
+            <sc-for list="{{ g.chips }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.onClick }}" aria-pressed="{{ c.on }}" style="height:28px;padding:0 10px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </sc-for>
+        <span style="margin-left:auto;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">{{ colCount }}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:22px 14px">
+        <sc-for list="{{ coll }}" as="c" hint-placeholder-count="16">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.art }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" hero="{{ c.isHero }}" level="{{ c.lvl }}" elixir="{{ c.elixir }}" owned="{{ c.owned }}" split="{{ c.split }}" img2="{{ c.img2 }}" size="M" show-label="{{ true }}" hint-size="68px,130px"></dc-import>
+            <span style="font:500 9px/1.3 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--text-3)">{{ c.meta }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <sc-for list="{{ colSections }}" as="sec" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:16px;padding-top:24px;border-top:1px solid var(--hair)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="margin:0;font:600 22px/1.2 'Space Grotesk',sans-serif">{{ sec.title }}</h3><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:{{ sec.fg }}">{{ sec.count }}</span></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:16px 10px">
+            <sc-for list="{{ sec.items }}" as="c" hint-placeholder-count="10">
+              <dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.art }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" hero="{{ c.isHero }}" owned="{{ c.owned }}" size="S" hint-size="44px,65px"></dc-import>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tBadges }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:36px">
+      <sc-for list="{{ badgeGroups }}" as="g" hint-placeholder-count="4">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><h3 style="margin:0;font:600 22px/1.2 'Space Grotesk',sans-serif">{{ g.title }}</h3><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">{{ g.note }}</span></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0;background:linear-gradient(to bottom,transparent calc(100% - 3px),rgba(140,203,255,.5) calc(100% - 3px));border-radius:6px">
+            <sc-for list="{{ g.items }}" as="b" hint-placeholder-count="6">
+              <div data-tilt="1" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 12px 20px;border-bottom:2px solid rgba(140,203,255,.35);box-shadow:0 10px 18px -12px rgba(58,160,255,.6)">
+                <div style="position:relative;width:72px;height:84px;border-radius:10px 10px 4px 4px;background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.02) 45%,rgba(140,203,255,.10));border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 {{ b.glow }}px rgba(58,160,255,.35);display:flex;align-items:center;justify-content:center;overflow:hidden">
+                  <sc-if value="{{ b.hasArt }}" hint-placeholder-val="{{ false }}"><img src="{{ b.art }}" alt="" style="width:44px;height:auto;filter:{{ b.artFilter }}"></img></sc-if>
+                  <sc-if value="{{ b.noArt }}" hint-placeholder-val="{{ true }}"><span style="font:800 22px/1 'JetBrains Mono',monospace;color:var(--text-1);letter-spacing:-.04em">{{ b.glyph }}</span></sc-if>
+                  <span style="position:absolute;top:0;left:-30%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.18),transparent);transform:skewX(-12deg)"></span>
+                </div>
+                <span style="font:600 13px/1.2 'Space Grotesk',sans-serif;text-align:center">{{ b.name }}</span>
+                <span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ b.lvFg }}">{{ b.lv }}</span>
+                <span style="width:100%;display:flex;flex-direction:column;gap:5px"><span style="height:2px;border-radius:2px;background:var(--well)"><span style="display:block;height:100%;width:{{ b.pct }}%;background:#8CCBFF;box-shadow:0 0 6px rgba(58,160,255,.9)"></span></span><span style="font:500 9px/1 'JetBrains Mono',monospace;color:var(--text-3);text-align:center">{{ b.prog }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <h3 style="margin:0;font:600 22px/1.2 'Space Grotesk',sans-serif">Classic achievements</h3>
+        <div style="border:1px solid var(--hair);border-radius:8px;background:var(--charcoal)">
+          <sc-for list="{{ achievements }}" as="a" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:1fr 80px 120px;gap:16px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--hair)">
+              <span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 14px/1.2 'Space Grotesk',sans-serif">{{ a.name }}</span><span style="font:400 12px/1.3 'Space Grotesk',sans-serif;color:var(--text-3)">{{ a.desc }}</span></span>
+              <span style="font:500 12px/1 'JetBrains Mono',monospace;letter-spacing:.2em;color:var(--blue-hi);text-shadow:0 0 8px rgba(58,160,255,.6)">{{ a.stars }}</span>
+              <span style="text-align:right;font:500 12px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ a.prog }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tStats }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px">
+      <sc-for list="{{ statSecs }}" as="s" hint-placeholder-count="4">
+        <div style="position:relative;padding:22px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:6px">
+          <span style="position:absolute;top:-1px;left:-1px;width:10px;height:10px;border-top:1px solid var(--frame);border-left:1px solid var(--frame)"></span>
+          <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--blue-hi);margin-bottom:10px">{{ s.title }}</span>
+          <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="5">
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--hair)"><span style="font:400 14px/1.2 'Space Grotesk',sans-serif;color:var(--text-2)">{{ r.k }}</span><span style="font:600 14px/1.2 'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;text-align:right">{{ r.v }}</span></div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tBattles }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+        <sc-for list="{{ modeChips }}" as="c" hint-placeholder-count="5">
+          <button onClick="{{ c.onClick }}" style="height:28px;padding:0 10px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer">{{ c.label }}</button>
+        </sc-for>
+        <span style="margin-left:auto;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">BATTLE LOG HOLDS THE LAST ~30 BATTLES</span>
+      </div>
+      <div style="border:1px solid var(--hair);border-radius:8px;background:var(--charcoal);overflow:hidden">
+        <sc-for list="{{ battles }}" as="b" hint-placeholder-count="8">
+          <div style="border-bottom:1px solid var(--hair)">
+            <button onClick="{{ b.toggle }}" aria-expanded="{{ b.open }}" style="width:100%;display:grid;grid-template-columns:{{ battleCols }};gap:14px;align-items:center;padding:14px 18px;background:{{ b.bg }};border:0;color:var(--text-1);text-align:left;cursor:pointer" style-hover="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px)">
+              <span style="display:flex;align-items:center;gap:8px;font:700 12px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:{{ b.resFg }}"><span style="width:22px;height:22px;border-radius:4px;border:1px solid {{ b.resFg }};display:flex;align-items:center;justify-content:center">{{ b.resL }}</span>{{ b.res }}</span>
+              <span style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font:600 14px/1.2 'Space Grotesk',sans-serif">vs {{ b.opp }}</span><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--text-3)">{{ b.oppClan }} · {{ b.mode }} · {{ b.ago }}</span></span>
+              <span style="font:800 18px/1 'JetBrains Mono',monospace;letter-spacing:.04em">{{ b.crowns }}</span>
+              <span style="text-align:right;font:600 13px/1 'JetBrains Mono',monospace;color:{{ b.dFg }}">{{ b.delta }}</span>
+              <span style="text-align:right;font:500 14px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ b.chev }}</span>
+            </button>
+            <sc-if value="{{ b.open }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:20px;padding:18px;background:var(--obsidian);border-top:1px solid var(--hair);animation:oaFade .3s">
+                <div style="display:flex;flex-direction:column;gap:10px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--blue-hi)">NIGHTHOLLOW</span><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ b.mine }}" as="c" hint-placeholder-count="8"><dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.art }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" hero="{{ c.isHero }}" level="{{ c.level }}" size="M" hint-size="68px,100px"></dc-import></sc-for></div></div>
+                <div style="display:flex;flex-direction:column;gap:10px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">{{ b.oppUpper }}</span><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ b.theirs }}" as="c" hint-placeholder-count="8"><dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.art }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" hero="{{ c.isHero }}" level="{{ c.level }}" size="M" hint-size="68px,100px"></dc-import></sc-for></div></div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tDecks }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column">
+      <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3);padding-bottom:14px">DECKS FROM TRACKED BATTLES · WIN RATES ARE BASED ON TRACKED GAMES ONLY</span>
+      <sc-for list="{{ myDecks }}" as="d" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:{{ myDeckCols }};gap:16px 24px;align-items:center;padding:20px 0;border-top:1px solid var(--hair)">
+          <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ d.cards }}" as="c" hint-placeholder-count="8"><dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.art }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" hero="{{ c.isHero }}" size="S" hint-size="44px,65px"></dc-import></sc-for></div>
+          <div style="display:flex;gap:28px;justify-content:flex-end">
+            <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">GAMES</span><span style="font:700 22px/1 'JetBrains Mono',monospace">{{ d.games }}</span></span>
+            <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">WIN %</span><span style="font:700 22px/1 'JetBrains Mono',monospace;color:{{ d.fg }}">{{ d.win }}</span></span>
+            <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">LAST USED</span><span style="font:500 14px/22px 'JetBrains Mono',monospace;color:var(--text-2)">{{ d.last }}</span></span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tHistory }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;gap:10px;align-items:center;padding:12px 16px;border:1px dashed rgba(58,160,255,.45);border-radius:6px;font:500 11px/1.5 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--text-2)"><span style="flex:none;width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px rgba(58,160,255,.8)"></span>Tracking started on 02 Jun 2026. History builds up from then.</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <sc-for list="{{ histTabs }}" as="c" hint-placeholder-count="4">
+          <button onClick="{{ c.onClick }}" style="height:32px;padding:0 12px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer">{{ c.label }}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ hTrophy }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">TROPHIES · TRACKED DAYS</span><span style="font:500 11px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ hoverTxt }}</span></div>
+          <svg viewBox="0 0 1000 260" preserveAspectRatio="none" style="width:100%;height:260px;overflow:visible" onMouseMove="{{ chartMove }}" onMouseLeave="{{ chartLeave }}">
+            <sc-for list="{{ gridY }}" as="g" hint-placeholder-count="4"><line x1="0" x2="1000" y1="{{ g.y }}" y2="{{ g.y }}" stroke="var(--hair)" stroke-width="1" vector-effect="non-scaling-stroke"></line></sc-for>
+            <rect x="0" y="0" width="{{ untrackedW }}" height="240" fill="var(--well)" opacity=".6"></rect>
+            <polyline points="{{ trophyLine }}" fill="none" stroke="var(--text-1)" stroke-width="1.4" vector-effect="non-scaling-stroke"></polyline>
+            <polyline points="{{ bestLine }}" fill="none" stroke="#3AA0FF" stroke-width="1.2" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"></polyline>
+            <sc-if value="{{ hasHover }}" hint-placeholder-val="{{ false }}"><line x1="{{ hx }}" x2="{{ hx }}" y1="0" y2="240" stroke="rgba(140,203,255,.5)" vector-effect="non-scaling-stroke"></line><circle cx="{{ hx }}" cy="{{ hy }}" r="5" fill="#8CCBFF" style="filter:drop-shadow(0 0 6px #3AA0FF)"></circle></sc-if>
+          </svg>
+          <div style="display:flex;justify-content:space-between;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)"><span>MAY · NOT TRACKED</span><span>JUN</span><span>JUL</span><span>AUG</span><span>SEP</span><span>OCT</span></div>
+          <div style="display:flex;gap:20px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-2)"><span style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:1.5px;background:var(--text-1)"></span>TROPHIES</span><span style="display:flex;align-items:center;gap:8px"><span style="width:16px;border-top:1.5px dashed #3AA0FF"></span>BEST</span></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ hTable }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid var(--hair);border-radius:8px;background:var(--charcoal);overflow-x:auto">
+          <div style="min-width:520px;display:grid;grid-template-columns:{{ hCols }}">
+            <sc-for list="{{ hHead }}" as="h" hint-placeholder-count="4"><span style="padding:12px 16px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair);text-align:{{ h.al }}">{{ h.t }}</span></sc-for>
+            <sc-for list="{{ hRows }}" as="r" hint-placeholder-count="6">
+              <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="4"><span style="padding:12px 16px;border-bottom:1px solid var(--hair);font:{{ c.font }};color:{{ c.fg }};text-align:{{ c.al }}">{{ c.t }}</span></sc-for>
+            </sc-for>
+          </div>
+          <sc-if value="{{ hEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:36px;text-align:center">
+              <div style="width:120px;height:84px;opacity:.8"><image-slot id="empty-chest" shape="rect" fit="contain" placeholder="chest art"></image-slot></div>
+              <span style="font:500 11px/1.6 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-3)">{{ hEmptyTxt }}</span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+</main>
+
+<footer style="border-top:1px solid var(--hair);padding:36px clamp(16px,3vw,40px) {{ footPad }}px;max-width:1440px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px">
+  <p style="margin:0;max-width:640px;font:400 12px/1.6 'Space Grotesk',sans-serif;color:var(--text-3)">This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it. For more information see Supercell's Fan Content Policy.</p>
+  <span style="font:500 10px/1.6 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">CR CLAN TRACKER · FAN-MADE</span>
+</footer>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+  <div role="status" style="position:fixed;left:50%;bottom:{{ toastBottom }}px;transform:translateX(-50%);z-index:100;padding:12px 18px;background:var(--obsidian);border:1px solid rgba(58,160,255,.6);border-radius:6px;box-shadow:0 0 18px rgba(58,160,255,.35);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;animation:oaFade .2s">{{ toast }}</div>
+</sc-if>
+
+<sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
+  <nav style="position:fixed;left:0;right:0;bottom:0;z-index:60;height:64px;display:grid;grid-template-columns:repeat(5,1fr);background:var(--glass);backdrop-filter:blur(16px);border-top:1px solid var(--hair)">
+    <a href="Home.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text-2);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><span style="width:16px;height:2px;background:currentColor"></span>HOME</a>
+    <a href="Player Profile.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--blue-hi);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;box-shadow:inset 0 2px 0 #8CCBFF"><span style="width:12px;height:12px;border:1.5px solid currentColor;border-radius:50%"></span>SEARCH</a>
+    <a href="Clan Dashboard.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text-2);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><span style="width:12px;height:12px;border:1.5px solid currentColor;transform:rotate(45deg)"></span>MY CLAN</a>
+    <a href="Decks.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text-2);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><span style="width:10px;height:14px;border:1.5px solid currentColor;border-radius:2px"></span>DECKS</a>
+    <a href="Cards.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text-2);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><span style="font-size:14px;line-height:10px">···</span>MORE</a>
+  </nav>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const fmt=n=>Number(n).toLocaleString('en-US');
+const DECK=[['boss-bandit'],['battle-ram','evo'],['bomber','evo'],['barbarian-barrel','hero'],['archers'],['arrows'],['baby-dragon'],['berserker']];
+const TROPHY=(()=>{const r=rng(9),a=[];let v=9120;for(let i=0;i<150;i++){v+=Math.round((r()-.46)*60);v=Math.min(10000,Math.max(8800,v));a.push(v)}return a})();
+const UNTRACKED=28;
+class Component extends DCLogic {
+  state={tab:'overview',cards:null,vw:typeof window!=='undefined'?window.innerWidth:1440,fRar:'all',fOwn:'all',fCap:'all',art:'base',openB:0,mode:'all',hist:'trophy',hover:null,pinned:false,toast:'',lastSync:'04:12',syncing:false,theme:'dark'};
+  componentDidMount(){
+    this.setState({theme:window.OA?OA.theme():'dark'});
+    try{this.setState({pinned:localStorage.getItem('oa-pin-player')==='1'})}catch(e){}
+    (window.OACards||Promise.resolve([])).then(cards=>{
+      const r=rng(5);
+      const off={common:0,rare:2,epic:5,legendary:8,champion:10,tower:0};
+      cards.forEach(c=>{c.owned=r()>.03||c.slug==='boss-bandit';const lv=Math.max(9,Math.min(16,Math.round(16-r()*r()*6)));c.level=lv;c.star=lv>=14?Math.floor(r()*4):0;c.copies=Math.floor(r()*900);c.evoOwned=c.evo&&r()<.45;c.heroOwned=c.hero&&r()<.35});
+      this.setState({cards});
+    });
+    this._rs=()=>this.setState({vw:innerWidth});addEventListener('resize',this._rs);
+  }
+  componentWillUnmount(){removeEventListener('resize',this._rs)}
+  flash(t){this.setState({toast:t});clearTimeout(this._t);this._t=setTimeout(()=>this.setState({toast:''}),1800)}
+  chip(on){return{bd:on?'rgba(58,160,255,.7)':'var(--hair)',bg:on?'rgba(58,160,255,.12)':'transparent',fg:on?'var(--text-1)':'var(--text-2)',sh:on?'0 0 12px rgba(58,160,255,.3)':'none',on}}
+  view(c,mode){const split=mode==='split'&&c.evo&&c.hero;const isEvo=(mode==='evo'||split)&&c.evo,isHero=(mode==='hero'||split)&&c.hero;return{...c,isEvo,isHero,split,img2:split?c.heroImg:'',art:isEvo&&c.evoImg?c.evoImg:isHero&&c.heroImg?c.heroImg:c.img}}
+  renderVals(){
+    const s=this.state,desktop=s.vw>=760,cards=s.cards||[],by={};cards.forEach(c=>by[c.slug]=c);
+    const T=(k,label)=>({label,active:s.tab===k,fg:s.tab===k?'var(--text-1)':'var(--text-3)',sh:s.tab===k?'inset 0 -2px 0 #8CCBFF,0 8px 16px -10px rgba(58,160,255,.9)':'none',onClick:()=>this.setState({tab:k})});
+    const tabs=[T('overview','Overview'),T('collection','Collection'),T('badges','Badges'),T('stats','Stats'),T('battles','Battles'),T('decks','Decks'),T('history','History')];
+    const deck=cards.length?DECK.map(([sl,m])=>this.view(by[sl],m)):[];
+    const r=rng(77);
+    const form=Array.from({length:30},(_,i)=>{const w=r()<.6;return{t:w?'W':'L',title:(w?'Win':'Loss')+' · battle '+(i+1),bg:w?'rgba(58,160,255,.85)':'var(--well)',sh:w?'0 0 8px rgba(58,160,255,.45)':'inset 0 1px 2px rgba(0,0,0,.5)',bd:w?'0':'1px solid rgba(255,84,100,.45)',fg:w?'#07080A':'var(--ember)'}});
+    const wins=form.filter(f=>f.t==='W').length;
+    // collection
+    const main=cards.filter(c=>c.rarity!=='tower');
+    const filt=main.filter(c=>(s.fRar==='all'||c.rarity===s.fRar)&&(s.fOwn==='all'||(s.fOwn==='owned'?c.owned:!c.owned))&&(s.fCap==='all'||(s.fCap==='evo'?c.evo:c.hero)));
+    const coll=filt.map(c=>{const v=this.view(c,s.art);return{...v,owned:c.owned,lvl:c.owned?c.level:null,meta:c.owned?`${'★'.repeat(c.star)||'☆0'} · ${fmt(c.copies)} copies`:'NOT FOUND'}});
+    const grp=(label,key,opts)=>({label,chips:opts.map(([v,l])=>({label:l,...this.chip(s[key]===v),onClick:()=>this.setState({[key]:v})}))});
+    const colFilters=[grp('RARITY','fRar',[['all','All'],['common','Common'],['rare','Rare'],['epic','Epic'],['legendary','Legendary'],['champion','Champion']]),grp('STATUS','fOwn',[['all','All'],['owned','Owned'],['missing','Missing']]),grp('CAN','fCap',[['all','Any'],['evo','Evolve'],['hero','Hero']]),grp('ART','art',[['base','Base'],['evo','Evo'],['hero','Hero'],['split','Evo+Hero split']])];
+    const owned=main.filter(c=>c.owned).length,evos=main.filter(c=>c.evo),heroes=main.filter(c=>c.hero),towers=cards.filter(c=>c.rarity==='tower');
+    const pb=(k,a,b,c)=>({k,v:`${a}/${b}`,pct:b?Math.round(a/b*100):0,c,sh:c==='#8CCBFF'?'0 0 6px rgba(58,160,255,.9)':'none'});
+    const completion=[pb('CARDS FOUND',owned,main.length,'#8CCBFF'),pb('EVOLUTIONS',evos.filter(c=>c.evoOwned).length,evos.length,'#C79BFF'),pb('HEROES',heroes.filter(c=>c.heroOwned).length,heroes.length,'#E6B34A'),pb('TOWER TROOPS',3,towers.length,'var(--text-1)')];
+    const colSections=[
+      {title:'Evolutions',count:`${evos.filter(c=>c.evoOwned).length} / ${evos.length} UNLOCKED`,fg:'#C79BFF',items:evos.map(c=>({...this.view(c,'evo'),owned:c.evoOwned}))},
+      {title:'Heroes',count:`${heroes.filter(c=>c.heroOwned).length} / ${heroes.length} UNLOCKED`,fg:'#E6B34A',items:heroes.map(c=>({...this.view(c,'hero'),owned:c.heroOwned}))},
+      {title:'Tower troops',count:'3 / 4 UNLOCKED',fg:'var(--text-2)',items:towers.map((c,i)=>({...c,art:c.img,isEvo:false,isHero:false,owned:i<3}))}
+    ];
+    // badges
+    const rb=rng(31);
+    const mk=(name,lv,max,cur,goal,o={})=>({name,lv:`LV ${lv} / ${max}`,lvFg:lv===max?'var(--blue-hi)':'var(--text-3)',pct:Math.round(cur/goal*100),prog:`${fmt(cur)} / ${fmt(goal)}`,glow:lv===max?18:6,hasArt:!!o.art,noArt:!o.art,art:o.art,artFilter:'none',glyph:o.glyph||'◆'});
+    const mastery=cards.filter(c=>c.rarity!=='tower').slice(0,12).map(c=>{const lv=1+Math.floor(rb()*10);return mk(c.name,lv,10,lv===10?1:Math.floor(rb()*900),lv===10?1:1000,{art:c.img})});
+    const badgeGroups=[
+      {title:'Mastery',note:`ONE PER CARD · SHOWING 12 OF ${main.length}`,items:mastery},
+      {title:'Seasonal',note:'',items:[mk('Path of Legends',8,10,143,150,{glyph:'PoL'}),mk('Season Champion',3,3,1,1,{glyph:'S'}),mk('Classic Challenge',6,8,48,60,{glyph:'12'}),mk('Grand Challenge',4,8,19,40,{glyph:'GC'})]},
+      {title:'Collection',note:'EMOTES SHOWN AS A COUNT ONLY',items:[mk('Emotes collected',7,10,412,500,{glyph:'412'}),mk('Banners',5,8,96,150,{glyph:'B'}),mk('Years played',8,10,8,10,{glyph:'8Y'})]},
+      {title:'Tournament & events',note:'',items:[mk('Tournament host',2,5,14,25,{glyph:'T'}),mk('2v2 League',6,6,1,1,{glyph:'2v2'}),mk('Merge Tactics',3,6,61,100,{glyph:'MT'})]},
+      {title:'Milestones',note:'',items:[mk('Donation master',9,10,182440,250000,{glyph:'D'}),mk('Clan war veteran',10,10,1,1,{glyph:'CW'}),mk('Battle count',8,10,26317,30000,{glyph:'⚔'})]}
+    ];
+    const achievements=[['Team Player','Join a clan',3,'Done'],['Friend in Need','Donate 2,500 cards',3,'Done'],['Road to Glory','Reach arena 10',3,'Done'],['Gatherer','Collect 100 cards',3,'Done'],['TV Royale','Watch a TV Royale battle',3,'Done'],['Tournament Rewards','Win 2,000 cards in tournaments',2,'1,640 / 2,000'],['Practice with Friends','Play 50 friendly battles',3,'Done'],['Tournament Host','Host 10 tournaments',1,'4 / 10']].map(([name,desc,st,prog])=>({name,desc,stars:'★'.repeat(st)+'☆'.repeat(3-st),prog}));
+    const rows=a=>a.map(([k,v])=>({k,v}));
+    const statSecs=[
+      {title:'RANKED · PATH OF LEGENDS',rows:rows([['Current season','Ultimate Champion · 2,184'],['Global rank (current)','#4,812'],['Previous season','Ultimate Champion · 2,061'],['Previous rank','#6,330'],['Best season','Ultimate Champion · 2,402'],['Best rank','#1,977']])},
+      {title:'CHALLENGE',rows:rows([['Max challenge wins','20'],['Challenge cards won','18,402'],['Tournament battles','1,288'],['Tournament cards won','1,640']])},
+      {title:'BATTLE',rows:rows([['Wins','14,221'],['Losses','9,880'],['Three-crown wins','5,412'],['Win %','59.0%'],['Battle count','26,317'],['Merge Tactics best','Rank 3,410'],['Seasonal trophy road','Step 42 / 50']])},
+      {title:'MISC',rows:rows([['Donations (total)','182,440'],['Donations received','64,903'],['War day wins','1,107'],['Clan cards collected','211,560'],['EXP level','61'],['Star points','48,210']])}
+    ];
+    // battles
+    const MODES=['Path of Legends','Ladder','Clan War','2v2','Event'];
+    const OPP=[['Brannoc','THE QUIET KEEP'],['Velk','SALTMARSH'],['moonwell','KESTREL COURT'],['Ixia','GILDED ASH'],['Pell','NORTHWATCH'],['Durgan','—'],['Lio','LANTERN ROW'],['Oskar','GILDED ASH'],['tess.v','NORTHWATCH'],['Hask','THE QUIET KEEP']];
+    const rbt=rng(13);
+    const pool=cards.filter(c=>c.rarity!=='tower');
+    const battlesAll=Array.from({length:10},(_,i)=>{const mode=MODES[[0,0,2,1,0,2,3,0,4,2][i]];const win=form[29-i].t==='W';const cr=win?(rbt()<.4?'3–0':'1–0'):(rbt()<.5?'0–1':'1–2');const opp=pool.length?Array.from({length:8},()=>pool[Math.floor(rbt()*pool.length)]).map((c,j)=>({...this.view(c,j<1&&c.evo?'evo':'base'),level:Math.max(11,Math.min(16,c.level+Math.round(rbt()*2-1)))})):[];return{i,mode,win,cr,opp,o:OPP[i],ago:['4m','22m','1h','2h','3h','5h','9h','1d','1d','2d'][i]}});
+    const battles=battlesAll.filter(b=>s.mode==='all'||b.mode===s.mode).map(b=>{const open=s.openB===b.i;const d=b.mode==='Path of Legends'||b.mode==='Ladder'?(b.win?'+':'−')+(b.mode==='Ladder'?30:Math.round(20+rbt()*14)):'';return{open,bg:open?'linear-gradient(90deg,var(--blue) 0 2px,var(--obsidian) 2px)':'transparent',chev:open?'−':'+',toggle:()=>this.setState({openB:open?null:b.i}),res:b.win?'WIN':'LOSS',resL:b.win?'W':'L',resFg:b.win?'var(--blue)':'var(--ember)',opp:b.o[0],oppUpper:b.o[0].toUpperCase(),oppClan:b.o[1],mode:b.mode.toUpperCase(),ago:b.ago+' AGO',crowns:b.cr,delta:d||'—',dFg:d?(b.win?'var(--blue)':'var(--ember)'):'var(--text-3)',mine:deck,theirs:b.opp}});
+    const modeChips=[['all','All'],...MODES.map(m=>[m,m])].map(([v,l])=>({label:l,...this.chip(s.mode===v),onClick:()=>this.setState({mode:v})}));
+    const alt=sl=>sl.map(([x,m])=>by[x]?this.view(by[x],m):null).filter(Boolean);
+    const myDecks=cards.length?[{cards:deck,games:22,win:'63.6%',fg:'var(--blue-hi)',last:'4M AGO'},{cards:alt([['barbarian-hut'],['bomb-tower'],['archers','evo'],['barbarians','evo'],['arrows'],['bomber'],['battle-healer'],['barbarian-barrel']]),games:6,win:'50.0%',fg:'var(--text-1)',last:'1D AGO'},{cards:alt([['battle-healer'],['barbarians','evo'],['baby-dragon','evo'],['battle-ram'],['berserker','hero'],['arrows'],['bomb-tower'],['boss-bandit']]),games:2,win:'0.0%',fg:'var(--ember)',last:'2D AGO'}]:[];
+    // history
+    const H=(k,l)=>({label:l,...this.chip(s.hist===k),onClick:()=>this.setState({hist:k})});
+    const histTabs=[H('trophy','Trophy history'),H('clan','Clan history'),H('pol','Path of Legends'),H('war','Clan wars')];
+    const N=TROPHY.length,mn=8700,mx=10050,X=i=>(i/(N-1)*1000).toFixed(1),Y=v=>(240-(v-mn)/(mx-mn)*240).toFixed(1);
+    const tracked=TROPHY.map((v,i)=>i<UNTRACKED?null:v);
+    let best=0;const bestA=TROPHY.map(v=>best=Math.max(best,v));
+    const trophyLine=tracked.map((v,i)=>v==null?null:`${X(i)},${Y(v)}`).filter(Boolean).join(' ');
+    const bestLine=bestA.map((v,i)=>i<UNTRACKED?null:`${X(i)},${Y(v)}`).filter(Boolean).join(' ');
+    const hi=s.hover;
+    const tbl=(head,rowsA,cols,empty)=>({hHead:head.map(([t,al])=>({t,al})),hRows:rowsA.map(cells=>({cells:cells.map((t,j)=>({t,al:head[j][1],font:j===0?"600 14px/1.2 'Space Grotesk',sans-serif":"500 13px/1.2 'JetBrains Mono',monospace",fg:'var(--text-1)'}))})),hCols:cols,hEmpty:!!empty,hEmptyTxt:empty||''});
+    let hist={};
+    if(s.hist==='clan')hist=tbl([['CLAN','left'],['ROLE','left'],['FROM','left'],['TO','left']],[['Iron Veil','Co-Leader','02 Jun 2026','Now']],'1.4fr 1fr 1fr 1fr','Clans before 02 Jun 2026 were not tracked.');
+    if(s.hist==='pol')hist=tbl([['SEASON','left'],['LEAGUE','left'],['RATING','right'],['RANK','right']],[['Oct 2026 (live)','Ultimate Champion','2,184','#4,812'],['Sep 2026','Ultimate Champion','2,061','#6,330'],['Aug 2026','Ultimate Champion','2,402','#1,977'],['Jul 2026','Royal Champion','—','—'],['Jun 2026 (partial)','Grand Champion','—','—']],'1.3fr 1.3fr .7fr .7fr','');
+    if(s.hist==='war')hist=tbl([['WEEK','left'],['CLAN','left'],['DECKS','right'],['FAME','right']],Array.from({length:10},(_,i)=>['Week '+(41-i),'Iron Veil',String([16,16,14,16,16,12,16,16,15,16][i])+'/16',fmt([3410,3290,2850,3380,3520,2410,3300,3460,3080,3390][i])]),'1fr 1.2fr .7fr .8fr','Weeks before 02 Jun 2026 are not available.');
+    return {
+      desktop,wide:s.vw>=1000,mobile:!desktop,footPad:desktop?36:100,toastBottom:desktop?24:84,loading:!s.cards,
+      themeLabel:s.theme==='light'?'◐ Marble':'◑ Obsidian',toggleTheme:()=>this.setState({theme:window.OA?OA.toggleTheme():'dark'}),
+      lastSync:s.lastSync,refreshLabel:s.syncing?'SYNCING…':'↻ REFRESH',refresh:()=>{this.setState({syncing:true});setTimeout(()=>{const n=new Date();this.setState({syncing:false,lastSync:String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')});this.flash('Player data refreshed')},1400)},
+      copyTag:()=>{try{navigator.clipboard.writeText('#LQ2V9R0Y')}catch(e){}this.flash('Tag copied')},copyDeck:()=>this.flash('Deck link copied · opens in game'),
+      pinLabel:s.pinned?'✓ PINNED AS ME':'PIN AS ME',pinBg:s.pinned?'transparent':'#F3F4F6',pinFg:s.pinned?'#8CCBFF':'#07080A',pinSh:s.pinned?'inset 0 0 0 1px rgba(58,160,255,.7),0 0 18px rgba(58,160,255,.3)':'none',
+      togglePin:()=>{const p=!s.pinned;this.setState({pinned:p});try{localStorage.setItem('oa-pin-player',p?'1':'0')}catch(e){}this.flash(p?'Pinned. Home opens to your data':'Unpinned')},
+      facts:[{k:'KING TOWER',v:'15',sub:'',fg:'#F3F4F6'},{k:'EXP',v:'61',sub:'',fg:'#F3F4F6'},{k:'ARENA',v:'Legendary',sub:'',fg:'#F3F4F6'},{k:'TROPHIES',v:'9,870',sub:'BEST 10,000',fg:'#F3F4F6'},{k:'PATH OF LEGENDS',v:'2,184',sub:'',fg:'#F3F4F6',league:true},{k:'STREAK',v:'W4',sub:'',fg:'#8CCBFF'}],
+      tabs,tOverview:s.tab==='overview',tCollection:s.tab==='collection',tBadges:s.tab==='badges',tStats:s.tab==='stats',tBattles:s.tab==='battles',tDecks:s.tab==='decks',tHistory:s.tab==='history',
+      tiles:[['Wins','14,221',''],['Losses','9,880',''],['Win %','59.0','%'],['3-crown wins','5,412',''],['Battles','26,317',''],['Cards found',String(owned||121),'/'+(main.length||123)],['Collection lvl','14.2','avg'],['Star points','48,210',''],['Donations','182,440','total']].map(([k,v,sub])=>({k,v,sub})),
+      deck,towerImg:by['tower-princess']?by['tower-princess'].img:'',deckSize:s.vw<1000?'M':'L',deckHint:s.vw<1000?'68px,100px':'104px,153px',deckGap:s.vw<1000?8:14,
+      form,formSummary:`${wins}W ${30-wins}L · ${Math.round(wins/30*100)}% · BASED ON 30 GAMES`,
+      completion,colFilters,coll,colCount:`${coll.length} CARDS`,colSections,badgeGroups,achievements,statSecs,
+      battles,modeChips,battleCols:desktop?'110px 1fr 70px 70px 24px':'84px 1fr 52px',myDecks,myDeckCols:desktop?'1fr auto':'1fr',
+      histTabs,hTrophy:s.hist==='trophy',hTable:s.hist!=='trophy',hHead:[],hRows:[],hCols:'1fr',hEmpty:false,hEmptyTxt:'',...hist,
+      gridY:[0,80,160,240].map(y=>({y})),untrackedW:X(UNTRACKED),trophyLine,bestLine,
+      hasHover:hi!=null,hx:hi!=null?X(hi):0,hy:hi!=null?Y(TROPHY[hi]):0,hoverTxt:hi!=null?`DAY ${hi-UNTRACKED+1} · ${fmt(TROPHY[hi])} TROPHIES`:'HOVER THE LINE',
+      chartMove:e=>{const r=e.currentTarget.getBoundingClientRect();const i=Math.round((e.clientX-r.left)/r.width*(N-1));this.setState({hover:i>=UNTRACKED&&i<N?i:null})},chartLeave:()=>this.setState({hover:null}),
+      hasToast:!!s.toast,toast:s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

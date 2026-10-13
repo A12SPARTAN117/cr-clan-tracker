@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+@keyframes oaPulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(58,160,255,.7)}50%{opacity:.55;box-shadow:0 0 0 6px rgba(58,160,255,0)}}
+@keyframes oaFlicker{0%,100%{opacity:.85}40%{opacity:.6}55%{opacity:1}70%{opacity:.7}}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:var(--void);color:var(--text-1);overflow-x:hidden">
+<oa-grain></oa-grain>
+<dc-import name="SiteNav" active="clans" hint-size="100%,64px"></dc-import>
+
+<section data-screen-label="Clan header" style="position:relative;min-height:clamp(480px,55vh,620px);overflow:hidden;background:#07080A;color:#F3F4F6">
+  <div style="position:absolute;inset:0;filter:grayscale(1) contrast(1.1) brightness(.55)"><image-slot id="scene-shields" shape="rect" placeholder="Scene · castle wall, chained hanging shields, torn banners, torches"></image-slot></div>
+  <div style="position:absolute;left:18%;top:20%;width:160px;height:240px;background:radial-gradient(closest-side,rgba(255,180,90,.18),transparent);animation:oaFlicker 2.6s infinite;pointer-events:none"></div>
+  <div style="position:absolute;right:18%;top:24%;width:160px;height:240px;background:radial-gradient(closest-side,rgba(255,180,90,.16),transparent);animation:oaFlicker 3.1s infinite;pointer-events:none"></div>
+  <div style="position:absolute;left:50%;top:9%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none">
+    <span style="width:1px;height:46px;background:linear-gradient(#62676F,#A4A9B4)"></span>
+    <div style="width:clamp(120px,13vw,180px);height:clamp(140px,15vw,210px);padding:14px;border:1px solid rgba(140,203,255,.6);border-radius:8px 8px 50% 50% / 8px 8px 30% 30%;background:rgba(7,8,10,.5);box-shadow:0 0 40px rgba(58,160,255,.35),inset 0 0 30px rgba(58,160,255,.15);pointer-events:auto"><image-slot id="clan-badge-shield" shape="rect" fit="contain" placeholder="clan badge (royaleapi/clan-badges)"></image-slot></div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:8%;height:30%;display:flex;justify-content:center;gap:6%;filter:grayscale(1) brightness(.5) drop-shadow(0 0 20px rgba(58,160,255,.4));opacity:.7;pointer-events:none">
+    <div style="width:12%;height:100%"><image-slot id="clan-troop-1" shape="rect" fit="contain" placeholder="troop"></image-slot></div>
+    <div style="width:12%;height:100%"><image-slot id="clan-troop-2" shape="rect" fit="contain" placeholder="troop"></image-slot></div>
+    <div style="width:12%;height:100%"><image-slot id="clan-troop-3" shape="rect" fit="contain" placeholder="troop"></image-slot></div>
+  </div>
+  <oa-fog density="1.2"></oa-fog>
+  <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(7,8,10,.4) 0%,rgba(7,8,10,0) 30%,rgba(7,8,10,.6) 62%,#07080A 100%),radial-gradient(ellipse at center,rgba(7,8,10,0) 40%,rgba(7,8,10,.7) 100%)"></div>
+  <div style="position:absolute;inset:14px;border:1px solid rgba(255,255,255,.55);border-radius:4px;pointer-events:none"></div>
+  <div style="position:relative;min-height:clamp(480px,55vh,620px);max-width:1440px;margin:0 auto;padding:36px clamp(28px,4vw,64px) 40px;display:flex;flex-direction:column;justify-content:space-between;gap:24px;pointer-events:none">
+    <div style="display:flex;flex-wrap:wrap;gap:8px 20px;font:500 10px/1.4 'JetBrains Mono',monospace;letter-spacing:.14em;color:#A4A9B4">
+      <span style="display:flex;align-items:center;gap:8px;color:#F3F4F6"><span style="width:7px;height:7px;border-radius:50%;background:#3AA0FF;animation:oaPulse 2s infinite"></span>LIVE · WAR DAY 3</span><span>TRACKED SINCE 02 JUN 2026</span><span>LAST SYNC 04:12</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:760px">
+        <h1 data-reveal="1" style="margin:0;font:800 clamp(46px,8.4vw,132px)/.86 'JetBrains Mono',monospace;letter-spacing:-.055em">IRON VEIL</h1>
+        <p style="margin:0;max-width:560px;font:400 15px/1.55 'Space Grotesk',sans-serif;color:#A4A9B4;text-wrap:pretty">War every week, all 16 decks. Donate what you can. Discord in the clan chat. Inactive 5+ days without notice = kick.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px 16px;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:#A4A9B4;pointer-events:auto">
+          <button onClick="{{ copyTag }}" style="display:flex;gap:8px;background:none;border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:5px 8px;color:#F3F4F6;font:inherit;letter-spacing:inherit;cursor:pointer" style-hover="border-color:#3AA0FF">#9Q2LUY <span style="color:#80868F">COPY</span></button>
+          <span style="padding:5px 0">EUROPE</span><span style="padding:5px 0">INVITE ONLY</span>
+        </div>
+      </div>
+      <a href="Clan Dashboard.dc.html" data-magnet="1" style="pointer-events:auto;display:flex;align-items:center;gap:12px;height:56px;padding:0 26px;border-radius:6px;background:linear-gradient(110deg,#F3F4F6 40%,#fff 50%,#F3F4F6 60%) 120% 0/250% 100%;color:#07080A;font:700 12px/1 'JetBrains Mono',monospace;letter-spacing:.14em;box-shadow:0 0 0 1px rgba(58,160,255,.5),0 0 30px rgba(58,160,255,.3);transition:background-position .7s,box-shadow .3s" style-hover="color:#07080A;background-position:-20% 0;box-shadow:0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)">MANAGE THIS CLAN →</a>
+    </div>
+  </div>
+</section>
+
+<main style="position:relative;max-width:1440px;margin:0 auto;padding:0 clamp(16px,3vw,40px) 80px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:8px;overflow:hidden;margin-top:-20px;position:relative">
+    <sc-for list="{{ facts }}" as="f" hint-placeholder-count="6">
+      <div data-spot="1" style="display:flex;flex-direction:column;gap:12px;padding:16px 18px;background:radial-gradient(220px circle at var(--mx,-400px) var(--my,-400px),rgba(58,160,255,.10),transparent 70%),var(--charcoal)">
+        <span style="font:500 10px/1.2 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">{{ f.k }}</span>
+        <span style="display:flex;align-items:baseline;gap:6px"><span data-decode="1" style="font:800 30px/1 'JetBrains Mono',monospace;letter-spacing:-.04em">{{ f.v }}</span><span style="font:500 11px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ f.sub }}</span></span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div role="tablist" style="display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--hair);scrollbar-width:none">
+    <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4">
+      <button role="tab" aria-selected="{{ tb.active }}" onClick="{{ tb.onClick }}" style="flex:none;height:46px;padding:0 18px;background:none;border:0;color:{{ tb.fg }};font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer;box-shadow:{{ tb.sh }}" style-hover="color:var(--text-1)">{{ tb.label }}</button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ tMembers }}" hint-placeholder-val="{{ true }}">
+    <div style="overflow-x:auto;border:1px solid var(--hair);border-radius:8px;background:var(--charcoal)">
+      <table style="width:100%;min-width:720px;border-collapse:collapse;font-variant-numeric:tabular-nums">
+        <thead><tr>
+          <sc-for list="{{ cols }}" as="c" hint-placeholder-count="7"><th aria-sort="{{ c.aria }}" style="padding:0;background:var(--glass);border-bottom:1px solid var(--hair);text-align:{{ c.al }}"><button onClick="{{ c.onClick }}" style="width:100%;height:42px;padding:0 14px;background:none;border:0;cursor:pointer;text-align:{{ c.al }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ c.fg }}">{{ c.label }} <span style="color:var(--blue)">{{ c.arrow }}</span></button></th></sc-for>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ members }}" as="m" hint-placeholder-count="12">
+            <tr tabindex="0" onClick="{{ m.go }}" onKeyDown="{{ m.key }}" style="cursor:pointer;outline:none" style-hover="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px)" style-focus="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px)">
+              <td style="padding:11px 14px;border-bottom:1px solid var(--hair);font:500 12px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ m.rank }}</td>
+              <td style="padding:11px 14px;border-bottom:1px solid var(--hair);font:600 14px/1.2 'Space Grotesk',sans-serif">{{ m.name }}</td>
+              <td style="padding:11px 14px;border-bottom:1px solid var(--hair);font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ m.roleFg }}">{{ m.roleTxt }}</td>
+              <td style="padding:11px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 13px/1 'JetBrains Mono',monospace">{{ m.trophies }}</td>
+              <td style="padding:11px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 13px/1 'JetBrains Mono',monospace">{{ m.lvl }}</td>
+              <td style="padding:11px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 13px/1 'JetBrains Mono',monospace">{{ m.don }}</td>
+              <td style="padding:11px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 12px/1 'JetBrains Mono',monospace;color:{{ m.lsFg }}">{{ m.ls }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tWar }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:20px">
+      <div style="padding:22px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:6px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3);margin-bottom:10px">CURRENT RIVER RACE · DAY 3 / 4</span>
+        <sc-for list="{{ race }}" as="c" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:24px 1fr 80px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--hair)">
+            <span style="font:700 13px/1 'JetBrains Mono',monospace;color:{{ c.rfg }}">{{ c.rank }}</span>
+            <span style="display:flex;flex-direction:column;gap:6px"><span style="font:600 14px/1 'Space Grotesk',sans-serif;color:{{ c.fg }}">{{ c.name }}</span><span style="height:2px;background:var(--hair)"><span style="display:block;height:100%;width:{{ c.pct }}%;background:{{ c.bar }};box-shadow:{{ c.sh }}"></span></span></span>
+            <span style="text-align:right;font:600 13px/1 'JetBrains Mono',monospace">{{ c.fame }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="padding:22px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:6px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3);margin-bottom:10px">LAST 10 RACES</span>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:140px">
+          <sc-for list="{{ past }}" as="p" hint-placeholder-count="10"><div title="{{ p.t }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px"><span style="font:700 10px/1 'JetBrains Mono',monospace;color:{{ p.fg }}">{{ p.r }}</span><span style="width:100%;height:{{ p.h }}px;border-radius:3px 3px 0 0;background:{{ p.bg }};box-shadow:{{ p.sh }}"></span></div></sc-for>
+        </div>
+        <span style="font:500 10px/1.4 'JetBrains Mono',monospace;color:var(--text-3)">Bar = fame. Number = finishing place.</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tRoster }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;max-width:760px">
+      <sc-for list="{{ events }}" as="e" hint-placeholder-count="8">
+        <div style="display:grid;grid-template-columns:90px 22px 1fr;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--hair)">
+          <span style="font:500 11px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ e.d }}</span>
+          <span style="width:18px;height:18px;border-radius:50%;border:1px solid {{ e.c }};color:{{ e.c }};display:flex;align-items:center;justify-content:center;font:700 9px/1 'JetBrains Mono',monospace">{{ e.i }}</span>
+          <span style="font:500 14px/1.3 'Space Grotesk',sans-serif"><b style="font-weight:600">{{ e.n }}</b> {{ e.t }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tStats }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px">
+      <sc-for list="{{ statSecs }}" as="s" hint-placeholder-count="3">
+        <div style="padding:22px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column">
+          <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--blue-hi);margin-bottom:14px">{{ s.t }}</span>
+          <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="5"><div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--hair)"><span style="font:400 14px/1.2 'Space Grotesk',sans-serif;color:var(--text-2)">{{ r.k }}</span><span style="font:600 14px/1.2 'JetBrains Mono',monospace">{{ r.v }}</span></div></sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,140px"></dc-import>
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><div role="status" style="position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:100;padding:12px 18px;background:var(--obsidian);border:1px solid rgba(58,160,255,.6);border-radius:6px;box-shadow:0 0 18px rgba(58,160,255,.35);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em">{{ toast }}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const N=['Vexor','NightHollow','ArcanePike','Ser Brannoc','kaiju_kev','Lumi','Quillon','TowerTax','Mossback','R0nin.exe','Halvard','elixir_eli','Saffron','GraveMint','BlueCandle','Okonkwo','Mira.v','Thistle','Pyre','Cobalt Jay','Wren','Fennick','ZeroCycle','Bastion','Ondine','Kestrel','logbait_lou','Morrow','Ashgrove','Nyx','Tamsin','PumpKing','Vale','Corvid','Bram','Iolanthe','Sable','Hexley','Juno','Fjord','Marlow','Odessa','PikeAndShot','Rook','Sorrel','Tiberius','Umber'];
+const R=rng(42);
+const MEM=N.map((name,i)=>({name,role:i===0?'Leader':i<4?'Co-Leader':i<13?'Elder':'Member',trophies:Math.min(10000,9950-i*52-Math.floor(R()*500)),lvl:46+Math.floor(R()*20),don:Math.floor(R()*820),h:R()<.7?Math.floor(R()*23):R()<.6?30+Math.floor(R()*40):80+Math.floor(R()*300)}));
+const fmt=n=>n.toLocaleString('en-US');
+class Component extends DCLogic {
+  state={tab:'members',sort:{k:'trophies',d:-1},toast:''};
+  renderVals(){
+    const s=this.state;
+    const T=(k,label)=>({label,active:s.tab===k,fg:s.tab===k?'var(--text-1)':'var(--text-3)',sh:s.tab===k?'inset 0 -2px 0 #8CCBFF,0 8px 16px -10px rgba(58,160,255,.9)':'none',onClick:()=>this.setState({tab:k})});
+    const C=[['rank','#','left'],['name','NAME','left'],['role','ROLE','left'],['trophies','TROPHIES','right'],['lvl','EXP','right'],['don','DON. / WK','right'],['h','LAST SEEN','right']];
+    const ord=['Leader','Co-Leader','Elder','Member'];
+    const ranked=[...MEM].sort((a,b)=>b.trophies-a.trophies).map((m,i)=>({...m,rank:i+1}));
+    const key={rank:m=>m.rank,name:m=>m.name.toLowerCase(),role:m=>ord.indexOf(m.role),trophies:m=>m.trophies,lvl:m=>m.lvl,don:m=>m.don,h:m=>m.h}[s.sort.k];
+    const members=[...ranked].sort((a,b)=>(key(a)<key(b)?-1:key(a)>key(b)?1:0)*s.sort.d).map(m=>({rank:String(m.rank).padStart(2,'0'),name:m.name,roleTxt:m.role.toUpperCase(),roleFg:m.role==='Leader'?'var(--gold)':m.role==='Member'?'var(--text-2)':'var(--text-1)',trophies:fmt(m.trophies),lvl:m.lvl,don:fmt(m.don),ls:(m.h<24?'● ':m.h<72?'◐ ':'○ ')+(m.h<24?m.h+'h':Math.floor(m.h/24)+'d'),lsFg:m.h<24?'var(--blue)':m.h<72?'var(--text-2)':'var(--ember)',go:()=>location.href='Player Profile.dc.html',key:e=>{if(e.key==='Enter')location.href='Player Profile.dc.html'}}));
+    const RACE=[['Gilded Ash',9105],['Iron Veil',8420,1],['Northwatch',7360],['Kestrel Court',6890],['Saltmarsh',5210]];
+    const PAST=[[2,40120],[1,43880],[1,42210],[3,36540],[2,39900],[1,44020],[4,31870],[2,38760],[1,42940],[2,39300]].reverse();
+    const ev=[['12 Oct','+','var(--blue)','Fjord','joined'],['11 Oct','▲','var(--blue-hi)','Saffron','promoted to Elder'],['10 Oct','−','var(--text-2)','Brightwater','left'],['08 Oct','×','var(--ember)','Hollis','was removed'],['04 Oct','▼','var(--text-2)','Thistle','demoted to Member'],['24 Sep','▲','var(--blue-hi)','ArcanePike','promoted to Co-Leader'],['21 Sep','+','var(--blue)','Iolanthe','joined']];
+    return {
+      copyTag:()=>{try{navigator.clipboard.writeText('#9Q2LUY')}catch(e){}this.setState({toast:'TAG COPIED'});setTimeout(()=>this.setState({toast:''}),1600)},hasToast:!!s.toast,toast:s.toast,
+      facts:[['CLAN SCORE','71,482',''],['WAR TROPHIES','3,214',''],['REQUIRED','7,000','TR'],['DONATIONS / WK','18,940',''],['MEMBERS','47','/50'],['TYPE','INVITE','']].map(([k,v,sub])=>({k,v,sub})),
+      tabs:[T('members','MEMBERS'),T('war','WAR'),T('roster','ROSTER CHANGES'),T('stats','STATS')],tMembers:s.tab==='members',tWar:s.tab==='war',tRoster:s.tab==='roster',tStats:s.tab==='stats',
+      cols:C.map(([k,label,al])=>{const on=s.sort.k===k;return{label,al,fg:on?'var(--text-1)':'var(--text-3)',arrow:on?(s.sort.d<0?'▼':'▲'):'',aria:on?(s.sort.d<0?'descending':'ascending'):'none',onClick:()=>this.setState(st=>({sort:{k,d:st.sort.k===k?-st.sort.d:(k==='name'||k==='rank'||k==='role'||k==='h'?1:-1)}}))}}),members,
+      race:RACE.sort((a,b)=>b[1]-a[1]).map(([name,f,us],i)=>({rank:i+1,name,fame:fmt(f),pct:Math.round(f/100),fg:us?'var(--text-1)':'var(--text-2)',rfg:i===0?'var(--gold)':'var(--text-3)',bar:us?'#8CCBFF':'var(--text-3)',sh:us?'0 0 8px rgba(58,160,255,.8)':'none'})),
+      past:PAST.map(([r,f],i)=>({r:'#'+r,t:`Week ${32+i}: ${fmt(f)} fame`,h:Math.round((f-28000)/16000*110),fg:r===1?'var(--gold)':'var(--text-2)',bg:r===1?'rgba(58,160,255,.85)':'var(--slate)',sh:r===1?'0 0 12px rgba(58,160,255,.5)':'none'})),
+      events:ev.map(([d,i,c,n,t])=>({d,i,c,n,t})),
+      statSecs:[{t:'ACTIVITY',rows:[['Active 24h','31'],['Active 7 days','43'],['Avg. member tenure','7.4 mo'],['Joins / leaves (30d)','6 / 4']].map(([k,v])=>({k,v}))},{t:'WAR',rows:[['Races won (10 wk)','4'],['Avg. finish','2.1'],['Avg. weekly fame','39,954'],['Deck participation','82%']].map(([k,v])=>({k,v}))},{t:'TROPHIES',rows:[['Average','8,712'],['Highest','Vexor · 9,950'],['Path of Legends members','29'],['Ultimate Champions','11']].map(([k,v])=>({k,v}))}]
+    };
+  }
+}
+</script>
+</body>
+</html>

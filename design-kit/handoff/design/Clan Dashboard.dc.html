@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E;--vein:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='900'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.0025 0.012' numOctaves='5' seed='11'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 -2.2 1.35'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.04'/></svg>")}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8;--vein:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='900'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.0025 0.012' numOctaves='5' seed='11'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.35'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.07'/></svg>")}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+@keyframes oaPulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(58,160,255,.7)}50%{opacity:.55;box-shadow:0 0 0 6px rgba(58,160,255,0)}}
+@keyframes oaRune{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}}
+@keyframes oaDrawer{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes oaFade{from{opacity:0}to{opacity:1}}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:var(--void);color:var(--text-1);overflow-x:hidden">
+<oa-grain></oa-grain>
+
+<header style="position:sticky;top:0;z-index:50;height:64px;display:flex;align-items:center;gap:24px;padding:0 clamp(16px,3vw,40px);background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hair)">
+  <a href="Home.dc.html" style="display:flex;align-items:center;gap:10px;color:var(--text-1);flex:none">
+    <svg width="30" height="26" viewBox="0 0 30 26" style="filter:drop-shadow(0 0 6px rgba(58,160,255,.6))"><polyline points="2,22 2,8 8,14 12,4 16,14 22,8 22,22 2,22" fill="none" stroke="#A4A9B4" stroke-width="1.4" stroke-linejoin="round"></polyline><polyline points="8,24 8,10 14,16 18,6 22,16 28,10 28,24 8,24" fill="none" stroke="#8CCBFF" stroke-width="1.4" stroke-linejoin="round"></polyline></svg>
+    <span style="font:800 13px/1 'JetBrains Mono',monospace;letter-spacing:.04em">CR·CLAN<span style="color:var(--text-3)">/</span>TRACKER</span>
+  </a>
+  <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+    <nav style="display:flex;gap:22px;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase">
+      <a href="Player Profile.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">Players</a>
+      <a href="Clans.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">Clans</a>
+      <a href="Clan Dashboard.dc.html" style="color:var(--text-1);padding-bottom:6px;margin-bottom:-6px;box-shadow:0 2px 0 0 #8CCBFF,0 4px 10px rgba(58,160,255,.6)">My Clan</a>
+      <a href="Decks.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">Decks</a>
+      <a href="Leaderboards.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">Leaderboards</a>
+      <a href="News.dc.html" style="color:var(--text-2)" style-hover="color:var(--text-1)">News</a>
+    </nav>
+  </sc-if>
+  <div style="flex:1"></div>
+  <sc-if value="{{ showSearch }}" hint-placeholder-val="{{ true }}">
+    <label style="display:flex;align-items:center;gap:8px;height:36px;width:280px;padding:0 6px;background:var(--obsidian);border:1px solid {{ searchBd }};border-radius:6px;box-shadow:{{ searchSh }}">
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;background:var(--slate);font:700 12px/1 'JetBrains Mono',monospace;color:var(--blue-hi)">#</span>
+      <input value="{{ search }}" onChange="{{ onSearch }}" onKeyDown="{{ onSearchKey }}" onFocus="{{ onSearchFocus }}" onBlur="{{ onSearchBlur }}" placeholder="Player or clan tag, or name" aria-label="Search" style="flex:1;min-width:0;background:none;border:0;outline:none;color:var(--text-1);font:500 12px/1 'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase"></input>
+      <span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ searchHintColor }};padding-right:4px">{{ searchHint }}</span>
+    </label>
+  </sc-if>
+  <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="flex:none;height:36px;padding:0 12px;background:none;border:1px solid var(--hair);border-radius:6px;color:var(--text-2);font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer" style-hover="color:var(--text-1);border-color:rgba(58,160,255,.6)">{{ themeLabel }}</button>
+</header>
+
+<section data-screen-label="Dashboard header" style="position:relative;height:clamp(380px,50vh,540px);overflow:hidden;background:#07080A">
+  <div style="position:absolute;inset:0;filter:grayscale(1) contrast(1.1) brightness(.7)">
+    <image-slot id="scene-warroom" shape="rect" placeholder="Scene · war-room stone table, blue crown rune (drop 04-scenes-blue-glow.jpg)"></image-slot>
+  </div>
+  <div style="position:absolute;left:62%;top:46%;width:min(46vw,620px);aspect-ratio:2.4;border-radius:50%;transform:translate(-50%,-50%);border:1px solid rgba(140,203,255,.5);box-shadow:0 0 30px rgba(58,160,255,.35),inset 0 0 40px rgba(58,160,255,.25);animation:oaRune {{ runeDur }} ease-in-out infinite;pointer-events:none"></div>
+  <div style="position:absolute;left:62%;top:46%;width:min(18vw,220px);aspect-ratio:2.4;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(58,160,255,.55),rgba(58,160,255,0));animation:oaRune {{ runeDur }} ease-in-out infinite;pointer-events:none"></div>
+  <oa-fog density="1.1"></oa-fog>
+  <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(7,8,10,.55) 0%,rgba(7,8,10,0) 30%,rgba(7,8,10,.4) 60%,#07080A 100%),radial-gradient(ellipse at center,rgba(7,8,10,0) 40%,rgba(7,8,10,.75) 100%)"></div>
+  <div style="position:absolute;inset:14px;border:1px solid rgba(255,255,255,.55);border-radius:4px;pointer-events:none"></div>
+  <div style="position:relative;height:100%;max-width:1440px;margin:0 auto;padding:40px clamp(28px,4vw,64px) 44px;display:flex;flex-direction:column;justify-content:space-between;gap:24px;pointer-events:none">
+    <div style="display:flex;flex-wrap:wrap;gap:8px 20px;font:500 10px/1.4 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#A4A9B4">
+      <span style="display:flex;align-items:center;gap:8px;color:#F3F4F6"><span style="width:7px;height:7px;border-radius:50%;background:#3AA0FF;animation:oaPulse 2s infinite"></span>Live · River race war day 3</span>
+      <span>Manage · leader view</span>
+      <span>Last sync {{ lastSync }}</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px">
+      <div style="display:flex;align-items:flex-end;gap:clamp(16px,2vw,28px);min-width:0">
+        <div style="flex:none;width:clamp(64px,7vw,104px);height:clamp(72px,8vw,118px);pointer-events:auto">
+          <image-slot id="badge-ironveil" shape="rect" fit="contain" placeholder="clan badge"></image-slot>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <h1 data-reveal="1" style="margin:0;font:800 clamp(44px,8.4vw,132px)/.86 'JetBrains Mono',monospace;letter-spacing:-.055em;color:#F3F4F6;text-wrap:balance">IRON VEIL</h1>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#A4A9B4;pointer-events:auto">
+            <button onClick="{{ copyTag }}" style="display:flex;align-items:center;gap:8px;background:none;border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:5px 8px;color:#F3F4F6;font:inherit;letter-spacing:inherit;cursor:pointer" style-hover="border-color:#3AA0FF">Tag #9Q2LUY <span style="color:#62676F">Copy</span></button>
+            <span>Invite only</span><span>Europe</span><span>Req. 7,000</span><span>Clan score 71,482</span><span>War trophies 3,214</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;pointer-events:auto">
+        <button data-magnet="1" onClick="{{ refresh }}" style="display:flex;align-items:center;gap:10px;height:44px;padding:0 20px;border:0;border-radius:6px;background:linear-gradient(110deg,#F3F4F6 40%,#ffffff 50%,#F3F4F6 60%) 120% 0/250% 100%;color:#07080A;font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:background-position .7s,box-shadow .3s" style-hover="background-position:-20% 0;box-shadow:0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)">{{ refreshLabel }}</button>
+        <a href="Clan Profile.dc.html" style="display:flex;align-items:center;height:44px;padding:0 16px;border:1px solid rgba(255,255,255,.28);border-radius:6px;color:#F3F4F6;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase" style-hover="border-color:#8CCBFF;color:#fff">Clan profile →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main style="position:relative;max-width:1440px;margin:0 auto;padding:0 clamp(16px,3vw,40px) 120px;display:flex;flex-direction:column;gap:28px">
+  <div style="position:absolute;inset:0;background:var(--vein);pointer-events:none"></div>
+
+  <div style="position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:8px;overflow:hidden;margin-top:-28px">
+    <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="7">
+      <div data-spot="1" style="position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:16px;min-height:132px;padding:16px 18px;background:radial-gradient(220px circle at var(--mx,-400px) var(--my,-400px),rgba(58,160,255,.10),transparent 70%),var(--charcoal)">
+        <div style="font:500 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)">{{ t.label }}</div>
+        <div style="display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums">
+          <span data-decode="1" style="font:800 clamp(34px,3.2vw,46px)/1 'JetBrains Mono',monospace;letter-spacing:-.05em;color:var(--text-1)">{{ t.value }}</span>
+          <span style="font:500 13px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ t.unit }}</span>
+        </div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
+          <span style="font:500 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:{{ t.deltaColor }}">{{ t.delta }}</span>
+          <svg width="64" height="20" viewBox="0 0 64 20" style="flex:none;overflow:visible"><polyline points="{{ t.spark }}" fill="none" stroke="var(--text-2)" stroke-width="1" stroke-linejoin="round"></polyline></svg>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div role="tablist" style="position:relative;display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--hair);scrollbar-width:none">
+    <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4">
+      <button role="tab" aria-selected="{{ tb.active }}" onClick="{{ tb.onClick }}" style="position:relative;flex:none;height:46px;padding:0 18px;background:none;border:0;color:{{ tb.fg }};font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:{{ tb.sh }}" style-hover="color:var(--text-1)">{{ tb.label }}<span style="margin-left:8px;color:var(--text-3)">{{ tb.count }}</span></button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ tabMembers }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px">
+        <label style="display:flex;align-items:center;gap:8px;height:34px;flex:1 1 220px;max-width:320px;padding:0 10px;background:var(--obsidian);border:1px solid var(--hair);border-radius:6px">
+          <span style="font:500 10px/1 'JetBrains Mono',monospace;color:var(--text-3);letter-spacing:.12em">FIND</span>
+          <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Name or tag" style="flex:1;min-width:0;background:none;border:0;outline:none;color:var(--text-1);font:500 13px/1 'Space Grotesk',sans-serif"></input>
+        </label>
+        <sc-for list="{{ filterGroups }}" as="g" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-right:2px">{{ g.label }}</span>
+            <sc-for list="{{ g.chips }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.onClick }}" aria-pressed="{{ c.on }}" style="height:28px;padding:0 10px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap" style-hover="color:var(--text-1);border-color:rgba(58,160,255,.5)">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </sc-for>
+        <span style="margin-left:auto;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)">{{ shownLabel }}</span>
+      </div>
+
+      <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px;background:var(--obsidian);border:1px solid rgba(58,160,255,.5);border-radius:6px;box-shadow:0 0 18px rgba(58,160,255,.15);animation:oaFade .25s">
+          <span style="font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--blue-hi);margin-right:8px">{{ selCount }} SELECTED</span>
+          <button onClick="{{ openCompare }}" style="height:30px;padding:0 12px;border:0;border-radius:4px;background:var(--btn-bg);color:var(--btn-fg);font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer">Compare</button>
+          <button onClick="{{ exportCsv }}" style="height:30px;padding:0 12px;border:1px solid var(--hair);border-radius:4px;background:none;color:var(--text-1);font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer" style-hover="border-color:var(--blue)">Export CSV</button>
+          <button onClick="{{ copyNames }}" style="height:30px;padding:0 12px;border:1px solid var(--hair);border-radius:4px;background:none;color:var(--text-1);font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer" style-hover="border-color:var(--blue)">Copy names</button>
+          <button onClick="{{ clearSel }}" style="margin-left:auto;height:30px;padding:0 8px;border:0;background:none;color:var(--text-2);font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer">Clear ×</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}">
+        <div data-spot="1" style="position:relative;max-height:72vh;overflow:auto;border:1px solid var(--hair);border-radius:8px;background:radial-gradient(400px circle at var(--mx,-600px) var(--my,-600px),rgba(58,160,255,.06),transparent 70%),var(--charcoal)">
+          <table style="width:100%;min-width:1480px;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums">
+            <thead>
+              <tr>
+                <th style="position:sticky;top:0;z-index:2;width:40px;padding:0 0 0 14px;background:var(--glass);backdrop-filter:blur(16px);border-bottom:1px solid var(--hair);text-align:left"><input type="checkbox" checked="{{ allSel }}" onChange="{{ toggleAll }}" aria-label="Select all" style="accent-color:var(--blue)"></input></th>
+                <sc-for list="{{ cols }}" as="col" hint-placeholder-count="15">
+                  <th aria-sort="{{ col.aria }}" style="position:sticky;top:0;z-index:2;padding:0;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hair);text-align:{{ col.align }};white-space:nowrap">
+                    <button onClick="{{ col.onClick }}" style="width:100%;height:44px;padding:0 12px;background:none;border:0;cursor:pointer;display:flex;align-items:center;justify-content:{{ col.justify }};gap:6px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:{{ col.fg }}" style-hover="color:var(--text-1)">{{ col.label }}<span style="color:var(--blue);text-shadow:0 0 8px rgba(58,160,255,.8);font-size:9px">{{ col.arrow }}</span></button>
+                  </th>
+                </sc-for>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ rows }}" as="m" hint-placeholder-count="12">
+                <tr tabindex="0" onClick="{{ m.open }}" onKeyDown="{{ m.key }}" style="cursor:pointer;outline:none;background:{{ m.rowBg }}" style-hover="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px)" style-focus="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px);box-shadow:inset 0 0 0 1px rgba(58,160,255,.6)">
+                  <td onClick="{{ m.stop }}" style="padding:0 0 0 14px;border-bottom:1px solid var(--hair)"><input type="checkbox" checked="{{ m.checked }}" onChange="{{ m.toggle }}" aria-label="Select {{ m.name }}" style="accent-color:var(--blue)"></input></td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);font:500 12px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ m.rankTxt }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);min-width:170px">
+                    <div style="display:flex;flex-direction:column;gap:4px">
+                      <span style="display:flex;align-items:center;gap:8px;font:600 14px/1.1 'Space Grotesk',sans-serif;color:var(--text-1)">{{ m.name }}<sc-if value="{{ m.isNew }}" hint-placeholder-val="{{ false }}"><span style="padding:2px 5px;border:1px solid rgba(58,160,255,.5);border-radius:3px;font:500 8px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--blue-hi)">NEW</span></sc-if></span>
+                      <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--text-3)">{{ m.tag }}</span>
+                    </div>
+                  </td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair)">
+                    <span style="display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border:1px solid {{ m.roleBd }};border-radius:4px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:{{ m.roleFg }};white-space:nowrap">
+                      <sc-if value="{{ m.isLeader }}" hint-placeholder-val="{{ false }}"><svg width="12" height="10" viewBox="0 0 12 10"><polyline points="1,9 1,3 4,6 6,1 8,6 11,3 11,9 1,9" fill="none" stroke="var(--gold)" stroke-width="1.2" stroke-linejoin="round"></polyline></svg></sc-if>
+                      <sc-if value="{{ m.isCo }}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 10 10"><polyline points="2,5 5,2 8,5" fill="none" stroke="currentColor" stroke-width="1.3"></polyline><polyline points="2,9 5,6 8,9" fill="none" stroke="currentColor" stroke-width="1.3"></polyline></svg></sc-if>
+                      <sc-if value="{{ m.isElder }}" hint-placeholder-val="{{ false }}"><svg width="10" height="11" viewBox="0 0 10 11"><path d="M5 1 L9 2.5 V5.5 C9 7.8 7.2 9 5 10 C2.8 9 1 7.8 1 5.5 V2.5 Z" fill="none" stroke="currentColor" stroke-width="1.2"></path></svg></sc-if>
+                      <sc-if value="{{ m.isMember }}" hint-placeholder-val="{{ true }}"><svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="2.2" fill="currentColor"></circle></svg></sc-if>
+                      {{ m.role }}
+                    </span>
+                  </td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);text-align:right;font:500 13px/1 'JetBrains Mono',monospace">{{ m.trophiesTxt }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair)">
+                    <span style="display:flex;align-items:center;gap:8px">
+                      <span title="Path of Legends league icon" style="flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--frame);display:flex;align-items:center;justify-content:center;font:700 9px/1 'JetBrains Mono',monospace;color:var(--text-1);background:var(--obsidian)">{{ m.league }}</span>
+                      <span style="font:500 12px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ m.polTxt }}</span>
+                    </span>
+                  </td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);white-space:nowrap">
+                    <span style="display:inline-flex;align-items:center;gap:7px;font:500 12px/1 'JetBrains Mono',monospace;color:{{ m.lsFg }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ m.lsDot }};border:1.5px solid {{ m.lsRing }};box-shadow:{{ m.lsGlow }}"></span>{{ m.lsTxt }}<span style="font-size:9px;letter-spacing:.12em;color:var(--text-3)">{{ m.lsLabel }}</span></span>
+                  </td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);text-align:right;font:500 13px/1 'JetBrains Mono',monospace">{{ m.donTxt }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);text-align:right;font:500 13px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ m.recvTxt }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);text-align:right;font:500 13px/1 'JetBrains Mono',monospace">{{ m.fameTxt }}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair)">
+                    <span style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                      <span style="display:flex;gap:2px"><sc-for list="{{ m.dayCells }}" as="d" hint-placeholder-count="4"><span title="{{ d.title }}" style="width:9px;height:14px;border-radius:2px;background:{{ d.bg }};box-shadow:{{ d.sh }};border:{{ d.bd }}"></span></sc-for></span>
+                      <span style="font:500 12px/1 'JetBrains Mono',monospace;color:{{ m.decksFg }};min-width:38px;text-align:right">{{ m.decks }}/16</span>
+                    </span>
+                  </td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);text-align:right;font:500 13px/1 'JetBrains Mono',monospace">{{ m.warWin }}%</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);text-align:right;white-space:nowrap;font:500 12px/1 'JetBrains Mono',monospace">{{ m.fTxt }}<span style="color:var(--text-3);font-size:10px"> {{ m.fGamesTxt }}</span></td>
+                  <td style="padding:6px 12px;border-bottom:1px solid var(--hair)">
+                    <span style="display:flex;align-items:center;gap:10px">
+                      <span style="position:relative;flex:none;width:32px;height:32px">
+                        <svg width="32" height="32" viewBox="0 0 36 36" style="filter:{{ m.gGlow }}"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--hair)" stroke-width="3"></circle><circle cx="18" cy="18" r="15" fill="none" stroke="var(--blue)" stroke-opacity="{{ m.gOp }}" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ m.gDash }}" transform="rotate(-90 18 18)"></circle></svg>
+                        <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 10px/1 'JetBrains Mono',monospace">{{ m.score }}</span>
+                      </span>
+                      <span title="War · Donations · Activity · Battle · Tenure" style="display:flex;width:66px;height:4px;border-radius:2px;overflow:hidden;background:var(--slate)">
+                        <sc-for list="{{ m.segs }}" as="s" hint-placeholder-count="5"><span style="width:{{ s.w }}%;background:{{ s.c }}"></span></sc-for>
+                      </span>
+                    </span>
+                  </td>
+                  <td style="padding:10px 12px;border-bottom:1px solid var(--hair);text-align:right;font:500 12px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ m.tenureTxt }}</td>
+                  <td style="padding:10px 14px 10px 12px;border-bottom:1px solid var(--hair);text-align:right;font:600 12px/1 'JetBrains Mono',monospace;color:{{ m.trendFg }};white-space:nowrap">{{ m.trendTxt }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:48px;text-align:center;font:500 11px/1.6 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)">No members match these filters</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none">
+            <sc-for list="{{ cols }}" as="col" hint-placeholder-count="6">
+              <button onClick="{{ col.onClick }}" style="flex:none;height:28px;padding:0 10px;border-radius:4px;border:1px solid var(--hair);background:none;color:{{ col.fg }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase">{{ col.label }} {{ col.arrow }}</button>
+            </sc-for>
+          </div>
+          <sc-for list="{{ rows }}" as="m" hint-placeholder-count="6">
+            <div role="button" tabindex="0" onClick="{{ m.open }}" style="display:grid;grid-template-columns:auto 1fr auto;gap:10px 12px;align-items:center;padding:14px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px">
+              <input type="checkbox" checked="{{ m.checked }}" onChange="{{ m.toggle }}" onClick="{{ m.stop }}" aria-label="Select {{ m.name }}" style="accent-color:var(--blue);width:18px;height:18px"></input>
+              <div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+                <span style="font:600 15px/1.1 'Space Grotesk',sans-serif">{{ m.rankTxt }} · {{ m.name }}</span>
+                <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)">{{ m.role }} · {{ m.trophiesTxt }} · {{ m.tenureTxt }}</span>
+              </div>
+              <span style="position:relative;width:40px;height:40px">
+                <svg width="40" height="40" viewBox="0 0 36 36" style="filter:{{ m.gGlow }}"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--hair)" stroke-width="3"></circle><circle cx="18" cy="18" r="15" fill="none" stroke="var(--blue)" stroke-opacity="{{ m.gOp }}" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ m.gDash }}" transform="rotate(-90 18 18)"></circle></svg>
+                <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 11px/1 'JetBrains Mono',monospace">{{ m.score }}</span>
+              </span>
+              <div style="grid-column:1 / -1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:10px;border-top:1px solid var(--hair);font:500 11px/1.3 'JetBrains Mono',monospace">
+                <span style="display:flex;align-items:center;gap:6px;color:{{ m.lsFg }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ m.lsDot }};border:1.5px solid {{ m.lsRing }}"></span>{{ m.lsTxt }}</span>
+                <span style="color:{{ m.decksFg }}">{{ m.decks }}/16 decks</span>
+                <span style="color:var(--text-2)">{{ m.fameTxt }} fame</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px;margin-top:12px">
+        <sc-for list="{{ recs }}" as="r" hint-placeholder-count="2">
+          <div style="position:relative;padding:20px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);display:flex;flex-direction:column;gap:14px">
+            <span style="position:absolute;top:-1px;left:-1px;width:10px;height:10px;border-top:1px solid var(--frame);border-left:1px solid var(--frame)"></span>
+            <span style="position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-bottom:1px solid var(--frame);border-right:1px solid var(--frame)"></span>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+              <h3 style="margin:0;font:600 18px/1.2 'Space Grotesk',sans-serif">{{ r.title }}</h3>
+              <span style="font:500 9px/1.3 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);text-align:right">{{ r.rule }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ r.items }}" as="it" hint-placeholder-count="4">
+                <button onClick="{{ it.open }}" style="display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:11px 0;background:none;border:0;border-top:1px solid var(--hair);color:var(--text-1);text-align:left;cursor:pointer" style-hover="box-shadow:inset 2px 0 0 var(--blue);padding-left:10px">
+                  <span style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font:600 14px/1.1 'Space Grotesk',sans-serif">{{ it.name }}</span><span style="font:500 10px/1.2 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--text-3)">{{ it.why }}</span></span>
+                  <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2)">{{ it.role }}</span>
+                  <span style="font:700 14px/1 'JetBrains Mono',monospace;color:{{ it.fg }}">{{ it.score }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <span style="font:400 12px/1.5 'Space Grotesk',sans-serif;color:var(--text-3)">Suggestions only. The leader decides.</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tabWar }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;display:flex;flex-direction:column;gap:28px">
+      <div style="padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)">River race · Week 42</span>
+            <h2 data-reveal="1" style="margin:0;font:800 clamp(32px,4vw,56px)/.95 'JetBrains Mono',monospace;letter-spacing:-.05em">WAR DAY 3<span style="color:var(--text-3)">/4</span></h2>
+          </div>
+          <div style="display:flex;gap:28px;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">DAY ENDS IN</span><span style="font:700 28px/1 'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;color:var(--blue-hi);text-shadow:0 0 18px rgba(58,160,255,.5)">{{ countdown }}</span></div>
+            <div style="display:flex;flex-direction:column;gap:8px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">OUR DECKS TODAY</span><span style="font:700 28px/1 'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ decksToday }}<span style="color:var(--text-3);font-size:16px">/200</span></span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <sc-for list="{{ dayPips }}" as="p" hint-placeholder-count="4"><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="height:2px;border-radius:2px;background:{{ p.bg }};box-shadow:{{ p.sh }}"></span><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:{{ p.fg }}">{{ p.label }}</span></div></sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ race }}" as="c" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:28px minmax(120px,200px) 1fr 90px 90px;gap:16px;align-items:center;padding:14px 0;border-top:1px solid var(--hair)">
+              <span style="font:700 14px/1 'JetBrains Mono',monospace;color:{{ c.rankFg }}">{{ c.rank }}</span>
+              <span style="font:600 15px/1.1 'Space Grotesk',sans-serif;color:{{ c.nameFg }}">{{ c.name }}<span style="display:block;margin-top:4px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--blue-hi)">{{ c.us }}</span></span>
+              <div style="position:relative;height:16px">
+                <div style="position:absolute;left:0;right:0;top:7px;height:1px;background:var(--hair)"></div>
+                <div style="position:absolute;left:0;top:7px;height:2px;width:{{ c.boat }}%;background:{{ c.bar }};box-shadow:{{ c.barSh }}"></div>
+                <div style="position:absolute;top:2px;left:calc({{ c.boat }}% - 6px);width:12px;height:12px;transform:rotate(45deg);border:1.5px solid {{ c.bar }};background:var(--charcoal)"></div>
+              </div>
+              <span style="text-align:right;font:600 14px/1 'JetBrains Mono',monospace">{{ c.fameTxt }}<span style="display:block;margin-top:4px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">FAME</span></span>
+              <span style="text-align:right;font:600 14px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ c.decks }}<span style="display:block;margin-top:4px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">DECKS/200</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:12px">
+          <h3 style="margin:0;font:600 22px/1.2 'Space Grotesk',sans-serif">Participation this week</h3>
+          <div style="display:flex;align-items:center;gap:6px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">
+            <span>0</span><sc-for list="{{ legend }}" as="l" hint-placeholder-count="5"><span style="width:16px;height:16px;border-radius:3px;background:{{ l.bg }};box-shadow:{{ l.sh }};border:{{ l.bd }}"></span></sc-for><span>4 DECKS</span>
+          </div>
+        </div>
+        <div style="overflow-x:auto;border:1px solid var(--hair);border-radius:8px;background:var(--charcoal)">
+          <div style="min-width:560px;display:grid;grid-template-columns:minmax(150px,1.4fr) repeat(4,minmax(64px,1fr)) 80px 110px">
+            <span style="padding:12px 14px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">MEMBER</span>
+            <span style="padding:12px 0;text-align:center;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">THU</span>
+            <span style="padding:12px 0;text-align:center;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">FRI</span>
+            <span style="padding:12px 0;text-align:center;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--blue-hi);border-bottom:1px solid var(--hair)">SAT · TODAY</span>
+            <span style="padding:12px 0;text-align:center;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">SUN</span>
+            <span style="padding:12px 0;text-align:right;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">TOTAL</span>
+            <span style="padding:12px 14px;text-align:right;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">FLAG</span>
+            <sc-for list="{{ grid }}" as="g" hint-placeholder-count="10">
+              <button onClick="{{ g.open }}" style="padding:8px 14px;background:none;border:0;border-bottom:1px solid var(--hair);text-align:left;color:var(--text-1);font:500 13px/1.2 'Space Grotesk',sans-serif;cursor:pointer" style-hover="color:var(--blue-hi)">{{ g.name }}</button>
+              <sc-for list="{{ g.cells }}" as="d" hint-placeholder-count="4">
+                <span style="display:flex;align-items:center;justify-content:center;padding:6px;border-bottom:1px solid var(--hair)"><span style="width:100%;max-width:56px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;background:{{ d.bg }};box-shadow:{{ d.sh }};border:{{ d.bd }};font:600 11px/1 'JetBrains Mono',monospace;color:{{ d.fg }}">{{ d.txt }}</span></span>
+              </sc-for>
+              <span style="padding:8px 0;text-align:right;border-bottom:1px solid var(--hair);font:600 13px/26px 'JetBrains Mono',monospace;color:{{ g.totFg }}">{{ g.total }}</span>
+              <span style="padding:8px 14px;text-align:right;border-bottom:1px solid var(--hair);font:500 9px/26px 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--ember)">{{ g.flag }}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <h3 style="margin:0;font:600 22px/1.2 'Space Grotesk',sans-serif">Past 10 races</h3>
+        <div style="border:1px solid var(--hair);border-radius:8px;background:var(--charcoal);overflow:hidden">
+          <sc-for list="{{ past }}" as="w" hint-placeholder-count="10">
+            <div style="border-bottom:1px solid var(--hair)">
+              <button onClick="{{ w.toggle }}" aria-expanded="{{ w.open }}" style="width:100%;display:grid;grid-template-columns:minmax(90px,1fr) 70px minmax(80px,1fr) minmax(80px,1fr) 24px;gap:12px;align-items:center;padding:14px 18px;background:{{ w.bg }};border:0;color:var(--text-1);text-align:left;cursor:pointer;font:500 13px/1 'JetBrains Mono',monospace" style-hover="background:var(--slate)">
+                <span>{{ w.label }}</span>
+                <span style="color:{{ w.rankFg }};font-weight:700">{{ w.rankTxt }}</span>
+                <span style="text-align:right">{{ w.fameTxt }} <span style="color:var(--text-3);font-size:10px">FAME</span></span>
+                <span style="text-align:right;color:{{ w.trFg }}">{{ w.trTxt }}</span>
+                <span style="text-align:right;color:var(--text-3)">{{ w.chev }}</span>
+              </button>
+              <sc-if value="{{ w.open }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1px;background:var(--hair);border-top:1px solid var(--hair)">
+                  <sc-for list="{{ w.members }}" as="pm" hint-placeholder-count="8"><div style="display:flex;justify-content:space-between;gap:8px;padding:10px 18px;background:var(--obsidian);font:500 12px/1.2 'JetBrains Mono',monospace"><span style="font-family:'Space Grotesk',sans-serif">{{ pm.name }}</span><span style="color:{{ pm.fg }}">{{ pm.decks }}/16 · {{ pm.fame }}</span></div></sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tabRoster }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:28px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ evChips }}" as="c" hint-placeholder-count="6">
+            <button onClick="{{ c.onClick }}" style="height:28px;padding:0 10px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer">{{ c.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;padding:10px 14px;border:1px dashed var(--hair);border-radius:6px;font:500 10px/1.5 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2)"><span style="width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>Data since 02 Jun 2026. Earlier roster changes were not tracked.</div>
+        <div style="position:relative;display:flex;flex-direction:column;padding-left:28px">
+          <div style="position:absolute;left:7px;top:6px;bottom:6px;width:1px;background:linear-gradient(var(--blue-hi),var(--hair) 40%)"></div>
+          <sc-for list="{{ events }}" as="e" hint-placeholder-count="10">
+            <div style="position:relative;display:grid;grid-template-columns:86px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--hair)">
+              <span style="position:absolute;left:-27px;top:15px;width:14px;height:14px;border-radius:50%;background:var(--charcoal);border:1px solid {{ e.ring }};display:flex;align-items:center;justify-content:center;font:700 9px/1 'JetBrains Mono',monospace;color:{{ e.ring }}">{{ e.icon }}</span>
+              <span style="font:500 11px/1.4 'JetBrains Mono',monospace;color:var(--text-3)">{{ e.date }}</span>
+              <span style="display:flex;flex-direction:column;gap:3px"><span style="font:500 14px/1.3 'Space Grotesk',sans-serif"><b style="font-weight:600">{{ e.name }}</b> {{ e.verb }}</span><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:{{ e.ring }}">{{ e.type }}</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <h3 style="margin:0;font:600 22px/1.2 'Space Grotesk',sans-serif">Former members</h3>
+        <div style="overflow-x:auto;border:1px solid var(--hair);border-radius:8px;background:var(--charcoal)">
+          <table style="width:100%;min-width:440px;border-collapse:collapse;font-variant-numeric:tabular-nums">
+            <thead><tr>
+              <th style="padding:12px 14px;text-align:left;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">NAME</th>
+              <th style="padding:12px 14px;text-align:left;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">LEFT</th>
+              <th style="padding:12px 14px;text-align:right;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">STAYED</th>
+              <th style="padding:12px 14px;text-align:right;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">FAME</th>
+              <th style="padding:12px 14px;text-align:right;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);border-bottom:1px solid var(--hair)">DON.</th>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ former }}" as="f" hint-placeholder-count="6">
+                <tr style-hover="background:var(--slate)">
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--hair);font:600 14px/1.2 'Space Grotesk',sans-serif">{{ f.name }}<span style="display:block;margin-top:3px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ f.howFg }}">{{ f.how }}</span></td>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--hair);font:500 12px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ f.left }}</td>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 12px/1 'JetBrains Mono',monospace">{{ f.stayed }}</td>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 12px/1 'JetBrains Mono',monospace">{{ f.fame }}</td>
+                  <td style="padding:12px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 12px/1 'JetBrains Mono',monospace">{{ f.don }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ tabScore }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:28px;align-items:start">
+      <div style="position:relative;padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:22px">
+        <span style="position:absolute;top:-1px;left:-1px;width:10px;height:10px;border-top:1px solid var(--frame);border-left:1px solid var(--frame)"></span>
+        <span style="position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-bottom:1px solid var(--frame);border-right:1px solid var(--frame)"></span>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">ASSET SCORE WEIGHTS</span>
+          <h2 style="margin:0;font:600 24px/1.2 'Space Grotesk',sans-serif">What makes a member valuable to Iron Veil</h2>
+          <p style="margin:0;font:400 14px/1.5 'Space Grotesk',sans-serif;color:var(--text-2);text-wrap:pretty">Each member gets 0–100 per factor. The score is the weighted average. Weights are saved on this device only.</p>
+        </div>
+        <sc-for list="{{ sliders }}" as="s" hint-placeholder-count="5">
+          <label style="display:flex;flex-direction:column;gap:10px">
+            <span style="display:flex;justify-content:space-between;align-items:baseline"><span style="display:flex;align-items:center;gap:8px;font:500 14px/1 'Space Grotesk',sans-serif"><span style="width:10px;height:4px;border-radius:2px;background:{{ s.c }}"></span>{{ s.label }}</span><span style="font:700 14px/1 'JetBrains Mono',monospace;color:var(--blue-hi)">{{ s.pct }}%</span></span>
+            <input type="range" min="0" max="50" step="1" value="{{ s.v }}" onChange="{{ s.onChange }}" style="width:100%;accent-color:var(--blue)"></input>
+            <span style="font:500 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--text-3)">{{ s.hint }}</span>
+          </label>
+        </sc-for>
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ resetWeights }}" style="height:40px;padding:0 16px;border:1px solid var(--hair);border-radius:6px;background:none;color:var(--text-1);font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;cursor:pointer" style-hover="border-color:var(--blue)">Reset defaults</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="margin:0;font:600 22px/1.2 'Space Grotesk',sans-serif">Live ranking preview</h3><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">VS DEFAULT WEIGHTS</span></div>
+        <div style="border:1px solid var(--hair);border-radius:8px;background:var(--charcoal)">
+          <sc-for list="{{ preview }}" as="p" hint-placeholder-count="12">
+            <div style="display:grid;grid-template-columns:32px 1fr 120px 44px 52px;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--hair);transition:background .4s">
+              <span style="font:700 12px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ p.rank }}</span>
+              <span style="font:600 14px/1.1 'Space Grotesk',sans-serif">{{ p.name }}</span>
+              <span style="height:4px;border-radius:2px;background:var(--slate);overflow:hidden"><span style="display:block;height:100%;width:{{ p.score }}%;background:var(--blue);box-shadow:0 0 8px rgba(58,160,255,.7);transition:width .4s"></span></span>
+              <span style="text-align:right;font:700 13px/1 'JetBrains Mono',monospace">{{ p.score }}</span>
+              <span style="text-align:right;font:600 11px/1 'JetBrains Mono',monospace;color:{{ p.mvFg }}">{{ p.mv }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</main>
+
+<footer style="position:relative;border-top:1px solid var(--hair);padding:36px clamp(16px,3vw,40px) {{ footPad }}px;max-width:1440px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px">
+  <p style="margin:0;max-width:640px;font:400 12px/1.6 'Space Grotesk',sans-serif;color:var(--text-3)">This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it. For more information see Supercell's Fan Content Policy.</p>
+  <span style="font:500 10px/1.6 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">CR CLAN TRACKER · FAN-MADE · DATA CACHED, REFRESHED EVERY 10 MIN</span>
+</footer>
+
+<sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;z-index:80;background:rgba(7,8,10,.6);backdrop-filter:blur(2px);animation:oaFade .25s"></div>
+  <aside role="dialog" aria-label="Member detail" style="position:fixed;top:0;right:0;bottom:0;z-index:90;width:min(100vw,560px);overflow-y:auto;background:var(--charcoal);border-left:1px solid var(--hair);box-shadow:-30px 0 80px rgba(0,0,0,.5);animation:oaDrawer .45s cubic-bezier(.16,1,.3,1)">
+    <div style="position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--glass);backdrop-filter:blur(16px);border-bottom:1px solid var(--hair)">
+      <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">MEMBER · {{ d.rankTxt }} OF 47</span>
+      <div style="display:flex;gap:6px">
+        <button onClick="{{ prevMember }}" aria-label="Previous member" style="width:32px;height:32px;border:1px solid var(--hair);border-radius:4px;background:none;color:var(--text-1);cursor:pointer;font:500 12px/1 'JetBrains Mono',monospace">↑</button>
+        <button onClick="{{ nextMember }}" aria-label="Next member" style="width:32px;height:32px;border:1px solid var(--hair);border-radius:4px;background:none;color:var(--text-1);cursor:pointer;font:500 12px/1 'JetBrains Mono',monospace">↓</button>
+        <button onClick="{{ closeDrawer }}" aria-label="Close" style="height:32px;padding:0 10px;border:1px solid var(--hair);border-radius:4px;background:none;color:var(--text-1);cursor:pointer;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em">ESC ×</button>
+      </div>
+    </div>
+    <div style="padding:28px 24px 48px;display:flex;flex-direction:column;gap:32px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:20px">
+        <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          <h2 style="margin:0;font:800 clamp(30px,6vw,44px)/.95 'JetBrains Mono',monospace;letter-spacing:-.05em;word-break:break-word">{{ d.name }}</h2>
+          <span style="font:500 11px/1.5 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2)">{{ d.tag }} · {{ d.role }} · Joined {{ d.joined }}</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.08em;color:{{ d.lsFg }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ d.lsDot }};border:1.5px solid {{ d.lsRing }}"></span>Last seen {{ d.lsTxt }} ago · {{ d.lsLabel }}</span>
+        </div>
+        <div style="position:relative;flex:none;width:120px;height:120px">
+          <svg width="120" height="120" viewBox="0 0 120 120" style="filter:{{ d.gGlowBig }}"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--hair)" stroke-width="2"></circle><circle cx="60" cy="60" r="44" fill="none" stroke="var(--hair)" stroke-width="1"></circle><circle cx="60" cy="60" r="50" fill="none" stroke="var(--blue-hi)" stroke-opacity="{{ d.gOp }}" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ d.gDash }}" transform="rotate(-90 60 60)"></circle></svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span data-decode="1" style="font:800 36px/1 'JetBrains Mono',monospace;letter-spacing:-.04em">{{ d.score }}</span><span style="font:500 8px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">ASSET SCORE</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">SCORE BREAKDOWN</span>
+        <sc-for list="{{ d.parts }}" as="p" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:110px 1fr 40px;gap:12px;align-items:center">
+            <span style="font:500 13px/1.2 'Space Grotesk',sans-serif">{{ p.label }}<span style="display:block;font:500 9px/1.4 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-3)">WEIGHT {{ p.w }}%</span></span>
+            <span style="height:6px;border-radius:3px;background:var(--well);overflow:hidden"><span style="display:block;height:100%;width:{{ p.v }}%;background:{{ p.c }};box-shadow:{{ p.sh }}"></span></span>
+            <span style="text-align:right;font:700 13px/1 'JetBrains Mono',monospace">{{ p.v }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">WAR DECKS · LAST 10 WEEKS</span><span style="font:500 10px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ d.histTotal }}</span></div>
+        <div style="display:grid;grid-template-columns:44px repeat(4,1fr);gap:4px">
+          <span></span><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);text-align:center">THU</span><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);text-align:center">FRI</span><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);text-align:center">SAT</span><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3);text-align:center">SUN</span>
+          <sc-for list="{{ d.hist }}" as="wk" hint-placeholder-count="10">
+            <span style="font:500 10px/22px 'JetBrains Mono',monospace;color:var(--text-3)">{{ wk.label }}</span>
+            <sc-for list="{{ wk.cells }}" as="c" hint-placeholder-count="4"><span title="{{ c.title }}" style="height:22px;border-radius:3px;background:{{ c.bg }};box-shadow:{{ c.sh }};border:{{ c.bd }};display:flex;align-items:center;justify-content:center;font:600 9px/1 'JetBrains Mono',monospace;color:{{ c.fg }}">{{ c.txt }}</span></sc-for>
+          </sc-for>
+        </div>
+        <sc-if value="{{ d.partial }}" hint-placeholder-val="{{ false }}"><span style="font:500 10px/1.5 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--text-2)">Hatched weeks: not in clan yet. History builds up from the join date.</span></sc-if>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">CLAN 1V1 FRIENDLIES · BASED ON {{ d.fGames }} GAMES</span>
+        <sc-for list="{{ d.friendlies }}" as="f" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:1fr 80px 60px;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--hair);font:500 12px/1 'JetBrains Mono',monospace">
+            <span style="font:500 14px/1.2 'Space Grotesk',sans-serif">vs {{ f.name }}</span>
+            <span style="display:flex;height:4px;border-radius:2px;overflow:hidden;background:var(--ember)"><span style="width:{{ f.pct }}%;background:var(--blue)"></span></span>
+            <span style="text-align:right"><span style="color:var(--blue)">{{ f.w }}W</span> <span style="color:var(--ember)">{{ f.l }}L</span></span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">ROLE HISTORY</span>
+        <sc-for list="{{ d.roles }}" as="r" hint-placeholder-count="2">
+          <div style="display:grid;grid-template-columns:100px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--hair)"><span style="font:500 11px/1.4 'JetBrains Mono',monospace;color:var(--text-3)">{{ r.date }}</span><span style="font:500 14px/1.3 'Space Grotesk',sans-serif">{{ r.txt }}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </aside>
+</sc-if>
+
+<sc-if value="{{ compareOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeCompare }}" style="position:fixed;inset:0;z-index:80;background:rgba(7,8,10,.7);backdrop-filter:blur(4px);animation:oaFade .25s"></div>
+  <div role="dialog" aria-label="Compare members" style="position:fixed;z-index:90;left:50%;top:50%;transform:translate(-50%,-50%);width:min(94vw,880px);max-height:86vh;overflow:auto;padding:24px;background:var(--charcoal);border:1px solid var(--hair);border-radius:10px;box-shadow:0 40px 120px rgba(0,0,0,.6);animation:oaFade .3s">
+    <div style="position:absolute;inset:10px;border:1px solid var(--hair);border-radius:6px;pointer-events:none"></div>
+    <div style="position:relative;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">COMPARE · {{ selCount }} MEMBERS</span><button onClick="{{ closeCompare }}" style="height:30px;padding:0 10px;border:1px solid var(--hair);border-radius:4px;background:none;color:var(--text-1);cursor:pointer;font:500 10px/1 'JetBrains Mono',monospace">CLOSE ×</button></div>
+    <div style="position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+      <sc-for list="{{ compare }}" as="c" hint-placeholder-count="3">
+        <div style="padding:16px;background:var(--obsidian);border:1px solid {{ c.bd }};border-radius:8px;box-shadow:{{ c.sh }};display:flex;flex-direction:column;gap:10px">
+          <span style="font:700 18px/1.1 'JetBrains Mono',monospace;letter-spacing:-.03em">{{ c.name }}</span>
+          <span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ c.tagFg }}">{{ c.tagline }}</span>
+          <sc-for list="{{ c.stats }}" as="s" hint-placeholder-count="6"><div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--hair);font:500 12px/1 'JetBrains Mono',monospace"><span style="color:var(--text-3)">{{ s.k }}</span><span style="color:{{ s.fg }}">{{ s.v }}</span></div></sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+  <div role="status" style="position:fixed;left:50%;bottom:{{ toastBottom }}px;transform:translateX(-50%);z-index:100;padding:12px 18px;background:var(--obsidian);border:1px solid rgba(58,160,255,.6);border-radius:6px;box-shadow:0 0 18px rgba(58,160,255,.35);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--text-1);animation:oaFade .2s">{{ toast }}</div>
+</sc-if>
+
+<sc-if value="{{ syncing }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;right:24px;bottom:{{ toastBottom }}px;z-index:100;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px;background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--hair);border-radius:6px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-2)"><oa-portal size="28"></oa-portal>SYNCING CLAN DATA</div>
+</sc-if>
+
+<sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
+  <nav style="position:fixed;left:0;right:0;bottom:0;z-index:60;height:64px;display:grid;grid-template-columns:repeat(5,1fr);background:var(--glass);backdrop-filter:blur(16px);border-top:1px solid var(--hair)">
+    <a href="Home.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text-2);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><span style="width:16px;height:2px;background:currentColor"></span>HOME</a>
+    <a href="Clans.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text-2);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><span style="width:12px;height:12px;border:1.5px solid currentColor;border-radius:50%"></span>SEARCH</a>
+    <a href="Clan Dashboard.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--blue-hi);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;box-shadow:inset 0 2px 0 #8CCBFF"><span style="width:12px;height:12px;border:1.5px solid currentColor;transform:rotate(45deg)"></span>MY CLAN</a>
+    <a href="Decks.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text-2);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><span style="width:10px;height:14px;border:1.5px solid currentColor;border-radius:2px"></span>DECKS</a>
+    <a href="Cards.dc.html" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--text-2);font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em"><span style="font-size:14px;line-height:10px">···</span>MORE</a>
+  </nav>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const NAMES=['Vexor','NightHollow','ArcanePike','Ser Brannoc','kaiju_kev','Lumi','Quillon','TowerTax','Mossback','R0nin.exe','Halvard','elixir_eli','Saffron','GraveMint','BlueCandle','Okonkwo','Mira.v','Thistle','Pyre','Cobalt Jay','Wren','Fennick','ZeroCycle','Bastion','Ondine','Kestrel','logbait_lou','Morrow','Ashgrove','Nyx','Tamsin','PumpKing','Vale','Corvid','Bram','Iolanthe','Sable','Hexley','Juno','Fjord','Marlow','Odessa','PikeAndShot','Rook','Sorrel','Tiberius','Umber'];
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(42),ri=(a,b)=>Math.floor(a+R()*(b-a+1));
+const TC='0289PYLQGRJCUV',mkTag=()=>'#'+Array.from({length:ri(8,9)},()=>TC[ri(0,13)]).join('');
+const NEW=new Set([21,38,44,46]);
+const fmt=n=>n.toLocaleString('en-US');
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const TODAY=new Date(2026,9,13);
+const dstr=d=>String(d.getDate()).padStart(2,'0')+' '+MON[d.getMonth()]+' '+d.getFullYear();
+const ago=days=>{const d=new Date(TODAY);d.setDate(d.getDate()-days);return d};
+const M=NAMES.map((name,i)=>{
+  const role=i===0?'Leader':i<4?'Co-Leader':i<13?'Elder':'Member';
+  const t=R();let lastH=t<.66?ri(0,22):t<.84?ri(26,70):ri(76,380);if(i<4)lastH=ri(0,9);
+  const tenure=NEW.has(i)?ri(1,6):i<4?ri(380,1100):ri(12,720);
+  if(NEW.has(i))lastH=ri(0,20);
+  const engaged=lastH<72;
+  const days=[0,1,2].map(()=>engaged?(R()<.74?4:ri(1,3)):(R()<.6?0:ri(0,2)));
+  const decks=days.reduce((a,b)=>a+b,0);
+  const fame=days.reduce((a,d)=>a+d*ri(150,225),0);
+  const hist=Array.from({length:10},(_,w)=>(w+1)*7>tenure+3?null:[0,1,2,3].map(()=>engaged?(R()<.72?4:ri(0,3)):(R()<.45?0:ri(0,4))));
+  const trophies=Math.min(10000,Math.max(6400,9950-i*52-ri(0,500)));
+  const league=Math.max(1,Math.min(10,Math.round((trophies-6200)/380)));
+  const rating=league===10?ri(1500,2650):null;
+  const don=engaged?ri(60,820):ri(0,70),recv=ri(0,340);
+  const warWin=ri(36,74),fGames=ri(0,38),fWin=fGames?ri(28,78):null;
+  const hv=hist.filter(Boolean),hp=hv.length?hv.flat().reduce((a,b)=>a+b,0)/(hv.length*16):decks/12;
+  const comp={war:Math.round((decks/12)*60+hp*40),don:Math.min(100,Math.round(don/7.5)),act:lastH<24?100:lastH<72?Math.round(100-(lastH-24)*.8):Math.max(0,Math.round(58-(lastH-72)/5)),bat:Math.round(Math.max(0,Math.min(1,(warWin-30)/45))*100),ten:Math.min(100,Math.round(tenure/3.65))};
+  return {id:i,name,tag:mkTag(),role,lastH,tenure,days,decks,fame,hist,trophies,league,rating,don,recv,warWin,fGames,fWin,comp,trend:ri(-9,9)};
+});
+const KEYS=['war','don','act','bat','ten'];
+const PART={war:{label:'War',c:'var(--blue)',hint:'Decks used this week + last 10 weeks'},don:{label:'Donations',c:'var(--text-1)',hint:'Cards donated this week'},act:{label:'Activity',c:'var(--text-2)',hint:'Hours since last seen'},bat:{label:'Win rate',c:'var(--text-3)',hint:'War battle win % (tracked battles)'},ten:{label:'Tenure',c:'#4a4e57',hint:'Days in clan, maxes at 1 year'}};
+const DEF={war:35,don:20,act:20,bat:15,ten:10};
+const scoreOf=(m,w)=>{const s=KEYS.reduce((a,k)=>a+w[k],0)||1;return Math.round(KEYS.reduce((a,k)=>a+m.comp[k]*w[k],0)/s)};
+const cell=(n,pending)=>{
+  if(pending)return{bg:'transparent',sh:'none',bd:'1px dashed var(--hair)',fg:'var(--text-3)',txt:'·',title:'Not played yet'};
+  if(n==null)return{bg:'repeating-linear-gradient(135deg,var(--well) 0 3px,transparent 3px 6px)',sh:'none',bd:'1px solid var(--hair)',fg:'transparent',txt:'',title:'Not in clan'};
+  const a=[0,.22,.42,.66,1][n];
+  return{bg:n?`rgba(58,160,255,${a})`:'var(--well)',sh:n===4?'0 0 10px rgba(58,160,255,.6),inset 0 0 0 1px rgba(140,203,255,.7)':n?'none':'inset 0 1px 2px rgba(0,0,0,.6)',bd:n?'0':'1px solid var(--hair)',fg:n>=3?'#07080A':n?'var(--text-1)':'var(--text-3)',txt:String(n),title:n+' decks'};
+};
+const ls=h=>h<24?{lsFg:'var(--text-1)',lsDot:'var(--blue)',lsRing:'var(--blue)',lsGlow:'0 0 6px rgba(58,160,255,.8)',lsLabel:'ACTIVE',cls:'active'}:h<72?{lsFg:'var(--text-2)',lsDot:'transparent',lsRing:'var(--text-2)',lsGlow:'none',lsLabel:'AT RISK',cls:'risk'}:{lsFg:'var(--ember)',lsDot:'transparent',lsRing:'var(--ember)',lsGlow:'none',lsLabel:'INACTIVE',cls:'inactive'};
+const lsTxt=h=>h<1?'now':h<24?h+'h':Math.floor(h/24)+'d';
+const ten=d=>d<30?d+'d':d<365?Math.round(d/30)+'mo':(d/365).toFixed(1)+'y';
+const RACE=[{name:'Gilded Ash',fame:9105,decks:171},{name:'Iron Veil',fame:8420,us:1},{name:'Northwatch',fame:7360,decks:128},{name:'Kestrel Court',fame:6890,decks:119},{name:'Saltmarsh',fame:5210,decks:96}];
+const PAST=Array.from({length:10},(_,i)=>({label:'Week '+(41-i),rank:[2,1,1,3,2,1,4,2,1,2][i],fame:[40120,43880,42210,36540,39900,44020,31870,38760,42940,39300][i],tr:[20,100,100,-10,20,100,-50,20,100,20][i]}));
+const EVT=[[0,'joined','Joined','Fjord'],[1,'promoted','Promoted','Saffron','to Elder'],[2,'left','Left','Brightwater'],[3,'joined','Joined','Sorrel'],[5,'kicked','Kicked','Hollis','by NightHollow'],[6,'joined','Joined','Umber'],[9,'demoted','Demoted','Thistle','to Member'],[12,'joined','Joined','Wren'],[15,'left','Left','Corran'],[19,'promoted','Promoted','ArcanePike','to Co-Leader'],[24,'kicked','Kicked','zzSleepy','by Vexor'],[31,'promoted','Promoted','GraveMint','to Elder'],[40,'left','Left','Maelis'],[52,'joined','Joined','Iolanthe']];
+const EV={joined:{icon:'+',ring:'var(--blue)'},left:{icon:'−',ring:'var(--text-2)'},kicked:{icon:'×',ring:'var(--ember)'},promoted:{icon:'▲',ring:'var(--blue-hi)'},demoted:{icon:'▼',ring:'var(--text-2)'}};
+const FORMER=[['Brightwater','Left',2,212,'3,410','1,280'],['Hollis','Kicked',5,48,'0','40'],['Corran','Left',15,401,'9,870','4,120'],['zzSleepy','Kicked',24,19,'200','0'],['Maelis','Left',40,288,'7,140','2,260'],['Tobiah','Left',66,95,'2,950','610']];
+class Component extends DCLogic {
+  state={tab:'members',sort:{k:'score',d:-1},q:'',fRole:'all',fAct:'all',fWar:'all',fTro:0,fNew:false,sel:{},open:null,compare:false,toast:'',w:{...DEF},vw:typeof window!=='undefined'?window.innerWidth:1440,openWeek:null,evF:'all',lastSync:'04:12',syncing:false,left:14*3600+22*60+8,search:'',sFocus:false,theme:'dark'};
+  componentDidMount(){
+    try{const w=JSON.parse(localStorage.getItem('oa-weights')||'null');if(w)this.setState({w})}catch(e){}
+    this.setState({theme:window.OA?OA.theme():'dark'});
+    this._rs=()=>this.setState({vw:window.innerWidth});addEventListener('resize',this._rs);
+    this._kd=e=>{if(e.key==='Escape')this.setState({open:null,compare:false})};addEventListener('keydown',this._kd);
+    this._iv=setInterval(()=>this.setState(s=>({left:Math.max(0,s.left-1)})),1000);
+  }
+  componentWillUnmount(){removeEventListener('resize',this._rs);removeEventListener('keydown',this._kd);clearInterval(this._iv)}
+  flash(t){this.setState({toast:t});clearTimeout(this._tt);this._tt=setTimeout(()=>this.setState({toast:''}),1800)}
+  setW(k,v){this.setState(s=>{const w={...s.w,[k]:v};try{localStorage.setItem('oa-weights',JSON.stringify(w))}catch(e){}return{w}})}
+  chip(on){return{bd:on?'rgba(58,160,255,.7)':'var(--hair)',bg:on?'rgba(58,160,255,.12)':'transparent',fg:on?'var(--text-1)':'var(--text-2)',sh:on?'0 0 12px rgba(58,160,255,.3)':'none',on}}
+  renderVals(){
+    const s=this.state,w=s.w,desktop=s.vw>=760;
+    const all=M.map(m=>({...m,score:scoreOf(m,w),def:scoreOf(m,DEF)}));
+    const byScore=[...all].sort((a,b)=>b.score-a.score);byScore.forEach((m,i)=>m.rank=i+1);
+    const byDef=[...all].sort((a,b)=>b.def-a.def);byDef.forEach((m,i)=>m.defRank=i+1);
+    const q=s.q.trim().toLowerCase();
+    let list=all.filter(m=>(!q||m.name.toLowerCase().includes(q)||m.tag.toLowerCase().includes(q))&&(s.fRole==='all'||m.role===s.fRole)&&(s.fAct==='all'||ls(m.lastH).cls===s.fAct)&&(s.fWar==='all'||(s.fWar==='full'?m.decks===12:s.fWar==='none'?m.decks===0:m.decks>0&&m.decks<12))&&m.trophies>=s.fTro&&(!s.fNew||m.tenure<7));
+    const SK={rank:m=>m.rank,name:m=>m.name.toLowerCase(),role:m=>['Leader','Co-Leader','Elder','Member'].indexOf(m.role),trophies:m=>m.trophies,league:m=>m.league*10000+(m.rating||0),lastSeen:m=>m.lastH,don:m=>m.don,recv:m=>m.recv,fame:m=>m.fame,decks:m=>m.decks,warWin:m=>m.warWin,fWin:m=>m.fWin??-1,score:m=>m.score,tenure:m=>m.tenure,trend:m=>m.trend};
+    const f=SK[s.sort.k];list.sort((a,b)=>{const x=f(a),y=f(b);return(x<y?-1:x>y?1:0)*s.sort.d});
+    const COLS=[['rank','#','left'],['name','Member','left'],['role','Role','left'],['trophies','Trophies','right'],['league','PoL','left'],['lastSeen','Last seen','left'],['don','Don.','right'],['recv','Recv.','right'],['fame','Fame','right'],['decks','War decks','right'],['warWin','War W%','right'],['fWin','1v1','right'],['score','Asset','left'],['tenure','In clan','right'],['trend','Trend','right']];
+    const cols=COLS.map(([k,label,align])=>{const on=s.sort.k===k;return{label,align,justify:align==='right'?'flex-end':'flex-start',fg:on?'var(--text-1)':'var(--text-3)',arrow:on?(s.sort.d<0?'▼':'▲'):'',aria:on?(s.sort.d<0?'descending':'ascending'):'none',onClick:()=>this.setState(st=>({sort:{k,d:st.sort.k===k?-st.sort.d:(k==='name'||k==='rank'||k==='lastSeen'||k==='role'?1:-1)}}))}});
+    const open=id=>()=>this.setState({open:id});
+    const stop=e=>e.stopPropagation();
+    const roleSty=r=>r==='Leader'?{roleBd:'rgba(230,179,74,.6)',roleFg:'var(--gold)'}:r==='Co-Leader'?{roleBd:'var(--frame)',roleFg:'var(--text-1)'}:r==='Elder'?{roleBd:'var(--hair)',roleFg:'var(--text-1)'}:{roleBd:'var(--hair)',roleFg:'var(--text-2)'};
+    const gauge=sc=>({gDash:`${sc} 100`,gOp:(.35+sc/100*.65).toFixed(2),gGlow:sc>=70?`drop-shadow(0 0 ${Math.round(sc/20)}px rgba(58,160,255,.8))`:'none',gGlowBig:`drop-shadow(0 0 ${Math.round(sc/8)}px rgba(58,160,255,.7))`});
+    const sw=KEYS.reduce((a,k)=>a+w[k],0)||1;
+    const rows=list.map(m=>({...m,...roleSty(m.role),...ls(m.lastH),...gauge(m.score),isLeader:m.role==='Leader',isCo:m.role==='Co-Leader',isElder:m.role==='Elder',isMember:m.role==='Member',isNew:m.tenure<7,rankTxt:String(m.rank).padStart(2,'0'),trophiesTxt:fmt(m.trophies),polTxt:m.rating?fmt(m.rating):'—',lsTxt:lsTxt(m.lastH),donTxt:fmt(m.don),recvTxt:fmt(m.recv),fameTxt:fmt(m.fame),decksFg:m.decks===0?'var(--ember)':m.decks===12?'var(--blue-hi)':'var(--text-1)',dayCells:[...m.days.map(d=>cell(d)),cell(0,true)],fTxt:m.fWin==null?'—':m.fWin+'%',fGamesTxt:m.fGames?m.fGames+'g':'',segs:KEYS.map(k=>({w:(m.comp[k]*w[k]/sw).toFixed(1),c:PART[k].c})),tenureTxt:ten(m.tenure),trendTxt:m.trend>2?'▲ '+m.trend:m.trend<-2?'▼ '+(-m.trend):'— 0',trendFg:m.trend>2?'var(--blue)':m.trend<-2?'var(--ember)':'var(--text-3)',checked:!!s.sel[m.id],toggle:()=>this.setState(st=>({sel:{...st.sel,[m.id]:!st.sel[m.id]}})),open:open(m.id),stop,key:e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();this.setState({open:m.id})}},rowBg:s.open===m.id?'linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px)':'transparent'}));
+    const selIds=Object.keys(s.sel).filter(k=>s.sel[k]).map(Number);
+    const selM=all.filter(m=>selIds.includes(m.id));
+    const act24=all.filter(m=>m.lastH<24).length,act3=all.filter(m=>m.lastH<72).length,act7=all.filter(m=>m.lastH<168).length;
+    const decksToday=all.reduce((a,m)=>a+m.days[2],0);
+    const decksWeek=all.reduce((a,m)=>a+m.decks,0);
+    const avg=Math.round(all.reduce((a,m)=>a+m.score,0)/all.length);
+    const flagged=all.filter(m=>m.lastH>=72||m.decks===0).length;
+    const spark=arr=>{const mx=Math.max(...arr),mn=Math.min(...arr);return arr.map((v,i)=>`${(i/(arr.length-1)*64).toFixed(1)},${(18-(v-mn)/((mx-mn)||1)*16).toFixed(1)}`).join(' ')};
+    const tiles=[
+      {label:'Members',value:String(all.length),unit:'/50',delta:'3 slots open',deltaColor:'var(--text-3)',spark:spark([44,45,45,46,44,45,47,47])},
+      {label:'Active · 24h',value:String(act24),unit:'',delta:`3d ${act3} · 7d ${act7}`,deltaColor:'var(--text-2)',spark:spark([28,31,30,33,29,32,31,act24])},
+      {label:'War participation',value:String(Math.round(decksWeek/(all.length*12)*100)),unit:'%',delta:'▲ 4 vs last week',deltaColor:'var(--blue)',spark:spark([71,74,69,78,80,76,79,82])},
+      {label:'Decks today',value:String(decksToday),unit:'/200',delta:`${200-decksToday} remaining`,deltaColor:'var(--text-2)',spark:spark([0,30,62,90,118,140,decksToday])},
+      {label:'Avg asset score',value:String(avg),unit:'/100',delta:'▼ 2 vs last week',deltaColor:'var(--ember)',spark:spark([64,66,65,63,64,62,avg])},
+      {label:'Flagged inactive',value:String(flagged),unit:'',delta:'3+ days or 0 decks',deltaColor:'var(--ember)',spark:spark([6,5,7,8,6,9,flagged])}
+    ];
+    const tabs=[['members','Members',all.length],['war','War','D3'],['roster','Roster changes',EVT.length],['score','Score settings','']].map(([k,label,count])=>({label,count,active:s.tab===k,fg:s.tab===k?'var(--text-1)':'var(--text-3)',sh:s.tab===k?'inset 0 -2px 0 #8CCBFF,0 8px 16px -10px rgba(58,160,255,.9)':'none',onClick:()=>this.setState({tab:k})}));
+    const grp=(label,key,opts)=>({label,chips:opts.map(([v,l])=>({label:l,...this.chip(s[key]===v),onClick:()=>this.setState({[key]:s[key]===v&&v!=='all'?'all':v})}))});
+    const filterGroups=[grp('Role','fRole',[['all','All'],['Leader','Leader'],['Co-Leader','Co'],['Elder','Elder'],['Member','Member']]),grp('Activity','fAct',[['all','All'],['active','Active'],['risk','At risk'],['inactive','Inactive']]),grp('War','fWar',[['all','All'],['full','All decks'],['partial','Partial'],['none','None']]),{label:'More',chips:[{label:s.fTro?'≥ '+fmt(s.fTro):'Trophies: any',...this.chip(!!s.fTro),onClick:()=>this.setState(st=>({fTro:[0,8000,9000,9500][([0,8000,9000,9500].indexOf(st.fTro)+1)%4]}))},{label:'New < 7d',...this.chip(s.fNew),onClick:()=>this.setState(st=>({fNew:!st.fNew}))}]}];
+    const promo=byScore.filter(m=>m.role==='Member'&&m.lastH<72).slice(0,4).map(m=>({name:m.name,why:`${m.decks}/12 decks · ${fmt(m.don)} donated · ${ten(m.tenure)} in clan`,role:'Member',score:m.score,fg:'var(--blue-hi)',open:open(m.id)}));
+    const risk=[...all].filter(m=>m.lastH>=72||m.decks===0).sort((a,b)=>b.lastH-a.lastH).slice(0,4).map(m=>({name:m.name,why:`Last seen ${lsTxt(m.lastH)} ago · ${m.decks} war decks`,role:m.role,score:m.score,fg:'var(--ember)',open:open(m.id)}));
+    const recs=[{title:'Promotion candidates',rule:'Member · score ≥ top · active',items:promo},{title:'At risk',rule:'3+ days away or 0 war decks',items:risk}];
+    // war
+    const race=RACE.map(c=>c.us?{...c,decks:decksToday}:c).sort((a,b)=>b.fame-a.fame).map((c,i)=>({rank:i+1,name:c.name,us:c.us?'● YOUR CLAN':'',nameFg:c.us?'var(--text-1)':'var(--text-2)',rankFg:i===0?'var(--gold)':'var(--text-3)',boat:Math.round(c.fame/100),fameTxt:fmt(c.fame),decks:c.decks,bar:c.us?'var(--blue-hi)':'var(--text-3)',barSh:c.us?'0 0 10px rgba(58,160,255,.8)':'none'}));
+    const L=s.left,countdown=[Math.floor(L/3600),Math.floor(L%3600/60),L%60].map(n=>String(n).padStart(2,'0')).join(':');
+    const dayPips=['Thu','Fri','Sat','Sun'].map((d,i)=>({label:d.toUpperCase()+(i===2?' · NOW':''),bg:i<2?'var(--text-2)':i===2?'var(--blue-hi)':'var(--hair)',sh:i===2?'0 0 10px rgba(58,160,255,.8)':'none',fg:i===2?'var(--blue-hi)':'var(--text-3)'}));
+    const grid=[...all].sort((a,b)=>a.decks-b.decks||a.name.localeCompare(b.name)).map(m=>({name:m.name,open:open(m.id),cells:[...m.days.map(d=>cell(d)),cell(0,true)],total:m.decks+'/16',totFg:m.decks===0?'var(--ember)':'var(--text-1)',flag:m.decks===0?'✕ NO DECKS':''}));
+    const legend=[0,1,2,3,4].map(n=>cell(n));
+    const past=PAST.map((p,i)=>({label:p.label,rankTxt:'#'+p.rank,rankFg:p.rank===1?'var(--gold)':'var(--text-1)',fameTxt:fmt(p.fame),trTxt:(p.tr>0?'▲ +':'▼ ')+p.tr+' TR',trFg:p.tr>0?'var(--blue)':'var(--ember)',open:s.openWeek===i,bg:s.openWeek===i?'var(--obsidian)':'transparent',chev:s.openWeek===i?'−':'+',toggle:()=>this.setState(st=>({openWeek:st.openWeek===i?null:i})),members:all.filter(m=>m.hist[i]).map(m=>({name:m.name,d:m.hist[i].reduce((a,b)=>a+b,0)})).sort((a,b)=>b.d-a.d).slice(0,12).map(m=>({name:m.name,decks:m.d,fame:fmt(m.d*190),fg:m.d===0?'var(--ember)':'var(--text-2)'}))}));
+    const evChips=[['all','All'],['joined','Joins'],['left','Leaves'],['kicked','Kicks'],['promoted','Promotions'],['demoted','Demotions']].map(([v,l])=>({label:l,...this.chip(s.evF===v),onClick:()=>this.setState({evF:v})}));
+    const events=EVT.filter(e=>s.evF==='all'||e[1]===s.evF).map(([d,t,type,name,extra])=>({date:dstr(ago(d)).slice(0,6),type,name,verb:{joined:'joined the clan',left:'left the clan',kicked:'was removed '+(extra||''),promoted:'promoted '+(extra||''),demoted:'demoted '+(extra||'')}[t],...EV[t]}));
+    const former=FORMER.map(([name,how,d,stayed,fame,don])=>({name,how:how.toUpperCase(),howFg:how==='Kicked'?'var(--ember)':'var(--text-3)',left:dstr(ago(d)),stayed:stayed+'d',fame,don}));
+    const sliders=KEYS.map(k=>({label:PART[k].label,c:PART[k].c,hint:PART[k].hint,v:w[k],pct:Math.round(w[k]/sw*100),onChange:e=>this.setW(k,+e.target.value)}));
+    const preview=byScore.slice(0,12).map(m=>{const mv=m.defRank-m.rank;return{rank:String(m.rank).padStart(2,'0'),name:m.name,score:m.score,mv:mv>0?'▲ '+mv:mv<0?'▼ '+(-mv):'—',mvFg:mv>0?'var(--blue)':mv<0?'var(--ember)':'var(--text-3)'}});
+    // drawer
+    const om=s.open!=null?all.find(m=>m.id===s.open):null;
+    let d={};
+    if(om){
+      const r2=rng(om.id*7+3),pick=[...all].filter(x=>x.id!==om.id).sort(()=>r2()-.5).slice(0,5);
+      let left=om.fGames;const fr=pick.map((p,i)=>{const g=i===4?left:Math.min(left,Math.floor(r2()*9)+1);left-=g;const wn=Math.round(g*(om.fWin||50)/100*(0.7+r2()*.6));const W=Math.min(g,wn);return{name:p.name,w:W,l:g-W,pct:g?Math.round(W/g*100):0,g}}).filter(f=>f.g>0);
+      const jd=ago(om.tenure);
+      const roles=[{date:dstr(jd),txt:'Joined as Member'}];
+      if(om.role!=='Member'){const pd=ago(Math.round(om.tenure*.6));roles.unshift({date:dstr(pd),txt:'Promoted to Elder'});if(om.role==='Co-Leader'||om.role==='Leader')roles.unshift({date:dstr(ago(Math.round(om.tenure*.3))),txt:'Promoted to '+om.role});}
+      const histTot=om.hist.filter(Boolean).flat().reduce((a,b)=>a+b,0),histMax=om.hist.filter(Boolean).length*16;
+      d={...om,...ls(om.lastH),...gauge(om.score),rankTxt:String(om.rank).padStart(2,'0'),joined:dstr(jd),lsTxt:lsTxt(om.lastH),
+        parts:KEYS.map(k=>({label:PART[k].label,w:Math.round(w[k]/sw*100),v:om.comp[k],c:k==='war'?'var(--blue)':'var(--text-2)',sh:k==='war'?'0 0 8px rgba(58,160,255,.7)':'none'})),
+        hist:om.hist.map((h,i)=>({label:'W'+(41-i),cells:h?h.map(n=>cell(n)):[0,1,2,3].map(()=>cell(null))})),partial:om.hist.some(h=>!h),histTotal:histMax?`${histTot}/${histMax} decks`:'No weeks yet',
+        friendlies:fr.length?fr:[{name:'No friendlies tracked',w:0,l:0,pct:0}],fGames:om.fGames,roles};
+    }
+    const idx=om?rows.findIndex(r=>r.id===om.id):-1;
+    const nav=dir=>()=>{if(!rows.length)return;const n=rows[(idx+dir+rows.length)%rows.length];this.setState({open:n.id})};
+    const compare=selM.slice(0,4).map((m,i,arr)=>{const best=Math.max(...arr.map(x=>x.score));return{name:m.name,tagline:m.role.toUpperCase()+' · '+m.tag,bd:m.score===best?'rgba(58,160,255,.7)':'var(--hair)',sh:m.score===best?'0 0 18px rgba(58,160,255,.3)':'none',tagFg:m.score===best?'var(--blue-hi)':'var(--text-3)',stats:[['Asset score',m.score],['War decks',m.decks+'/16'],['Fame',fmt(m.fame)],['Donations',fmt(m.don)],['Last seen',lsTxt(m.lastH)],['War W%',m.warWin+'%'],['In clan',ten(m.tenure)]].map(([k,v])=>({k,v,fg:'var(--text-1)'}))}});
+    const sv=s.search.replace(/^#/,'').toUpperCase(),validTag=/^[0289PYLQGRJCUV]{3,12}$/.test(sv);
+    return {
+      desktop,wide:s.vw>=1100,showSearch:s.vw>=1240,mobile:!desktop,footPad:desktop?36:100,toastBottom:desktop?24:84,
+      themeLabel:s.theme==='light'?'◐ Marble':'◑ Obsidian',toggleTheme:()=>{const t=window.OA?OA.toggleTheme():'dark';this.setState({theme:t})},
+      search:s.search,onSearch:e=>this.setState({search:e.target.value}),onSearchFocus:()=>this.setState({sFocus:true}),onSearchBlur:()=>this.setState({sFocus:false}),
+      onSearchKey:e=>{if(e.key==='Enter'){if(validTag)location.href='Player Profile.dc.html';else this.flash('Tags use 0 2 8 9 P Y L Q G R J C U V')}},
+      searchBd:s.sFocus?'rgba(58,160,255,.7)':'var(--hair)',searchSh:s.sFocus?'0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45)':'none',
+      searchHint:!sv?'⌘K':validTag?'VALID ↵':'NAME',searchHintColor:validTag?'var(--blue-hi)':'var(--text-3)',
+      lastSync:s.lastSync,syncing:s.syncing,refreshLabel:s.syncing?'Syncing…':'↻ Refresh',runeDur:s.syncing?'.8s':'4s',
+      refresh:()=>{if(s.syncing)return;this.setState({syncing:true});setTimeout(()=>{const n=new Date();this.setState({syncing:false,lastSync:String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')});this.flash('Clan data refreshed')},1600)},
+      copyTag:()=>{try{navigator.clipboard.writeText('#9Q2LUY')}catch(e){}this.flash('Tag #9Q2LUY copied')},
+      tiles,tabs,tabMembers:s.tab==='members',tabWar:s.tab==='war',tabRoster:s.tab==='roster',tabScore:s.tab==='score',
+      q:s.q,onQ:e=>this.setState({q:e.target.value}),filterGroups,shownLabel:`Showing ${rows.length} of ${all.length}`,
+      cols,rows,noRows:!rows.length,allSel:rows.length>0&&rows.every(r=>s.sel[r.id]),toggleAll:()=>{const on=!(rows.length&&rows.every(r=>s.sel[r.id]));const sel={...s.sel};rows.forEach(r=>sel[r.id]=on);this.setState({sel})},
+      hasSel:selIds.length>0,selCount:selIds.length,clearSel:()=>this.setState({sel:{}}),
+      openCompare:()=>{if(selIds.length<2)return this.flash('Select at least 2 members');this.setState({compare:true})},closeCompare:()=>this.setState({compare:false}),compareOpen:s.compare,compare,
+      exportCsv:()=>{const h='name,tag,role,trophies,last_seen_h,donations,received,fame,war_decks,war_win,asset_score';const body=selM.map(m=>[m.name,m.tag,m.role,m.trophies,m.lastH,m.don,m.recv,m.fame,m.decks,m.warWin,m.score].join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([h+'\n'+body],{type:'text/csv'}));a.download='iron-veil-members.csv';a.click();this.flash(`Exported ${selM.length} rows`)},
+      copyNames:()=>{try{navigator.clipboard.writeText(selM.map(m=>m.name).join(', '))}catch(e){}this.flash(`Copied ${selM.length} names`)},
+      recs,race,countdown,decksToday,dayPips,grid,legend,past,evChips,events,former,sliders,preview,resetWeights:()=>{try{localStorage.removeItem('oa-weights')}catch(e){}this.setState({w:{...DEF}})},
+      drawerOpen:!!om,d,closeDrawer:()=>this.setState({open:null}),prevMember:nav(-1),nextMember:nav(1),
+      hasToast:!!s.toast,toast:s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+@keyframes oaSpin{to{transform:translate(-50%,-50%) rotateX(72deg) rotateZ(360deg)}}
+@keyframes oaFade{from{opacity:0}to{opacity:1}}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./cards.js"></script>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:var(--void);color:var(--text-1);overflow-x:hidden">
+<oa-grain></oa-grain>
+<dc-import name="SiteNav" active="cards" hint-size="100%,64px"></dc-import>
+
+<section data-screen-label="Cards header" style="position:relative;height:clamp(380px,46vh,500px);overflow:hidden;background:#07080A;color:#F3F4F6">
+  <div style="position:absolute;inset:0;filter:grayscale(1) brightness(.5)"><image-slot id="scene-obelisks" shape="rect" placeholder="Scene · circle of black marble obelisks around a glowing ring portal"></image-slot></div>
+  <div style="position:absolute;left:62%;top:58%;width:min(40vw,460px);aspect-ratio:1;border-radius:50%;border:2px solid #8CCBFF;box-shadow:0 0 30px rgba(58,160,255,.7),inset 0 0 40px rgba(58,160,255,.5);transform:translate(-50%,-50%) rotateX(72deg);animation:oaSpin 24s linear infinite;pointer-events:none"></div>
+  <div style="position:absolute;left:62%;top:58%;width:min(20vw,220px);height:min(5vw,60px);border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(140,203,255,.6),transparent);pointer-events:none"></div>
+  <oa-fog density="1"></oa-fog>
+  <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(7,8,10,.4),rgba(7,8,10,0) 35%,rgba(7,8,10,.5) 72%,#07080A)"></div>
+  <div style="position:absolute;inset:14px;border:1px solid rgba(255,255,255,.55);border-radius:4px;pointer-events:none"></div>
+  <div style="position:relative;height:100%;max-width:1440px;margin:0 auto;padding:40px clamp(28px,4vw,64px);display:flex;flex-direction:column;justify-content:flex-end;gap:14px;pointer-events:none">
+    <span style="font:500 10px/1.4 'JetBrains Mono',monospace;letter-spacing:.14em;color:#A4A9B4">{{ countLine }}</span>
+    <h1 data-reveal="1" style="margin:0;font:800 clamp(46px,8vw,124px)/.86 'JetBrains Mono',monospace;letter-spacing:-.06em">{{ title }}</h1>
+  </div>
+</section>
+
+<main style="max-width:1440px;margin:0 auto;padding:28px clamp(16px,3vw,40px) 80px;display:flex;flex-direction:column;gap:24px">
+  <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:center;padding:60px"><oa-portal size="72"></oa-portal></div></sc-if>
+  <sc-if value="{{ inList }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--hair)">
+        <label style="display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;background:var(--obsidian);border:1px solid var(--hair);border-radius:6px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">FIND</span><input value="{{ q }}" onChange="{{ onQ }}" placeholder="Card name" style="width:150px;background:none;border:0;outline:none;color:var(--text-1);font:500 13px/1 'Space Grotesk',sans-serif"></input></label>
+        <sc-for list="{{ filters }}" as="g" hint-placeholder-count="3">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">{{ g.label }}</span><sc-for list="{{ g.chips }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.onClick }}" aria-pressed="{{ c.on }}" style="height:28px;padding:0 10px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;cursor:pointer">{{ c.label }}</button></sc-for></div>
+        </sc-for>
+        <span style="margin-left:auto;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">{{ shown }}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:24px 14px">
+        <sc-for list="{{ list }}" as="c" hint-placeholder-count="24">
+          <button onClick="{{ c.open }}" aria-label="{{ c.name }}" style="padding:0;background:none;border:0;cursor:pointer;text-align:left;color:var(--text-1)">
+            <dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.img }}" rarity="{{ c.rarity }}" evo="{{ c.evo }}" hero="{{ c.hero }}" elixir="{{ c.elixir }}" size="M" show-label="{{ true }}" hint-size="68px,130px"></dc-import>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ inDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:32px;animation:oaFade .3s">
+      <button onClick="{{ back }}" style="align-self:flex-start;background:none;border:0;padding:0;color:var(--blue);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer">← ALL CARDS</button>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:start">
+        <div style="position:relative;padding:28px;background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:20px">
+          <div style="position:absolute;inset:12px;border:1px solid var(--hair);border-radius:4px;pointer-events:none"></div>
+          <div style="position:relative;display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ artTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.onClick }}" style="height:30px;padding:0 12px;border-radius:4px;border:1px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }};box-shadow:{{ t.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;cursor:pointer">{{ t.label }}</button></sc-for></div>
+          <div style="position:relative;display:flex;justify-content:center;padding:20px 0">
+            <dc-import name="CardTile" slug="{{ d.slug }}" label="{{ d.name }}" img="{{ d.art }}" img2="{{ d.heroImg }}" split="{{ d.split }}" rarity="{{ d.rarity }}" evo="{{ d.isEvo }}" hero="{{ d.isHero }}" elixir="{{ d.elixir }}" size="XL" hint-size="150px,221px"></dc-import>
+          </div>
+          <div style="position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:6px;overflow:hidden">
+            <sc-for list="{{ d.facts }}" as="f" hint-placeholder-count="6"><div style="padding:12px 14px;background:var(--obsidian);display:flex;flex-direction:column;gap:6px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">{{ f.k }}</span><span style="font:700 15px/1.1 'JetBrains Mono',monospace;color:{{ f.fg }}">{{ f.v }}</span></div></sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <div style="display:flex;flex-direction:column;gap:10px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">{{ d.rarityUpper }} · {{ d.typeUpper }}</span><h2 style="margin:0;font:800 clamp(36px,5vw,72px)/.9 'JetBrains Mono',monospace;letter-spacing:-.055em">{{ d.nameUpper }}</h2></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">META · LAST 24H · USAGE AND WIN % PER MODE</span>
+            <sc-for list="{{ d.modes }}" as="m" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:130px 1fr 54px 60px;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--hair)">
+                <span style="font:500 13px/1.2 'Space Grotesk',sans-serif">{{ m.mode }}</span>
+                <span style="height:4px;border-radius:2px;background:var(--well)"><span style="display:block;height:100%;width:{{ m.useW }}%;background:var(--text-1)"></span></span>
+                <span style="text-align:right;font:600 12px/1 'JetBrains Mono',monospace">{{ m.use }}%</span>
+                <span style="text-align:right;font:700 12px/1 'JetBrains Mono',monospace;color:{{ m.fg }}">{{ m.win }}%</span>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ d.evo }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div style="padding:16px;border:1px solid rgba(163,91,255,.5);border-radius:6px;box-shadow:0 0 18px rgba(163,91,255,.15);display:flex;flex-direction:column;gap:8px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:#C79BFF">◆ EVOLVED</span><span style="font:800 26px/1 'JetBrains Mono',monospace">{{ d.evoWin }}%</span><span style="font:500 10px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ d.evoShare }}% OF PLAYS</span></div>
+              <div style="padding:16px;border:1px solid var(--hair);border-radius:6px;display:flex;flex-direction:column;gap:8px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">NON-EVOLVED</span><span style="font:800 26px/1 'JetBrains Mono',monospace">{{ d.baseWin }}%</span><span style="font:500 10px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ d.baseShare }}% OF PLAYS</span></div>
+            </div>
+          </sc-if>
+          <a href="Decks.dc.html" style="font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em">TOP DECKS WITH {{ d.nameUpper }} →</a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,140px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const RAR=[['all','All'],['common','Common'],['rare','Rare'],['epic','Epic'],['legendary','Legendary'],['champion','Champion'],['tower','Tower']];
+class Component extends DCLogic {
+  state={cards:null,q:'',rar:'all',el:'all',cap:'all',open:null,art:'base'};
+  componentDidMount(){(window.OACards||Promise.resolve([])).then(c=>this.setState({cards:c}))}
+  chip(on){return{bd:on?'rgba(58,160,255,.7)':'var(--hair)',bg:on?'rgba(58,160,255,.12)':'transparent',fg:on?'var(--text-1)':'var(--text-2)',sh:on?'0 0 12px rgba(58,160,255,.3)':'none',on}}
+  renderVals(){
+    const s=this.state,cards=s.cards||[],q=s.q.trim().toLowerCase();
+    const list=cards.filter(c=>(!q||c.name.toLowerCase().includes(q))&&(s.rar==='all'||c.rarity===s.rar)&&(s.el==='all'||(s.el==='6+'?(+c.elixir>=6):c.elixir===s.el))&&(s.cap==='all'||(s.cap==='evo'?c.evo:s.cap==='hero'?c.hero:c.evo&&c.hero))).map(c=>({...c,open:()=>{this.setState({open:c.slug,art:'base'});scrollTo({top:0})}}));
+    const grp=(label,key,opts)=>({label,chips:opts.map(([v,l])=>({label:l.toUpperCase(),...this.chip(s[key]===v),onClick:()=>this.setState({[key]:v})}))});
+    const C=s.open?cards.find(c=>c.slug===s.open):null;let d={facts:[],modes:[]};
+    if(C){const r=rng(C.name.length*97+C.elixir*3);const both=C.evo&&C.hero;const isEvo=s.art==='evo'&&C.evo,isHero=s.art==='hero'&&C.hero,split=s.art==='split'&&both;
+      const evoShare=Math.round(35+r()*50);
+      d={...C,isEvo:isEvo||split,isHero:isHero||split,split,heroImg:C.heroImg||'',art:isEvo?C.evoImg:isHero?C.heroImg:split?C.evoImg:C.img,nameUpper:C.name.toUpperCase(),rarityUpper:C.rarityName.toUpperCase(),typeUpper:C.type.toUpperCase(),
+        facts:[['ELIXIR',C.elixir??'—'],['RARITY',C.rarityName],['TYPE',C.type],['MAX LEVEL','16'],['EVOLUTION',C.evo?'YES':'—'],['HERO',C.hero?'YES':'—']].map(([k,v])=>({k,v:String(v),fg:k==='EVOLUTION'&&C.evo?'#C79BFF':k==='HERO'&&C.hero?'var(--gold)':'var(--text-1)'})),
+        modes:['Path of Legends','Ladder','Clan War','2v2','Challenges'].map(mode=>{const u=+(2+r()*24).toFixed(1),w=+(45+r()*11).toFixed(1);return{mode,use:u.toFixed(1),useW:Math.min(100,u*3.5),win:w.toFixed(1),fg:w>=53?'var(--blue-hi)':w<48?'var(--ember)':'var(--text-1)'}}),
+        evoWin:(50+r()*6).toFixed(1),baseWin:(47+r()*5).toFixed(1),evoShare,baseShare:100-evoShare};
+    }
+    const at=C?[['base','Normal'],...(C.evo?[['evo','Evolution']]:[]),...(C.hero?[['hero','Hero']]:[]),...(C.evo&&C.hero?[['split','Split']]:[])]:[];
+    return {
+      loading:!s.cards,inList:!C&&!!s.cards,inDetail:!!C,back:()=>this.setState({open:null}),
+      title:C?'CARDS':'CARDS',countLine:`${cards.filter(c=>c.rarity!=='tower').length} CARDS · ${cards.filter(c=>c.evo).length} EVOLUTIONS · ${cards.filter(c=>c.hero).length} HEROES · ${cards.filter(c=>c.rarity==='tower').length} TOWER TROOPS`,
+      q:s.q,onQ:e=>this.setState({q:e.target.value}),
+      filters:[grp('RARITY','rar',RAR),grp('ELIXIR','el',[['all','Any'],['1','1'],['2','2'],['3','3'],['4','4'],['5','5'],['6+','6+']]),grp('HAS','cap',[['all','Any'],['evo','Evo'],['hero','Hero'],['both','Both']])],
+      shown:`${list.length} SHOWN`,list,d,
+      artTabs:at.map(([v,l])=>({label:l.toUpperCase(),...this.chip(s.art===v),onClick:()=>this.setState({art:v})}))
+    };
+  }
+}
+</script>
+</body>
+</html>

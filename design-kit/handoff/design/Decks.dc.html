@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+@keyframes oaFade{from{opacity:0}to{opacity:1}}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./cards.js"></script>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:var(--void);color:var(--text-1);overflow-x:hidden">
+<oa-grain></oa-grain>
+<dc-import name="SiteNav" active="decks" hint-size="100%,64px"></dc-import>
+
+<section data-screen-label="Decks header" style="position:relative;height:clamp(360px,44vh,480px);overflow:hidden;background:#07080A;color:#F3F4F6">
+  <div style="position:absolute;inset:0;filter:grayscale(1) brightness(.5)"><image-slot id="scene-decktable" shape="rect" placeholder="Scene · obsidian table with recessed stone card slots, blue + violet light strips"></image-slot></div>
+  <oa-fog density=".8"></oa-fog>
+  <div style="position:absolute;left:50%;bottom:22%;transform:translateX(-50%) perspective(700px) rotateX(38deg);display:grid;grid-template-columns:repeat(8,clamp(34px,5vw,64px));gap:clamp(6px,1vw,14px);pointer-events:none">
+    <sc-for list="{{ slots }}" as="s" hint-placeholder-count="8">
+      <span style="aspect-ratio:95/140;border-radius:5px;background:linear-gradient(#0B0C0E,#16181c);box-shadow:inset 0 2px 6px rgba(0,0,0,.8),0 0 0 1px {{ s.c }},0 0 {{ s.g }}px {{ s.c }};transition:box-shadow .5s {{ s.delay }}ms"></span>
+    </sc-for>
+  </div>
+  <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(7,8,10,.5),rgba(7,8,10,0) 35%,rgba(7,8,10,.5) 70%,#07080A)"></div>
+  <div style="position:absolute;inset:14px;border:1px solid rgba(255,255,255,.55);border-radius:4px;pointer-events:none"></div>
+  <div style="position:relative;max-width:1440px;margin:0 auto;padding:40px clamp(28px,4vw,64px);display:flex;flex-direction:column;gap:14px;pointer-events:none">
+    <span style="font:500 10px/1.4 'JetBrains Mono',monospace;letter-spacing:.14em;color:#A4A9B4">● LIVE · {{ modeUpper }} · LAST 24H · {{ sampleTxt }} BATTLES SAMPLED</span>
+    <h1 data-reveal="1" style="margin:0;font:800 clamp(46px,8vw,124px)/.86 'JetBrains Mono',monospace;letter-spacing:-.06em">META</h1>
+  </div>
+</section>
+
+<main style="max-width:1440px;margin:0 auto;padding:0 clamp(16px,3vw,40px) 80px;display:flex;flex-direction:column;gap:24px">
+  <div role="tablist" style="display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--hair);scrollbar-width:none">
+    <sc-for list="{{ modes }}" as="m" hint-placeholder-count="5">
+      <button role="tab" aria-selected="{{ m.on }}" onClick="{{ m.onClick }}" style="flex:none;height:46px;padding:0 16px;background:none;border:0;color:{{ m.fg }};box-shadow:{{ m.sh }};font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer" style-hover="color:var(--text-1)">{{ m.label }}</button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ inList }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center">
+        <div style="display:flex;gap:6px"><sc-for list="{{ views }}" as="c" hint-placeholder-count="2"><button onClick="{{ c.onClick }}" style="height:30px;padding:0 12px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;cursor:pointer">{{ c.label }}</button></sc-for></div>
+        <sc-if value="{{ vDecks }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center">
+            <div style="display:flex;gap:6px;align-items:center"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">SORT</span><sc-for list="{{ sorts }}" as="c" hint-placeholder-count="2"><button onClick="{{ c.onClick }}" style="height:28px;padding:0 10px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;cursor:pointer">{{ c.label }}</button></sc-for></div>
+            <label style="display:flex;align-items:center;gap:8px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">INCLUDES<select value="{{ inc }}" onChange="{{ onInc }}" style="height:30px;padding:0 8px;background:var(--obsidian);border:1px solid var(--hair);border-radius:4px;color:var(--text-1);font:500 11px/1 'JetBrains Mono',monospace"><sc-for list="{{ cardOpts }}" as="o" hint-placeholder-count="5"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select></label>
+            <label style="display:flex;align-items:center;gap:8px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">EXCLUDES<select value="{{ exc }}" onChange="{{ onExc }}" style="height:30px;padding:0 8px;background:var(--obsidian);border:1px solid var(--hair);border-radius:4px;color:var(--text-1);font:500 11px/1 'JetBrains Mono',monospace"><sc-for list="{{ cardOpts }}" as="o" hint-placeholder-count="5"><option value="{{ o.v }}">{{ o.l }}</option></sc-for></select></label>
+          </div>
+        </sc-if>
+        <span style="margin-left:auto;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">{{ countTxt }}</span>
+      </div>
+
+      <sc-if value="{{ vDecks }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;border-top:1px solid var(--hair)">
+          <sc-for list="{{ decks }}" as="d" hint-placeholder-count="6">
+            <div role="button" tabindex="0" onClick="{{ d.open }}" onKeyDown="{{ d.key }}" data-spot="1" style="position:relative;overflow:hidden;display:grid;grid-template-columns:{{ rowCols }};gap:16px 28px;align-items:center;padding:20px 16px;border-bottom:1px solid var(--hair);cursor:pointer;outline:none;background:radial-gradient(360px circle at var(--mx,-600px) var(--my,-600px),rgba(58,160,255,.07),transparent 70%)" style-hover="box-shadow:inset 2px 0 0 var(--blue)" style-focus="box-shadow:inset 2px 0 0 var(--blue),inset 0 0 0 1px rgba(58,160,255,.5)">
+              <div style="position:absolute;right:8%;top:-10%;width:220px;height:130%;opacity:.22;filter:grayscale(1) drop-shadow(-2px 0 0 rgba(140,203,255,.8)) drop-shadow(0 0 20px rgba(58,160,255,.5));pointer-events:none"><image-slot id="{{ d.slot }}" shape="rect" fit="contain" placeholder="{{ d.wincon }} render"></image-slot></div>
+              <div style="position:relative;display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:700 12px/1 'JetBrains Mono',monospace;color:{{ d.rankFg }}">{{ d.rank }}</span><span style="font:600 18px/1.2 'Space Grotesk',sans-serif">{{ d.name }}</span><span style="font:500 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-3)">AVG {{ d.avg }} · CYCLE {{ d.cycle }}</span></div>
+              <div style="position:relative;display:flex;gap:6px;flex-wrap:wrap">
+                <sc-for list="{{ d.cards }}" as="c" hint-placeholder-count="8"><dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.art }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" hero="{{ c.isHero }}" elixir="{{ c.elixir }}" size="{{ cs }}" hint-size="{{ ch }}"></dc-import></sc-for>
+                <span style="width:1px;align-self:stretch;background:var(--hair);margin:0 4px"></span>
+                <dc-import name="CardTile" slug="{{ d.tower.slug }}" label="{{ d.tower.name }}" img="{{ d.tower.img }}" rarity="tower" size="{{ cs }}" hint-size="{{ ch }}"></dc-import>
+              </div>
+              <div style="position:relative;display:flex;gap:22px;justify-content:flex-end">
+                <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">USE</span><span style="font:700 20px/1 'JetBrains Mono',monospace">{{ d.use }}%</span></span>
+                <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">WIN</span><span style="font:700 20px/1 'JetBrains Mono',monospace;color:{{ d.winFg }};text-shadow:{{ d.winSh }}">{{ d.win }}%</span></span>
+                <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">GAMES</span><span style="font:500 13px/20px 'JetBrains Mono',monospace;color:var(--text-2)">{{ d.games }}</span></span>
+                <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">TREND</span><span style="font:600 13px/20px 'JetBrains Mono',monospace;color:{{ d.trFg }}">{{ d.tr }}</span></span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ vCards }}" hint-placeholder-val="{{ false }}">
+        <div style="overflow-x:auto;border:1px solid var(--hair);border-radius:8px;background:var(--charcoal)">
+          <table style="width:100%;min-width:760px;border-collapse:collapse;font-variant-numeric:tabular-nums">
+            <thead><tr>
+              <sc-for list="{{ csHead }}" as="h" hint-placeholder-count="7"><th style="padding:12px 14px;background:var(--glass);border-bottom:1px solid var(--hair);text-align:{{ h.al }};font:500 10px/1.3 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ h.fg }}">{{ h.t }}</th></sc-for>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{ cardStats }}" as="c" hint-placeholder-count="12">
+                <tr style-hover="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px)">
+                  <td style="padding:8px 14px;border-bottom:1px solid var(--hair)"><span style="display:flex;align-items:center;gap:12px"><dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.img }}" rarity="{{ c.rarity }}" size="S" hint-size="44px,65px"></dc-import><span style="font:600 14px/1.2 'Space Grotesk',sans-serif">{{ c.name }}</span></span></td>
+                  <td style="padding:8px 14px;border-bottom:1px solid var(--hair)"><span style="display:flex;align-items:center;gap:10px;justify-content:flex-end"><span style="width:90px;height:3px;background:var(--well)"><span style="display:block;height:100%;width:{{ c.useW }}%;background:var(--text-1)"></span></span><span style="font:600 13px/1 'JetBrains Mono',monospace;min-width:44px;text-align:right">{{ c.use }}%</span></span></td>
+                  <td style="padding:8px 14px;border-bottom:1px solid var(--hair);text-align:right;font:600 13px/1 'JetBrains Mono',monospace;color:{{ c.winFg }}">{{ c.win }}%</td>
+                  <td style="padding:8px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 12px/1 'JetBrains Mono',monospace;color:#C79BFF">{{ c.evoUse }}</td>
+                  <td style="padding:8px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 12px/1 'JetBrains Mono',monospace;color:#C79BFF">{{ c.evoWin }}</td>
+                  <td style="padding:8px 14px;border-bottom:1px solid var(--hair);text-align:right;font:500 12px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ c.baseWin }}</td>
+                  <td style="padding:8px 14px;border-bottom:1px solid var(--hair);text-align:right;font:600 12px/1 'JetBrains Mono',monospace;color:{{ c.trFg }}">{{ c.tr }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+      <span style="font:500 10px/1.5 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--text-3)">Stats come from battles the site has tracked in this mode over the last 24 hours. Click a deck for matchups.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ inDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:28px;animation:oaFade .3s">
+      <button onClick="{{ back }}" style="align-self:flex-start;background:none;border:0;padding:0;color:var(--blue);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer">← ALL DECKS</button>
+      <div style="position:relative;padding:clamp(20px,3vw,36px);background:var(--charcoal);border:1px solid var(--hair);border-radius:8px;display:flex;flex-direction:column;gap:24px">
+        <div style="position:absolute;inset:12px;border:1px solid var(--hair);border-radius:4px;pointer-events:none"></div>
+        <div style="position:relative;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:10px"><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">{{ modeUpper }} · RANK {{ dd.rank }}</span><h2 style="margin:0;font:800 clamp(32px,4.4vw,64px)/.92 'JetBrains Mono',monospace;letter-spacing:-.05em">{{ dd.nameUpper }}</h2></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button data-magnet="1" onClick="{{ copyDeck }}" style="height:46px;padding:0 20px;border:0;border-radius:6px;background:var(--btn-bg);color:var(--btn-fg);font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer" style-hover="box-shadow:0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)">{{ copyLabel }}</button>
+          </div>
+        </div>
+        <div style="position:relative;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+          <sc-for list="{{ dd.cards }}" as="c" hint-placeholder-count="8"><dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.art }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" hero="{{ c.isHero }}" elixir="{{ c.elixir }}" size="{{ csL }}" show-label="{{ true }}" hint-size="{{ chL }}"></dc-import></sc-for>
+          <span style="width:1px;height:120px;background:var(--hair);margin:0 6px"></span>
+          <dc-import name="CardTile" slug="{{ dd.tower.slug }}" label="{{ dd.tower.name }}" img="{{ dd.tower.img }}" rarity="tower" size="{{ csL }}" show-label="{{ true }}" hint-size="{{ chL }}"></dc-import>
+        </div>
+        <div style="position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:6px;overflow:hidden">
+          <sc-for list="{{ dd.stats }}" as="s" hint-placeholder-count="5"><div style="padding:14px 16px;background:var(--obsidian);display:flex;flex-direction:column;gap:8px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">{{ s.k }}</span><span data-decode="1" style="font:800 26px/1 'JetBrains Mono',monospace;letter-spacing:-.04em">{{ s.v }}</span></div></sc-for>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <h3 style="margin:0;font:600 22px/1.2 'Space Grotesk',sans-serif">Matchups vs other top decks</h3>
+        <div style="border:1px solid var(--hair);border-radius:8px;background:var(--charcoal)">
+          <sc-for list="{{ dd.matchups }}" as="m" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:{{ muCols }};gap:16px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--hair)">
+              <span style="font:600 14px/1.2 'Space Grotesk',sans-serif">vs {{ m.name }}</span>
+              <span style="display:flex;gap:4px"><sc-for list="{{ m.cards }}" as="c" hint-placeholder-count="8"><img src="{{ c.img }}" alt="{{ c.name }}" style="width:26px;height:38px;object-fit:cover;border-radius:3px"></img></sc-for></span>
+              <span style="position:relative;height:6px;border-radius:3px;background:var(--well);overflow:hidden"><span style="position:absolute;left:0;top:0;bottom:0;width:{{ m.win }}%;background:{{ m.bar }};box-shadow:{{ m.sh }}"></span><span style="position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--frame)"></span></span>
+              <span style="text-align:right;font:700 14px/1 'JetBrains Mono',monospace;color:{{ m.fg }}">{{ m.arrow }} {{ m.win }}%</span>
+              <span style="text-align:right;font:500 11px/1 'JetBrains Mono',monospace;color:var(--text-3)">{{ m.games }} games</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,140px"></dc-import>
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}"><div role="status" style="position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:100;padding:12px 18px;background:var(--obsidian);border:1px solid rgba(58,160,255,.6);border-radius:6px;box-shadow:0 0 18px rgba(58,160,255,.35);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em">{{ toast }}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const DECKS=[
+ ['Hog 2.6','hog-rider',['hog-rider','musketeer:e','cannon:e','ice-golem','ice-spirit','skeletons','fireball','the-log'],'tower-princess'],
+ ['Log Bait','goblin-barrel',['goblin-barrel:e','princess:e','knight','inferno-tower','ice-spirit','rocket','the-log','goblin-gang'],'dagger-duchess'],
+ ['Golem Night Witch','golem',['golem','night-witch','baby-dragon:e','lumberjack:e','tornado','lightning','mega-minion:h','barbarian-barrel'],'cannoneer'],
+ ['X-Bow 3.0','x-bow',['x-bow','tesla:e','archers:e','knight','ice-spirit','skeletons','fireball','the-log'],'tower-princess'],
+ ['P.E.K.K.A Bridge Spam','pekka',['pekka:e','battle-ram:e','bandit','royal-ghost','electro-wizard:h','magic-archer','poison','zap'],'dagger-duchess'],
+ ['LavaLoon','lava-hound',['lava-hound','balloon:h','mega-minion','minions','guards','fireball','arrows','tombstone'],'royal-chef'],
+ ['Miner Poison','miner',['miner','poison','valkyrie:e','bats:e','spear-goblins','inferno-tower','the-log','knight'],'tower-princess'],
+ ['Royal Giant Fisherman','royal-giant',['royal-giant:e','fisherman','mother-witch','earthquake','the-log','electro-spirit','skeletons:e','hunter'],'cannoneer']
+];
+const MODES=['Path of Legends','Ladder','Clan War','2v2','Challenges'];
+class Component extends DCLogic {
+  state={cards:null,mode:0,view:'decks',sort:'use',inc:'',exc:'',detail:null,lit:false,toast:'',copied:false,vw:typeof window!=='undefined'?innerWidth:1440};
+  componentDidMount(){(window.OACards||Promise.resolve([])).then(c=>this.setState({cards:c}));setTimeout(()=>this.setState({lit:true}),300);this._rs=()=>this.setState({vw:innerWidth});addEventListener('resize',this._rs)}
+  componentWillUnmount(){removeEventListener('resize',this._rs)}
+  chip(on){return{bd:on?'rgba(58,160,255,.7)':'var(--hair)',bg:on?'rgba(58,160,255,.12)':'transparent',fg:on?'var(--text-1)':'var(--text-2)',sh:on?'0 0 12px rgba(58,160,255,.3)':'none',on}}
+  flash(t){this.setState({toast:t});clearTimeout(this._t);this._t=setTimeout(()=>this.setState({toast:''}),1800)}
+  renderVals(){
+    const s=this.state,by={};(s.cards||[]).forEach(c=>by[c.slug]=c);
+    const r=rng(100+s.mode*17);
+    const mk=d=>d[2].map(x=>{const[sl,f]=x.split(':');const c=by[sl]||{slug:sl,name:sl,rarity:'common',img:''};const isEvo=f==='e',isHero=f==='h';return{...c,isEvo,isHero,art:isEvo&&c.evoImg?c.evoImg:isHero&&c.heroImg?c.heroImg:c.img}});
+    let all=DECKS.map((d,i)=>{const cards=mk(d);const els=cards.map(c=>+c.elixir||0);const t=by[d[3]]||{slug:d[3],name:d[3],img:''};const use=+(8.2-i*.8+r()*1.2).toFixed(1),win=+(48+r()*9).toFixed(1),tr=Math.round((r()-.45)*6);return{i,name:d[0],wincon:(by[d[1]]||{}).name||d[1],slugs:d[2].map(x=>x.split(':')[0]),cards,tower:t,avg:(els.reduce((a,b)=>a+b,0)/8).toFixed(1),cycle:[...els].sort((a,b)=>a-b).slice(0,4).reduce((a,b)=>a+b,0),use,win,games:Math.round(use*6100+r()*900),tr}});
+    const list=all.filter(d=>(!s.inc||d.slugs.includes(s.inc))&&(!s.exc||!d.slugs.includes(s.exc))).sort((a,b)=>s.sort==='use'?b.use-a.use:b.win-a.win);
+    const fmt=n=>n.toLocaleString('en-US');
+    const narrow=s.vw<1100,mobile=s.vw<760;
+    const decks=list.map((d,k)=>({...d,slot:'wincon-'+d.i,rank:String(k+1).padStart(2,'0'),rankFg:k===0?'var(--gold)':'var(--text-3)',use:d.use.toFixed(1),win:d.win.toFixed(1),games:fmt(d.games),winFg:d.win>=53?'var(--blue-hi)':'var(--text-1)',winSh:d.win>=53?'0 0 14px rgba(58,160,255,.6)':'none',tr:d.tr>0?'▲ '+d.tr:d.tr<0?'▼ '+(-d.tr):'— 0',trFg:d.tr>0?'var(--blue)':d.tr<0?'var(--ember)':'var(--text-3)',open:()=>{this.setState({detail:d.i,copied:false});scrollTo({top:0,behavior:'smooth'})},key:e=>{if(e.key==='Enter')this.setState({detail:d.i})}}));
+    const used=[...new Set(DECKS.flatMap(d=>d[2].map(x=>x.split(':')[0])))];
+    const cardOpts=[{v:'',l:'Any card'},...used.map(sl=>({v:sl,l:(by[sl]||{name:sl}).name})).sort((a,b)=>a.l.localeCompare(b.l))];
+    const rc=rng(300+s.mode);
+    const cardStats=used.map(sl=>{const c=by[sl]||{slug:sl,name:sl,rarity:'common',img:'',evo:false};const use=+(4+rc()*30).toFixed(1),win=+(46+rc()*10).toFixed(1),evo=c.evo;const tr=Math.round((rc()-.5)*6);return{...c,use,useW:Math.min(100,use*3),win:win.toFixed(1),winFg:win>=53?'var(--blue-hi)':'var(--text-1)',evoUse:evo?Math.round(40+rc()*50)+'%':'—',evoWin:evo?(win+1+rc()*3).toFixed(1)+'%':'—',baseWin:evo?(win-1-rc()*2).toFixed(1)+'%':win.toFixed(1)+'%',tr:tr>0?'▲ '+tr:tr<0?'▼ '+(-tr):'—',trFg:tr>0?'var(--blue)':tr<0?'var(--ember)':'var(--text-3)'}}).sort((a,b)=>b.use-a.use);
+    const D=s.detail!=null?all.find(d=>d.i===s.detail):null;let dd={cards:[],tower:{},stats:[],matchups:[]};
+    if(D){const rm=rng(D.i*13+s.mode);dd={...D,rank:String(list.findIndex(x=>x.i===D.i)+1||'—'),nameUpper:D.name.toUpperCase(),stats:[['WIN %',D.win.toFixed(1)],['USE %',D.use.toFixed(1)],['GAMES',fmt(D.games)],['AVG ELIXIR',D.avg],['4-CARD CYCLE',String(D.cycle)]].map(([k,v])=>({k,v})),matchups:all.filter(x=>x.i!==D.i).map(x=>{const w=Math.round(38+rm()*26);return{name:x.name,cards:x.cards,win:w,games:fmt(Math.round(300+rm()*4000)),bar:w>=50?'var(--blue)':'var(--text-3)',sh:w>=55?'0 0 8px rgba(58,160,255,.7)':'none',fg:w>=50?'var(--blue)':'var(--ember)',arrow:w>=50?'▲':'▼'}})}}
+    const slotC=['#3AA0FF','#A35BFF'];
+    return {
+      slots:Array.from({length:8},(_,i)=>({c:s.lit?(i<2?'rgba(163,91,255,.8)':'rgba(58,160,255,.7)'):'rgba(255,255,255,.08)',g:s.lit?16:0,delay:i*90})),
+      modeUpper:MODES[s.mode].toUpperCase(),sampleTxt:fmt(Math.round(482000/(s.mode+1))),
+      modes:MODES.map((label,i)=>({label:label.toUpperCase(),on:s.mode===i,fg:s.mode===i?'var(--text-1)':'var(--text-3)',sh:s.mode===i?'inset 0 -2px 0 #8CCBFF,0 8px 16px -10px rgba(58,160,255,.9)':'none',onClick:()=>this.setState({mode:i})})),
+      inList:!D,inDetail:!!D,back:()=>this.setState({detail:null}),
+      views:[['decks','DECKS'],['cards','CARD STATS']].map(([v,label])=>({label,...this.chip(s.view===v),onClick:()=>this.setState({view:v})})),vDecks:s.view==='decks',vCards:s.view==='cards',
+      sorts:[['use','POPULARITY'],['win','WIN RATE']].map(([v,label])=>({label,...this.chip(s.sort===v),onClick:()=>this.setState({sort:v})})),
+      inc:s.inc,exc:s.exc,onInc:e=>this.setState({inc:e.target.value}),onExc:e=>this.setState({exc:e.target.value}),cardOpts,
+      countTxt:s.view==='decks'?`${decks.length} DECKS`:`${cardStats.length} CARDS`,decks,rowCols:mobile?'1fr':narrow?'200px 1fr':'230px 1fr auto',cs:narrow?'S':'M',ch:narrow?'44px,65px':'68px,100px',csL:mobile?'M':'L',chL:mobile?'68px,130px':'104px,190px',
+      csHead:[['CARD','left'],['USAGE','right'],['WIN %','right'],['EVO SHARE','right'],['EVO WIN','right'],['NON-EVO WIN','right'],['TREND','right']].map(([t,al])=>({t,al,fg:t.startsWith('EVO')?'#C79BFF':'var(--text-3)'})),cardStats,
+      dd,muCols:mobile?'1fr 80px':'180px auto 1fr 80px 90px',
+      copyLabel:s.copied?'✓ COPIED · OPEN IN GAME':'COPY DECK TO GAME',copyDeck:()=>{try{navigator.clipboard.writeText('https://link.clashroyale.com/deck/en?deck=…')}catch(e){}this.setState({copied:true});this.flash('Deck link copied')},
+      hasToast:!!s.toast,toast:s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
