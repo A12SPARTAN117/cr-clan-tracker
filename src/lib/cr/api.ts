@@ -90,9 +90,13 @@ export async function getRiverRaceLog(tag: string, limit = 10) {
   return settle(await request<Paged<RiverRaceLogEntry>>(`/clans/${enc(tag)}/riverracelog?limit=${limit}`), 'cr');
 }
 
-export async function searchClans(name: string, limit = 24) {
+/** Clan search. The API needs at least one filter; a name must be 3+ characters. */
+export async function searchClans(opts: { name?: string; locationId?: number; minMembers?: number; limit?: number }) {
   'use cache';
-  const q = new URLSearchParams({ name, limit: String(limit) });
+  const q = new URLSearchParams({ limit: String(opts.limit ?? 30) });
+  if (opts.name) q.set('name', opts.name);
+  if (opts.locationId) q.set('locationId', String(opts.locationId));
+  if (opts.minMembers) q.set('minMembers', String(opts.minMembers));
   return settle(await request<Paged<ClanSearchItem>>(`/clans?${q}`), 'cr');
 }
 
