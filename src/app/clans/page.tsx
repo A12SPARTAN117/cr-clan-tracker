@@ -85,7 +85,8 @@ async function Results({ searchParams }: { searchParams: Promise<Record<string, 
   } else {
     const r = await getClanWarRankings(loc ?? 'global', 60);
     failed = !r.ok;
-    rows = r.ok ? r.data.items.map((c) => ({ ...c, rank: c.rank })) : [];
+    // In the clan-war ranking, clanScore holds the war trophies.
+    rows = r.ok ? r.data.items.map((c) => ({ ...c, clanWarTrophies: c.clanScore ?? c.clanWarTrophies, rank: c.rank })) : [];
     title = 'Top war clans';
   }
   const list = rows.filter((c) => (c.clanWarTrophies ?? 0) >= minW && (!type || type === 'all' || !c.type || c.type === type) && c.members >= minM);
