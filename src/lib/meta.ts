@@ -34,7 +34,22 @@ export type DeckStat = {
   matchups: Matchup[];
 };
 
-export type CardStat = { id: number; slug: string; name: string; rarity: Rarity; elixir: number | null; img: string | null; games: number; wins: number; use: number; win: number; evoGames: number; heroGames: number };
+export type CardStat = {
+  id: number;
+  slug: string;
+  name: string;
+  rarity: Rarity;
+  elixir: number | null;
+  img: string | null;
+  games: number;
+  wins: number;
+  use: number;
+  win: number;
+  evoGames: number;
+  evoWins: number;
+  heroGames: number;
+  heroWins: number;
+};
 
 export type ModeMeta = { mode: MetaMode; sides: number; decks: DeckStat[]; cards: CardStat[] };
 
@@ -68,7 +83,7 @@ async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Prom
 }
 
 type DeckAcc = { cards: DeckCard[]; tower: DeckStat['tower']; games: number; wins: number; vs: Map<string, { name: string; games: number; wins: number }> };
-type CardAcc = { c: DeckCard; games: number; wins: number; evo: number; hero: number };
+type CardAcc = { c: DeckCard; games: number; wins: number; evo: number; evoW: number; hero: number; heroW: number };
 
 function emptyMode(): { sides: number; decks: Map<string, DeckAcc>; cards: Map<number, CardAcc> } {
   return { sides: 0, decks: new Map(), cards: new Map() };
@@ -111,11 +126,17 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
     }
     m.decks.set(key, d);
     for (const c of cards) {
-      const ca = m.cards.get(c.id) ?? { c: { ...c, evo: false, hero: false, img: cardById(c.id)?.icons.normal ?? c.img }, games: 0, wins: 0, evo: 0, hero: 0 };
+      const ca = m.cards.get(c.id) ?? { c: { ...c, evo: false, hero: false, img: cardById(c.id)?.icons.normal ?? c.img }, games: 0, wins: 0, evo: 0, evoW: 0, hero: 0, heroW: 0 };
       ca.games++;
       if (won) ca.wins++;
-      if (c.evo) ca.evo++;
-      if (c.hero) ca.hero++;
+      if (c.evo) {
+        ca.evo++;
+        if (won) ca.evoW++;
+      }
+      if (c.hero) {
+        ca.hero++;
+        if (won) ca.heroW++;
+      }
       m.cards.set(c.id, ca);
     }
     m.sides++;
@@ -163,7 +184,7 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
       .sort((a, b) => b.games - a.games || b.win - a.win)
       .slice(0, 60);
     const cards: CardStat[] = [...m.cards.values()]
-      .map(({ c, games, wins, evo, hero }) => ({
+      .map(({ c, games, wins, evo, evoW, hero, heroW }) => ({
         id: c.id,
         slug: c.slug,
         name: c.name,
@@ -175,7 +196,9 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
         use: (games / Math.max(1, m.sides)) * 100,
         win: (wins / games) * 100,
         evoGames: evo,
+        evoWins: evoW,
         heroGames: hero,
+        heroWins: heroW,
       }))
       .sort((a, b) => b.games - a.games);
     return { mode, sides: m.sides, decks, cards };
