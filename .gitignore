@@ -27,3 +27,8 @@ design-kit/moodboard/
 vendor/
 design-kit/royaleapi/
 design-kit/prompts/
+
+# Next.js / TypeScript
+next-env.d.ts
+*.tsbuildinfo
+/coverage
