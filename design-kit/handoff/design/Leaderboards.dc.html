@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+@keyframes oaSway{0%,100%{transform:translateX(-50%) rotate(-2deg)}50%{transform:translateX(-50%) rotate(2deg)}}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:var(--void);color:var(--text-1);overflow-x:hidden">
+<oa-grain></oa-grain>
+<dc-import name="SiteNav" active="leaderboards" hint-size="100%,64px"></dc-import>
+
+<section data-screen-label="Leaderboard podium" style="position:relative;height:clamp(500px,58vh,640px);overflow:hidden;background:#07080A;color:#F3F4F6">
+  <div style="position:absolute;inset:0;filter:grayscale(1) brightness(.45)"><image-slot id="scene-podium" shape="rect" placeholder="Scene · obsidian podium, hanging translucent crown"></image-slot></div>
+  <oa-fog density=".9"></oa-fog>
+  <div style="position:absolute;left:50%;top:4%;width:min(30vw,260px);height:34%;transform-origin:50% 0;animation:oaSway 9s ease-in-out infinite;pointer-events:none">
+    <oa-crown variant="crown" count="1400" style="display:block;width:100%;height:100%"></oa-crown>
+  </div>
+  <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(7,8,10,.4),rgba(7,8,10,0) 30%,rgba(7,8,10,.2) 70%,#07080A)"></div>
+  <div style="position:absolute;inset:14px;border:1px solid rgba(255,255,255,.55);border-radius:4px;pointer-events:none"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;align-items:flex-end;gap:clamp(6px,1.4vw,18px);padding:0 16px">
+    <sc-for list="{{ podium }}" as="p" hint-placeholder-count="3">
+      <a href="{{ p.href }}" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:clamp(104px,18vw,240px);color:#F3F4F6">
+        <div style="width:clamp(48px,6vw,80px);height:clamp(54px,7vw,92px);filter:drop-shadow(0 0 16px rgba(58,160,255,.4))"><image-slot id="{{ p.slot }}" shape="rect" fit="contain" placeholder="{{ p.ph }}"></image-slot></div>
+        <span style="font:600 clamp(13px,1.3vw,17px)/1.1 'Space Grotesk',sans-serif;text-align:center">{{ p.name }}</span>
+        <span style="font:700 clamp(12px,1.2vw,15px)/1 'JetBrains Mono',monospace">{{ p.score }}</span>
+        <div style="width:100%;height:{{ p.h }};border-radius:6px 6px 0 0;background:linear-gradient(#1A1C20,#0B0C0E);border:1px solid rgba(255,255,255,.14);border-bottom:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 -10px 40px {{ p.glow }};display:flex;justify-content:center;padding-top:16px">
+          <span style="font:800 clamp(40px,6vw,88px)/1 'JetBrains Mono',monospace;letter-spacing:-.04em;color:{{ p.fg }};text-shadow:{{ p.sh }}">{{ p.num }}</span>
+        </div>
+      </a>
+    </sc-for>
+  </div>
+  <div style="position:absolute;left:clamp(28px,4vw,64px);top:36px;display:flex;flex-direction:column;gap:12px;pointer-events:none">
+    <span style="font:500 10px/1.4 'JetBrains Mono',monospace;letter-spacing:.14em;color:#A4A9B4">● LIVE · {{ locUpper }} · UPDATED 04:12</span>
+    <h1 data-reveal="1" style="margin:0;font:800 clamp(40px,6.4vw,100px)/.86 'JetBrains Mono',monospace;letter-spacing:-.06em">LEADER<br>BOARDS</h1>
+  </div>
+</section>
+
+<main style="max-width:1200px;margin:0 auto;padding:0 clamp(16px,3vw,40px) 80px;display:flex;flex-direction:column;gap:22px">
+  <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid var(--hair)">
+    <div role="tablist" style="display:flex;gap:2px;overflow-x:auto;scrollbar-width:none">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><button role="tab" aria-selected="{{ t.on }}" onClick="{{ t.onClick }}" style="flex:none;height:46px;padding:0 16px;background:none;border:0;color:{{ t.fg }};box-shadow:{{ t.sh }};font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer">{{ t.label }}</button></sc-for>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;padding-bottom:8px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">LOCATION
+      <select value="{{ loc }}" onChange="{{ onLoc }}" style="height:32px;padding:0 10px;background:var(--obsidian);border:1px solid var(--hair);border-radius:4px;color:var(--text-1);font:500 11px/1 'JetBrains Mono',monospace"><sc-for list="{{ locs }}" as="l" hint-placeholder-count="6"><option value="{{ l.v }}">{{ l.l }}</option></sc-for></select>
+    </label>
+  </div>
+  <sc-if value="{{ isEvents }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;gap:6px"><sc-for list="{{ evChips }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.onClick }}" style="height:28px;padding:0 10px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;cursor:pointer">{{ c.label }}</button></sc-for></div>
+  </sc-if>
+  <div style="border:1px solid var(--hair);border-radius:8px;background:var(--charcoal);overflow:hidden">
+    <div style="display:grid;grid-template-columns:{{ cols }};gap:12px;padding:0 16px;background:var(--glass);border-bottom:1px solid var(--hair);font:500 10px/42px 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)"><span>RANK</span><span>MOVE</span><span>{{ nameHead }}</span><sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><span>{{ subHead }}</span></sc-if><span style="text-align:right;color:var(--text-1)">{{ scoreHead }} <span style="color:var(--blue)">▼</span></span></div>
+    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="20">
+      <a href="{{ r.href }}" style="display:grid;grid-template-columns:{{ cols }};gap:12px;align-items:center;padding:0 16px;min-height:52px;border-bottom:1px solid var(--hair);color:var(--text-1)" style-hover="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px);color:var(--text-1)" style-focus="background:linear-gradient(90deg,var(--blue) 0 2px,var(--slate) 2px)">
+        <span style="font:800 16px/1 'JetBrains Mono',monospace;color:{{ r.rankFg }};text-shadow:{{ r.rankSh }}">{{ r.rank }}</span>
+        <span style="font:600 11px/1 'JetBrains Mono',monospace;color:{{ r.mvFg }}">{{ r.mv }}</span>
+        <span style="display:flex;align-items:center;gap:10px;min-width:0"><span title="{{ r.iconTitle }}" style="flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--frame);display:flex;align-items:center;justify-content:center;font:700 8px/1 'JetBrains Mono',monospace;color:var(--text-2)">{{ r.icon }}</span><span style="font:600 14px/1.2 'Space Grotesk',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-3)">{{ r.cc }}</span></span>
+        <sc-if value="{{ desktop }}" hint-placeholder-val="{{ true }}"><span style="font:500 11px/1.2 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span></sc-if>
+        <span style="text-align:right;font:700 15px/1 'JetBrains Mono',monospace;font-variant-numeric:tabular-nums">{{ r.score }}</span>
+      </a>
+    </sc-for>
+  </div>
+  <span style="font:500 10px/1.5 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--text-3)">{{ note }}</span>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,140px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const P=['Mørkvann','Sabre_Ix','Tavi','oldcastle','Q-Rix','Lumen','Berrow','Kairo','dvsk','Hollin','Ysolde','R4ze','Tomasz.','Nell','Ashby','Kuro','Vinter','Paz','Orrin','Elske'];
+const CLN=['Kestrel Court','Gilded Ash','Northwatch','Iron Veil','Saltmarsh','The Quiet Keep','Ashen Crown','Blue Hour','Ninth Bastion','Lantern Row','Coldharbour','Marrow & Oak','Velvet Siege','Old Harbour','Pale Lantern','Stonewake','Hollow Pike','Emberfall','North Gate','Grey Tower'];
+const CC=['NO','DE','FR','GB','PL','JP','BR','US','ES','NL','SE','CA','IT','KR','MX','TR','FI','AR','DK','BE'];
+const LOCS=[['global','Global'],['DE','DE · Germany'],['GB','GB · United Kingdom'],['FR','FR · France'],['US','US · United States'],['JP','JP · Japan'],['BR','BR · Brazil']];
+class Component extends DCLogic {
+  state={tab:'pol',loc:'global',ev:'2v2',vw:typeof window!=='undefined'?innerWidth:1440};
+  componentDidMount(){this._rs=()=>this.setState({vw:innerWidth});addEventListener('resize',this._rs)}
+  componentWillUnmount(){removeEventListener('resize',this._rs)}
+  chip(on){return{bd:on?'rgba(58,160,255,.7)':'var(--hair)',bg:on?'rgba(58,160,255,.12)':'transparent',fg:on?'var(--text-1)':'var(--text-2)',sh:on?'0 0 12px rgba(58,160,255,.3)':'none',on}}
+  renderVals(){
+    const s=this.state,r=rng(s.tab.length*31+s.loc.length*7+s.ev.length),fmt=n=>n.toLocaleString('en-US');
+    const isClan=s.tab==='clans'||s.tab==='war';
+    const names=isClan?CLN:P;
+    const top=s.tab==='pol'?2960:s.tab==='clans'?91240:s.tab==='war'?6820:s.ev==='2v2'?4120:3880;
+    let v=top;
+    const rows=names.map((n,i)=>{v-=Math.round(r()*(top*.006)+2);const mv=i<3?0:Math.round((r()-.45)*8);return{rank:i<3?['I','II','III'][i]:String(i+1).padStart(2,'0'),rankFg:i===0?'var(--gold)':i<3?'var(--text-1)':'var(--text-3)',rankSh:i===0?'0 0 14px rgba(230,179,74,.5)':i<3?'0 0 12px rgba(140,203,255,.5)':'none',mv:mv>0?'▲ '+mv:mv<0?'▼ '+(-mv):'—',mvFg:mv>0?'var(--blue)':mv<0?'var(--ember)':'var(--text-3)',name:n,cc:s.loc==='global'?CC[i]:s.loc,icon:isClan?'◆':s.tab==='pol'?'10':'EV',iconTitle:isClan?'Clan badge':'League icon',sub:isClan?`${40+Math.floor(r()*11)}/50 · ${['OPEN','INVITE','CLOSED'][Math.floor(r()*3)]}`:CLN[(i*7)%20].toUpperCase(),score:fmt(i===0?top:v),href:isClan?'Clan Profile.dc.html':'Player Profile.dc.html',raw:i===0?top:v}});
+    const podiumOrder=[1,0,2];
+    const podium=podiumOrder.map(i=>({...rows[i],num:['I','II','III'][i],slot:`podium-${isClan?'badge':'league'}-${i}`,ph:isClan?'clan badge':'league icon',h:['clamp(150px,22vh,220px)','clamp(110px,16vh,160px)','clamp(90px,13vh,130px)'][i],fg:i===0?'#E6B34A':'#DDEBFF',sh:i===0?'0 0 30px rgba(230,179,74,.6)':'0 0 24px rgba(140,203,255,.6)',glow:i===0?'rgba(230,179,74,.15)':'rgba(58,160,255,.15)',name:rows[i].name,score:rows[i].score}));
+    const T=[['pol','PATH OF LEGENDS'],['clans','CLANS'],['war','CLAN WARS'],['events','EVENTS']];
+    const desktop=s.vw>=760;
+    return {
+      podium,locUpper:(LOCS.find(l=>l[0]===s.loc)||LOCS[0])[1].toUpperCase(),
+      tabs:T.map(([k,label])=>({label,on:s.tab===k,fg:s.tab===k?'var(--text-1)':'var(--text-3)',sh:s.tab===k?'inset 0 -2px 0 #8CCBFF,0 8px 16px -10px rgba(58,160,255,.9)':'none',onClick:()=>this.setState({tab:k})})),
+      locs:LOCS.map(([v,l])=>({v,l})),loc:s.loc,onLoc:e=>this.setState({loc:e.target.value}),
+      isEvents:s.tab==='events',evChips:[['2v2','2V2 LEAGUE'],['merge','MERGE TACTICS'],['challenge','GLOBAL CHALLENGE']].map(([v,label])=>({label,...this.chip(s.ev===v),onClick:()=>this.setState({ev:v})})),
+      desktop,cols:desktop?'64px 56px minmax(0,1.4fr) minmax(0,1fr) 110px':'48px 44px minmax(0,1fr) 90px',
+      nameHead:isClan?'CLAN':'PLAYER',subHead:isClan?'MEMBERS · TYPE':'CLAN',scoreHead:s.tab==='pol'?'RATING':s.tab==='clans'?'CLAN SCORE':s.tab==='war'?'WAR TROPHIES':'POINTS',
+      rows:rows.slice(3),
+      note:s.tab==='pol'?'Ranked player leaderboards are Path of Legends only. Trophy-road player leaderboards no longer exist.':'Movement compares with the snapshot 24 hours ago.'
+    };
+  }
+}
+</script>
+</body>
+</html>

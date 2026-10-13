@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+@keyframes oaFade{from{opacity:0}to{opacity:1}}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./cards.js"></script>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:var(--void);color:var(--text-1);overflow-x:hidden">
+<oa-grain></oa-grain>
+<dc-import name="SiteNav" active="news" hint-size="100%,64px"></dc-import>
+
+<sc-if value="{{ inList }}" hint-placeholder-val="{{ true }}">
+  <section data-screen-label="News header" style="position:relative;height:clamp(340px,42vh,460px);overflow:hidden;background:#07080A;color:#F3F4F6">
+    <div style="position:absolute;inset:0;filter:grayscale(1) brightness(.5)"><image-slot id="scene-scrolls" shape="rect" placeholder="Scene · ember-edged scrolls on a stone ledge, skeleton parrot"></image-slot></div>
+    <oa-fog density=".8"></oa-fog>
+    <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(7,8,10,.4),rgba(7,8,10,0) 35%,rgba(7,8,10,.5) 70%,#07080A)"></div>
+    <div style="position:absolute;inset:14px;border:1px solid rgba(255,255,255,.55);border-radius:4px;pointer-events:none"></div>
+    <div style="position:relative;height:100%;max-width:1440px;margin:0 auto;padding:40px clamp(28px,4vw,64px);display:flex;flex-direction:column;justify-content:flex-end;gap:14px;pointer-events:none">
+      <span style="font:500 10px/1.4 'JetBrains Mono',monospace;letter-spacing:.14em;color:#A4A9B4">OFFICIAL · BALANCE CHANGES · SITE UPDATES</span>
+      <h1 data-reveal="1" style="margin:0;font:800 clamp(46px,8vw,124px)/.86 'JetBrains Mono',monospace;letter-spacing:-.06em">NEWS</h1>
+    </div>
+  </section>
+  <main style="max-width:1440px;margin:0 auto;padding:28px clamp(16px,3vw,40px) 80px;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ chips }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.onClick }}" style="height:30px;padding:0 12px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;cursor:pointer">{{ c.label }}</button></sc-for></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:28px 20px">
+      <sc-for list="{{ posts }}" as="p" hint-placeholder-count="6">
+        <button onClick="{{ p.open }}" style="display:flex;flex-direction:column;gap:14px;padding:0;background:none;border:0;text-align:left;color:var(--text-1);cursor:pointer" style-hover="color:var(--blue-hi)">
+          <div style="position:relative;width:100%;aspect-ratio:16/10;border-radius:6px;overflow:hidden;background:var(--obsidian)"><image-slot id="{{ p.slot }}" shape="rect" placeholder="{{ p.ph }}"></image-slot><span style="position:absolute;inset:10px;border:1px solid rgba(255,255,255,.45);border-radius:3px;pointer-events:none"></span></div>
+          <span style="display:flex;gap:12px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em"><span style="color:{{ p.tagFg }}">{{ p.tag }}</span><span style="color:var(--text-3)">{{ p.date }}</span></span>
+          <span style="font:600 21px/1.25 'Space Grotesk',sans-serif;text-wrap:pretty">{{ p.title }}</span>
+          <span style="font:400 14px/1.5 'Space Grotesk',sans-serif;color:var(--text-2);text-wrap:pretty">{{ p.dek }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </main>
+</sc-if>
+
+<sc-if value="{{ inArticle }}" hint-placeholder-val="{{ false }}">
+  <article style="max-width:760px;margin:0 auto;padding:clamp(32px,5vw,64px) clamp(18px,4vw,24px) 80px;display:flex;flex-direction:column;gap:26px;animation:oaFade .35s">
+    <button onClick="{{ back }}" style="align-self:flex-start;background:none;border:0;padding:0;color:var(--blue);font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.14em;cursor:pointer">← ALL NEWS</button>
+    <span style="display:flex;gap:12px;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em"><span style="color:{{ a.tagFg }}">{{ a.tag }}</span><span style="color:var(--text-3)">{{ a.date }} · {{ a.read }} MIN READ</span></span>
+    <h1 style="margin:0;font:800 clamp(34px,5vw,60px)/.98 'JetBrains Mono',monospace;letter-spacing:-.045em;text-wrap:balance">{{ a.title }}</h1>
+    <p style="margin:0;font:400 20px/1.5 'Space Grotesk',sans-serif;color:var(--text-2);text-wrap:pretty">{{ a.dek }}</p>
+    <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:6px;overflow:hidden;background:var(--obsidian)"><image-slot id="{{ a.slot }}" shape="rect" placeholder="{{ a.ph }}"></image-slot><span style="position:absolute;inset:12px;border:1px solid rgba(255,255,255,.45);border-radius:3px;pointer-events:none"></span></div>
+    <sc-if value="{{ a.isBalance }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;border-top:1px solid var(--hair)">
+        <sc-for list="{{ changes }}" as="c" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:56px 1fr auto;gap:18px;align-items:center;padding:16px 0;border-bottom:1px solid var(--hair)">
+            <dc-import name="CardTile" slug="{{ c.slug }}" label="{{ c.name }}" img="{{ c.img }}" rarity="{{ c.rarity }}" evo="{{ c.isEvo }}" size="S" hint-size="44px,65px"></dc-import>
+            <span style="display:flex;flex-direction:column;gap:6px"><span style="font:600 17px/1.2 'Space Grotesk',sans-serif">{{ c.name }}</span><span style="font:400 15px/1.5 'Space Grotesk',sans-serif;color:var(--text-2)">{{ c.txt }}</span></span>
+            <span style="display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid {{ c.fg }};border-radius:4px;font:700 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ c.fg }}">{{ c.arrow }} {{ c.kind }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-for list="{{ a.body }}" as="b" hint-placeholder-count="3">
+      <p style="margin:0;font:400 18px/1.7 'Space Grotesk',sans-serif;color:var(--text-1);text-wrap:pretty">{{ b }}</p>
+    </sc-for>
+    <span style="padding-top:20px;border-top:1px solid var(--hair);font:500 10px/1.6 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-3)">SOURCE · {{ a.source }}</span>
+  </article>
+</sc-if>
+<dc-import name="SiteFooter" hint-size="100%,140px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const POSTS=[
+ {tag:'BALANCE CHANGES',date:'09 OCT 2026',title:'October balance update: six cards adjusted',dek:'Hog Rider and Royal Giant evolution get trimmed. Bowler and Goblin Gang get help.',balance:true,source:'Official patch notes, summarised by CR Clan Tracker',body:['Changes go live with the next server maintenance. Stats on the Decks page reset their 24-hour window when it lands, so expect a day of noisy win rates.']},
+ {tag:'SITE UPDATE',date:'04 OCT 2026',title:'Asset Score weights are now editable per clan',dek:'Leaders can now decide how much war, donations, activity, win rate and tenure count.',source:'CR Clan Tracker',body:['Open your clan dashboard and choose Score settings. Move the sliders and the ranking preview updates as you go, with arrows showing who moved.','Weights are stored on your device. Other leaders of the same clan keep their own settings.']},
+ {tag:'OFFICIAL',date:'29 SEP 2026',title:'New season: Path of Legends rewards and arena',dek:'The season reset is on Monday. Ratings above 2,000 are soft-reset.',source:'Official announcement',body:['Path of Legends history on player profiles records each finished season from the day we started tracking that player.']},
+ {tag:'SITE UPDATE',date:'21 SEP 2026',title:'Clan Wars participation grid on mobile',dek:'The war tab now fits a phone screen, with members as rows and war days as columns.',source:'CR Clan Tracker',body:['Each cell shows decks used, 0 to 4. Members with no war decks are flagged with a label.']},
+ {tag:'BALANCE CHANGES',date:'11 SEP 2026',title:'September hotfix: Electro Giant evolution',dek:'A single change after a week at the top of the meta.',balance:true,source:'Official patch notes',body:['Expect Electro Giant evolution usage to drop over the next few days.']},
+ {tag:'OFFICIAL',date:'02 SEP 2026',title:'Clan Wars: river race schedule update',dek:'War days now start one hour later in all regions.',source:'Official announcement',body:['Countdown timers on the clan dashboard have been updated.']}
+];
+const CH=[['hog-rider','Hit speed 1.6s → 1.7s.','NERF',0],['royal-giant','Evolution recoil damage −8%.','NERF',1],['bowler','Rock now knocks back slightly further.','BUFF',0],['goblin-gang','Spear Goblins deploy 0.2s faster.','BUFF',0],['executioner','Axe return speed +5%.','BUFF',0],['mega-knight','Jump damage −4%.','NERF',0]];
+class Component extends DCLogic {
+  state={f:'all',open:null,cards:null};
+  componentDidMount(){(window.OACards||Promise.resolve([])).then(c=>this.setState({cards:c}))}
+  chip(on){return{bd:on?'rgba(58,160,255,.7)':'var(--hair)',bg:on?'rgba(58,160,255,.12)':'transparent',fg:on?'var(--text-1)':'var(--text-2)',sh:on?'0 0 12px rgba(58,160,255,.3)':'none'}}
+  renderVals(){
+    const s=this.state,by={};(s.cards||[]).forEach(c=>by[c.slug]=c);
+    const tagFg=t=>t==='BALANCE CHANGES'?'var(--blue-hi)':t==='OFFICIAL'?'var(--text-1)':'var(--text-2)';
+    const posts=POSTS.map((p,i)=>({...p,i})).filter(p=>s.f==='all'||p.tag===s.f).map(p=>({...p,slot:'news-img-'+p.i,ph:p.tag.toLowerCase()+' art',tagFg:tagFg(p.tag),open:()=>{this.setState({open:p.i});scrollTo({top:0})}}));
+    const A=s.open!=null?POSTS[s.open]:null;
+    const changes=(A&&A.balance?(s.open===4?[['electro-giant','Evolution reflect damage −10%.','NERF',1]]:CH):[]).map(([sl,txt,kind,evo])=>{const c=by[sl]||{slug:sl,name:sl,rarity:'common',img:''};return{...c,img:evo&&c.evoImg?c.evoImg:c.img,isEvo:!!evo,name:c.name+(evo?' (Evolution)':''),txt,kind,arrow:kind==='BUFF'?'▲':'▼',fg:kind==='BUFF'?'var(--blue)':'var(--ember)'}});
+    return {
+      chips:[['all','ALL'],['OFFICIAL','OFFICIAL'],['BALANCE CHANGES','BALANCE CHANGES'],['SITE UPDATE','SITE UPDATES']].map(([v,label])=>({label,...this.chip(s.f===v),onClick:()=>this.setState({f:v})})),
+      posts,inList:!A,inArticle:!!A,back:()=>this.setState({open:null}),
+      a:A?{...A,tagFg:tagFg(A.tag),slot:'news-img-'+s.open,ph:A.tag.toLowerCase()+' art',read:Math.max(1,A.body.length+1),isBalance:!!A.balance}:{body:[]},changes
+    };
+  }
+}
+</script>
+</body>
+</html>

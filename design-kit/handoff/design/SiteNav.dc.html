@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="height:64px">
+<header style="position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;align-items:center;gap:24px;padding:0 clamp(16px,3vw,40px);background:var(--glass,rgba(18,19,22,.72));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hair,rgba(255,255,255,.1))">
+  <a href="Home.dc.html" style="display:flex;align-items:center;gap:10px;color:var(--text-1);flex:none">
+    <svg width="30" height="26" viewBox="0 0 30 26" style="filter:drop-shadow(0 0 6px rgba(58,160,255,.6))"><polyline points="2,22 2,8 8,14 12,4 16,14 22,8 22,22 2,22" fill="none" stroke="#A4A9B4" stroke-width="1.4" stroke-linejoin="round"></polyline><polyline points="8,24 8,10 14,16 18,6 22,16 28,10 28,24 8,24" fill="none" stroke="#8CCBFF" stroke-width="1.4" stroke-linejoin="round"></polyline></svg>
+    <span style="font:800 13px/1 'JetBrains Mono',monospace;letter-spacing:.04em">CR·CLAN<span style="color:var(--text-3)">/</span>TRACKER</span>
+  </a>
+  <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+    <nav style="display:flex;gap:22px;font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase">
+      <sc-for list="{{ links }}" as="l" hint-placeholder-count="6">
+        <a href="{{ l.href }}" aria-current="{{ l.cur }}" style="color:{{ l.fg }};padding-bottom:6px;margin-bottom:-6px;box-shadow:{{ l.sh }}" style-hover="color:var(--text-1)">{{ l.label }}</a>
+      </sc-for>
+    </nav>
+  </sc-if>
+  <div style="flex:1"></div>
+  <sc-if value="{{ showSearch }}" hint-placeholder-val="{{ true }}">
+    <label style="display:flex;align-items:center;gap:8px;height:36px;width:260px;padding:0 6px;background:var(--obsidian);border:1px solid {{ sBd }};border-radius:6px;box-shadow:{{ sSh }}">
+      <span style="flex:none;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;background:var(--slate);font:700 12px/1 'JetBrains Mono',monospace;color:var(--blue-hi)">#</span>
+      <input value="{{ q }}" onChange="{{ onQ }}" onKeyDown="{{ onKey }}" onFocus="{{ onFocus }}" onBlur="{{ onBlur }}" placeholder="Tag or name" aria-label="Search players and clans" style="flex:1;min-width:0;background:none;border:0;outline:none;color:var(--text-1);font:500 12px/1 'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase"></input>
+      <span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ hintFg }};padding-right:4px">{{ hint }}</span>
+    </label>
+  </sc-if>
+  <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="flex:none;height:36px;padding:0 12px;background:none;border:1px solid var(--hair);border-radius:6px;color:var(--text-2);font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;cursor:pointer" style-hover="color:var(--text-1);border-color:rgba(58,160,255,.6)">{{ themeLabel }}</button>
+</header>
+<sc-if value="{{ mobile }}" hint-placeholder-val="{{ false }}">
+  <nav aria-label="Primary" style="position:fixed;left:0;right:0;bottom:0;z-index:60;height:64px;display:grid;grid-template-columns:repeat(5,1fr);background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--hair)">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+      <a href="{{ t.href }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:{{ t.fg }};font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;box-shadow:{{ t.sh }}"><span style="width:12px;height:12px;border:1.5px solid currentColor;border-radius:{{ t.r }};transform:{{ t.rot }}"></span>{{ t.label }}</a>
+    </sc-for>
+  </nav>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:64},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;players&quot;,&quot;clans&quot;,&quot;myclan&quot;,&quot;decks&quot;,&quot;leaderboards&quot;,&quot;news&quot;],&quot;default&quot;:&quot;players&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const LINKS=[['players','Players','Player Profile.dc.html'],['clans','Clans','Clans.dc.html'],['myclan','My Clan','Clan Dashboard.dc.html'],['decks','Decks','Decks.dc.html'],['leaderboards','Leaderboards','Leaderboards.dc.html'],['news','News','News.dc.html']];
+const TABS=[['home','HOME','Home.dc.html','2px','none'],['players','SEARCH','Clans.dc.html','50%','none'],['myclan','MY CLAN','Clan Dashboard.dc.html','1px','rotate(45deg)'],['decks','DECKS','Decks.dc.html','2px','none'],['more','MORE','Cards.dc.html','50%','none']];
+class Component extends DCLogic {
+  state={vw:typeof window!=='undefined'?innerWidth:1440,q:'',f:false,theme:'dark',bad:false};
+  componentDidMount(){this.setState({theme:window.OA?OA.theme():'dark'});this._rs=()=>this.setState({vw:innerWidth});addEventListener('resize',this._rs)}
+  componentWillUnmount(){removeEventListener('resize',this._rs)}
+  renderVals(){
+    const s=this.state,a=this.props.active||'',raw=s.q.replace(/^#/,'').toUpperCase(),valid=/^[0289PYLQGRJCUV]{3,12}$/.test(raw);
+    const go=()=>{if(valid)location.href=raw.length>7?'Player Profile.dc.html':'Clan Profile.dc.html';else if(raw)location.href=/[^0289PYLQGRJCUV]/.test(raw)&&raw.length>2?'Clans.dc.html':'Not Found.dc.html'};
+    return {
+      wide:s.vw>=1000,showSearch:s.vw>=1240,mobile:s.vw<760,
+      links:LINKS.map(([k,label,href])=>({label,href,cur:k===a?'page':'false',fg:k===a?'var(--text-1)':'var(--text-2)',sh:k===a?'0 2px 0 0 #8CCBFF,0 4px 10px rgba(58,160,255,.6)':'none'})),
+      tabs:TABS.map(([k,label,href,r,rot])=>({label,href,r,rot,fg:k===a||(k==='players'&&a==='clans')?'var(--blue-hi)':'var(--text-2)',sh:k===a?'inset 0 2px 0 #8CCBFF':'none'})),
+      q:s.q,onQ:e=>this.setState({q:e.target.value}),onKey:e=>{if(e.key==='Enter')go()},onFocus:()=>this.setState({f:true}),onBlur:()=>this.setState({f:false}),
+      sBd:s.f?'rgba(58,160,255,.7)':'var(--hair)',sSh:s.f?'0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45)':'none',
+      hint:!raw?'⌘K':valid?'TAG ↵':'NAME ↵',hintFg:valid?'var(--blue-hi)':'var(--text-3)',
+      themeLabel:s.theme==='light'?'◐ Marble':'◑ Obsidian',toggleTheme:()=>this.setState({theme:window.OA?OA.toggleTheme():'dark'})
+    };
+  }
+}
+</script>
+</body>
+</html>

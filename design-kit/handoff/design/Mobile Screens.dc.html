@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;800&amp;display=swap" rel="stylesheet">
+<style>html,body{margin:0;background:#07080A;color:#F3F4F6}a{color:#3AA0FF;text-decoration:none}a:hover{color:#8CCBFF}</style>
+</helmet>
+<div style="padding:64px;background:#07080A;min-width:max-content">
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:48px">
+    <span style="font:500 11px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:#80868F">MOBILE · 390 × 844 · LIVE PAGES</span>
+    <h1 style="margin:0;font:800 96px/.86 'JetBrains Mono',monospace;letter-spacing:-.06em">MOBILE</h1>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,414px);gap:56px 48px">
+    <sc-for list="{{ screens }}" as="s" hint-placeholder-count="12">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:800 18px/1 'JetBrains Mono',monospace;letter-spacing:-.02em">{{ s.n }} · {{ s.label }}</span><a href="{{ s.file }}" style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.14em">OPEN →</a></div>
+        <div style="width:414px;height:868px;padding:12px;border-radius:48px;background:#1A1C20;border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 30px 80px rgba(0,0,0,.6)">
+          <iframe src="{{ s.file }}" title="{{ s.label }}" loading="lazy" style="width:390px;height:844px;border:0;border-radius:36px;background:#07080A;display:block"></iframe>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const P=[['Home','Home.dc.html'],['Player profile','Player Profile.dc.html'],['Clan dashboard','Clan Dashboard.dc.html'],['Clan profile','Clan Profile.dc.html'],['Clans','Clans.dc.html'],['Decks / Meta','Decks.dc.html'],['Leaderboards','Leaderboards.dc.html'],['News','News.dc.html'],['Cards','Cards.dc.html'],['404 / not found','Not Found.dc.html'],['Design system','Design System.dc.html'],['Interaction notes','Interaction Notes.dc.html']];
+class Component extends DCLogic { renderVals(){ return { screens:P.map(([label,file],i)=>({label,file,n:String(i+1).padStart(2,'0')})) }; } }
+</script>
+</body>
+</html>

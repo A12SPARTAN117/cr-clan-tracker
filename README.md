@@ -2,7 +2,7 @@
 
 A free, fan-made Clash Royale stats site with a focus on **clan management**: look up any player, browse meta decks and leaderboards, and see who in your clan is active, who plays war and who's the most valuable member.
 
-> 🚧 Early development: currently in the design phase.
+> 🚧 Early development. Built with Next.js 16 (App Router, Cache Components) and TypeScript. The design reference lives in [design-kit/handoff](design-kit/handoff/README.md).
 
 ## Planned features
 
@@ -26,6 +26,11 @@ See [docs/api-findings.md](docs/api-findings.md) for what the official API does 
 4. Test the connection:
    ```bash
    node scripts/probe.mjs "#YOURTAG"
+   ```
+5. Install dependencies and start the site at http://localhost:3000:
+   ```bash
+   npm install
+   npm run dev
    ```
 
 ## Disclaimer

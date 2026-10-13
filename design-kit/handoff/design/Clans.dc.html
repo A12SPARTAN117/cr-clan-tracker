@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--void:#07080A;--charcoal:#121316;--obsidian:#1A1C20;--slate:#262930;--hair:rgba(255,255,255,.10);--frame:rgba(255,255,255,.55);--text-1:#F3F4F6;--text-2:#A4A9B4;--text-3:#80868F;--blue:#3AA0FF;--blue-hi:#8CCBFF;--blue-deep:#0A48C9;--evo:#A35BFF;--gold:#E6B34A;--ember:#FF5464;--glass:rgba(18,19,22,.72);--btn-bg:#F3F4F6;--btn-fg:#07080A;--well:#0B0C0E}
+[data-theme=light]{--void:#E7E7E4;--charcoal:#F4F4F2;--obsidian:#FFFFFF;--slate:#ECECE9;--hair:rgba(12,13,15,.12);--frame:rgba(12,13,15,.35);--text-1:#0C0D0F;--text-2:#3E4249;--text-3:#5F646C;--blue:#0A6BDB;--blue-hi:#0A6BDB;--ember:#C8283A;--gold:#946508;--evo:#7A2FE0;--glass:rgba(244,244,242,.8);--btn-bg:#0C0D0F;--btn-fg:#F4F4F2;--well:#DCDCD8}
+html,body{margin:0;background:var(--void);color:var(--text-1)}
+body{font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}a:hover{color:var(--blue-hi)}
+*{box-sizing:border-box}
+@keyframes oaBlink{50%{opacity:0}}
+</style>
+<script src="./arena-fx.js"></script>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative;min-height:100vh;background:var(--void);color:var(--text-1);overflow-x:hidden">
+<oa-grain></oa-grain>
+<dc-import name="SiteNav" active="clans" hint-size="100%,64px"></dc-import>
+<main style="max-width:1440px;margin:0 auto;padding:clamp(40px,6vw,80px) clamp(16px,3vw,40px) 80px;display:flex;flex-direction:column;gap:32px">
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--text-3)">CLANS DIRECTORY · 1,284 TRACKED</span>
+    <h1 data-reveal="1" style="margin:0;font:800 clamp(44px,8vw,120px)/.86 'JetBrains Mono',monospace;letter-spacing:-.06em">FIND A CLAN</h1>
+  </div>
+  <label style="position:relative;display:flex;align-items:center;gap:12px;height:64px;max-width:760px;padding:0 12px;background:var(--obsidian);border:1px solid {{ sBd }};border-radius:8px;box-shadow:{{ sSh }}">
+    <span style="position:absolute;inset:5px;border:1px solid var(--hair);border-radius:5px;pointer-events:none"></span>
+    <span style="flex:none;width:38px;height:38px;border-radius:5px;background:var(--slate);display:flex;align-items:center;justify-content:center;font:800 16px/1 'JetBrains Mono',monospace;color:var(--blue-hi)">#</span>
+    <span style="position:relative;flex:1;display:flex;align-items:center"><input value="{{ q }}" onChange="{{ onQ }}" onFocus="{{ onF }}" onBlur="{{ onB }}" aria-label="Clan name or tag" placeholder="{{ ph }}" style="width:100%;background:none;border:0;outline:none;color:var(--text-1);font:700 18px/1 'JetBrains Mono',monospace;letter-spacing:.06em;caret-color:var(--blue)"></input><sc-if value="{{ block }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;left:0;width:11px;height:22px;background:var(--blue-hi);animation:oaBlink 1.05s steps(1) infinite"></span></sc-if></span>
+    <span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:{{ qFg }}">{{ qHint }}</span>
+  </label>
+  <div style="display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;padding:16px 0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)">
+    <label style="display:flex;align-items:center;gap:10px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">LOCATION
+      <select value="{{ loc }}" onChange="{{ onLoc }}" style="height:32px;padding:0 10px;background:var(--obsidian);border:1px solid var(--hair);border-radius:4px;color:var(--text-1);font:500 11px/1 'JetBrains Mono',monospace">
+        <sc-for list="{{ locs }}" as="l" hint-placeholder-count="6"><option value="{{ l }}">{{ l }}</option></sc-for>
+      </select>
+    </label>
+    <label style="display:flex;align-items:center;gap:10px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">MIN MEMBERS <input type="range" min="0" max="50" value="{{ minM }}" onChange="{{ onMinM }}" style="accent-color:var(--blue);width:120px"></input><span style="color:var(--text-1);font-size:12px;min-width:22px">{{ minM }}</span></label>
+    <label style="display:flex;align-items:center;gap:10px;font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">WAR TROPHIES ≥ <input type="range" min="0" max="5000" step="250" value="{{ minW }}" onChange="{{ onMinW }}" style="accent-color:var(--blue);width:120px"></input><span style="color:var(--text-1);font-size:12px;min-width:40px">{{ minWTxt }}</span></label>
+    <div style="display:flex;gap:6px;align-items:center"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--text-3)">TYPE</span>
+      <sc-for list="{{ types }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.onClick }}" aria-pressed="{{ c.on }}" style="height:28px;padding:0 10px;border-radius:4px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};box-shadow:{{ c.sh }};font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;cursor:pointer">{{ c.label }}</button></sc-for>
+    </div>
+    <span style="margin-left:auto;font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">{{ count }}</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px">
+    <sc-for list="{{ clans }}" as="c" hint-placeholder-count="9">
+      <a href="Clan Profile.dc.html" data-spot="1" style="position:relative;display:flex;flex-direction:column;gap:16px;padding:20px;background:radial-gradient(260px circle at var(--mx,-400px) var(--my,-400px),rgba(58,160,255,.12),transparent 70%),var(--charcoal);border:1px solid var(--hair);border-radius:8px;color:var(--text-1)" style-hover="border-color:rgba(58,160,255,.5)">
+        <div style="display:flex;gap:14px;align-items:center">
+          <div style="flex:none;width:52px;height:60px"><image-slot id="{{ c.slot }}" shape="rect" fit="contain" placeholder="badge"></image-slot></div>
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:800 20px/1 'JetBrains Mono',monospace;letter-spacing:-.03em">{{ c.name }}</span><span style="font:500 10px/1 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-3)">{{ c.tag }} · {{ c.loc }}</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:14px;border-top:1px solid var(--hair)">
+          <span style="display:flex;flex-direction:column;gap:5px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">MEMBERS</span><span style="font:700 15px/1 'JetBrains Mono',monospace">{{ c.m }}/50</span></span>
+          <span style="display:flex;flex-direction:column;gap:5px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">WAR TR.</span><span style="font:700 15px/1 'JetBrains Mono',monospace">{{ c.w }}</span></span>
+          <span style="display:flex;flex-direction:column;gap:5px"><span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--text-3)">REQ.</span><span style="font:700 15px/1 'JetBrains Mono',monospace">{{ c.req }}</span></span>
+        </div>
+        <span style="font:500 9px/1 'JetBrains Mono',monospace;letter-spacing:.14em;color:{{ c.typeFg }}">{{ c.type }}</span>
+      </a>
+    </sc-for>
+  </div>
+  <sc-if value="{{ none }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:48px;border:1px dashed var(--hair);border-radius:8px;text-align:center">
+      <div style="width:120px;height:90px;opacity:.85"><image-slot id="empty-chest-clans" shape="rect" fit="contain" placeholder="chest art"></image-slot></div>
+      <span style="font:500 11px/1.6 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--text-3)">NO CLANS MATCH. LOOSEN A FILTER OR SEARCH BY TAG.</span>
+    </div>
+  </sc-if>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,140px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CL=[['Iron Veil','#9Q2LUY','Europe',47,3214,'7,000','Invite only'],['Gilded Ash','#Y0PQ8LG','Europe',50,4120,'8,500','Invite only'],['Northwatch','#2RJ9C0V','Germany',44,2980,'7,500','Open'],['Kestrel Court','#LUG82PY','United Kingdom',49,3560,'8,000','Invite only'],['Saltmarsh','#QC0Y2R','Netherlands',38,1880,'6,000','Open'],['The Quiet Keep','#P8UVJ2Q','France',50,4710,'9,000','Closed'],['Lantern Row','#90GLRC','Spain',31,1240,'5,000','Open'],['Ninth Bastion','#UVQ28YP','United States',46,3890,'8,000','Invite only'],['Coldharbour','#GJ2C98L','Canada',27,960,'4,000','Open'],['Ashen Crown','#RYP0Q9U','Brazil',50,4380,'9,500','Closed'],['Marrow & Oak','#8LJ0UGC','Poland',41,2410,'7,000','Open'],['Blue Hour','#JQ9P2VR','Japan',48,3720,'8,500','Invite only']];
+class Component extends DCLogic {
+  state={q:'',f:false,loc:'All locations',minM:0,minW:0,type:'all'};
+  chip(on){return{bd:on?'rgba(58,160,255,.7)':'var(--hair)',bg:on?'rgba(58,160,255,.12)':'transparent',fg:on?'var(--text-1)':'var(--text-2)',sh:on?'0 0 12px rgba(58,160,255,.3)':'none',on}}
+  renderVals(){
+    const s=this.state,q=s.q.trim().replace(/^#/,'').toUpperCase();
+    const list=CL.filter(([n,t,l,m,w,r,ty])=>(!q||n.toUpperCase().includes(q)||t.includes(q))&&(s.loc==='All locations'||l===s.loc)&&m>=s.minM&&w>=s.minW&&(s.type==='all'||ty===s.type));
+    const looksTag=q&&/^[0289PYLQGRJCUV]+$/.test(q);
+    return {
+      q:s.q,onQ:e=>this.setState({q:e.target.value}),onF:()=>this.setState({f:true}),onB:()=>this.setState({f:false}),block:!s.q&&!s.f,ph:'',
+      sBd:s.f?'rgba(58,160,255,.7)':'var(--hair)',sSh:s.f?'0 0 0 1px rgba(58,160,255,.6),0 0 18px rgba(58,160,255,.45),0 0 48px rgba(58,160,255,.18)':'none',
+      qHint:!q?'NAME OR #TAG':looksTag?'SEARCHING TAG':'SEARCHING NAME',qFg:looksTag?'var(--blue-hi)':'var(--text-3)',
+      locs:['All locations',...new Set(CL.map(c=>c[2]))],loc:s.loc,onLoc:e=>this.setState({loc:e.target.value}),
+      minM:s.minM,onMinM:e=>this.setState({minM:+e.target.value}),minW:s.minW,minWTxt:s.minW.toLocaleString('en-US'),onMinW:e=>this.setState({minW:+e.target.value}),
+      types:[['all','ALL'],['Open','OPEN'],['Invite only','INVITE'],['Closed','CLOSED']].map(([v,label])=>({label,...this.chip(s.type===v),onClick:()=>this.setState({type:v})})),
+      count:`${list.length} RESULTS`,none:!list.length,
+      clans:list.map(([name,tag,loc,m,w,req,type],i)=>({slot:'dir-badge-'+i,name,tag,loc:loc.toUpperCase(),m,w:w.toLocaleString('en-US'),req,type:type.toUpperCase(),typeFg:type==='Open'?'var(--blue)':type==='Closed'?'var(--ember)':'var(--text-2)'}))
+    };
+  }
+}
+</script>
+</body>
+</html>
