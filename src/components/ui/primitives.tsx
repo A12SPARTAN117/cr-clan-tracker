@@ -3,7 +3,8 @@ import { agoShort } from '@/lib/format';
 import { Decode } from '../fx/Reveal';
 
 /* ---------- roles ---------- */
-export type ApiRole = 'leader' | 'coLeader' | 'elder' | 'member';
+import type { ApiRole } from '@/lib/cr/types';
+export type { ApiRole };
 export const ROLE_LABEL: Record<ApiRole, string> = { leader: 'Leader', coLeader: 'Co-Leader', elder: 'Elder', member: 'Member' };
 export const ROLE_ORDER: ApiRole[] = ['leader', 'coLeader', 'elder', 'member'];
 

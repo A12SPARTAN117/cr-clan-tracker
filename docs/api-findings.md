@@ -29,6 +29,10 @@ Tested against the live API through the RoyaleAPI proxy (`https://proxy.royaleap
 | Emotes | Not in the API. Only the `EmoteCollection` badge (count of emotes owned) is available |
 | Any historical data | API is current-state only. Clan/trophy/PoL/war history must be built from our own snapshots |
 
+## Tags
+
+Player and clan tags share one character set (`0289PYLQGRJCUV`) **and can collide**: `#GJ8R2Q8U` is both a player and a clan. Tag length does not tell them apart either. The site's search (`/t/{tag}`) asks both endpoints and shows a chooser when both exist.
+
 ## Evolutions & Heroes
 
 Each card has `maxEvolutionLevel` and (on a player's card) `evolutionLevel`. Values:
