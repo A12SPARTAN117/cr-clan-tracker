@@ -1,8 +1,11 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getBattleLog, getPolLeaderboard } from './cr/api';
-import type { ApiCard, Battle, BattleSide } from './cr/types';
-import { cardById, playedAsEvo, playedAsHero, slugify, type Rarity } from './cards';
+import type { Battle, BattleSide } from './cr/types';
+import { cardById, slugify, type Rarity } from './cards';
+import { deckKey, deckName, deckStats, toDeckCard, winConOf, type DeckCard } from './decks';
+
+export type { DeckCard };
 import { parseApiDate } from './format';
 
 /**
@@ -13,17 +16,6 @@ import { parseApiDate } from './format';
 
 export type MetaMode = 'pol' | 'ladder' | 'war';
 export const MODE_LABEL: Record<MetaMode, string> = { pol: 'Path of Legends', ladder: 'Trophy Road', war: 'Clan War' };
-
-export type DeckCard = {
-  id: number;
-  slug: string;
-  name: string;
-  rarity: Rarity;
-  elixir: number | null;
-  evo: boolean;
-  hero: boolean;
-  img: string | null;
-};
 
 export type Matchup = { vs: string; vsSlug: string; games: number; wins: number };
 
@@ -54,61 +46,12 @@ export type MetaSnapshot = {
   modes: Record<MetaMode, ModeMeta>;
 };
 
-/** Cards that win games on their own; used to name decks and group matchups. */
-const WIN_CONS = [
-  'golem', 'lava-hound', 'electro-giant', 'giant', 'royal-giant', 'goblin-giant', 'pekka', 'mega-knight', 'elixir-golem',
-  'hog-rider', 'ram-rider', 'battle-ram', 'royal-hogs', 'balloon', 'graveyard', 'x-bow', 'mortar', 'miner',
-  'goblin-barrel', 'goblin-drill', 'wall-breakers', 'three-musketeers', 'skeleton-barrel', 'sparky', 'goblin-machine',
-  'royal-recruits', 'rocket', 'monk', 'boss-bandit', 'goblinstein', 'rune-giant', 'suspicious-bush', 'skeleton-king', 'mighty-miner', 'archer-queen',
-  'golden-knight', 'little-prince', 'giant-skeleton', 'cannon-cart', 'phoenix', 'electro-dragon', 'prince', 'dark-prince',
-];
-const WIN_RANK = new Map(WIN_CONS.map((s, i) => [s, i]));
-
 const MODE_OF = (b: Battle): MetaMode | null => {
   if (b.type === 'pathOfLegend') return 'pol';
   if (b.type === 'PvP' && /ladder/i.test(b.gameMode?.name ?? '')) return 'ladder';
   if (b.type === 'riverRacePvP' || b.type === 'riverRaceDuel' || b.type === 'riverRaceDuelColosseum') return 'war';
   return null;
 };
-
-function toDeckCard(c: ApiCard): DeckCard {
-  const info = cardById(c.id);
-  const evo = playedAsEvo(c.evolutionLevel);
-  const hero = playedAsHero(c.evolutionLevel);
-  const slug = info?.slug ?? slugify(c.name);
-  return {
-    id: c.id,
-    slug,
-    name: c.name,
-    rarity: (info?.rarity ?? c.rarity) as Rarity,
-    elixir: info?.elixir ?? c.elixirCost ?? null,
-    evo,
-    hero,
-    img: (evo ? c.iconUrls.evolutionMedium : hero ? c.iconUrls.heroMedium : null) ?? c.iconUrls.medium ?? info?.icons.normal ?? null,
-  };
-}
-
-function winConOf(cards: DeckCard[]): DeckCard | null {
-  let best: DeckCard | null = null;
-  for (const c of cards) {
-    const r = WIN_RANK.get(c.slug);
-    if (r != null && (best == null || r < (WIN_RANK.get(best.slug) ?? 99))) best = c;
-  }
-  return best;
-}
-
-/**
- * "Hog Rider · Boss Bandit": the win condition plus the most distinctive support card
- * (champion > legendary > … , heavier first). Without a win condition: two support cards.
- */
-function deckName(cards: DeckCard[], wc: DeckCard | null): string {
-  const order: Rarity[] = ['champion', 'legendary', 'epic', 'rare', 'common', 'tower'];
-  const rest = cards
-    .filter((c) => c !== wc)
-    .sort((a, b) => order.indexOf(a.rarity) - order.indexOf(b.rarity) || (b.elixir ?? 0) - (a.elixir ?? 0));
-  const names = wc ? [wc.name, rest[0]?.name] : [rest[0]?.name, rest[1]?.name];
-  return names.filter(Boolean).join(' · ');
-}
 
 async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Promise<R[]> {
   const out: R[] = new Array(items.length);
@@ -153,10 +96,7 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
     if (!side?.cards || side.cards.length !== 8) return;
     const won = side.crowns > opp.crowns;
     const cards = side.cards.map(toDeckCard);
-    const key = cards
-      .map((c) => `${c.id}${c.evo ? 'e' : ''}${c.hero ? 'h' : ''}`)
-      .sort()
-      .join('-');
+    const key = deckKey(cards);
     const t = side.supportCards?.[0];
     const tower = t ? { slug: cardById(t.id)?.slug ?? slugify(t.name), name: t.name, img: t.iconUrls.medium ?? null } : null;
     const d = m.decks.get(key) ?? { cards, tower, games: 0, wins: 0, vs: new Map() };
@@ -203,7 +143,7 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
       .filter(([, d]) => d.games >= 2)
       .map(([key, d]) => {
         const wc = winConOf(d.cards);
-        const els = d.cards.map((c) => c.elixir ?? 0);
+        const st = deckStats(d.cards);
         // Show the deck in its played order: evo / hero slots first.
         return {
           key,
@@ -215,8 +155,8 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
           wins: d.wins,
           use: (d.games / Math.max(1, m.sides)) * 100,
           win: (d.wins / d.games) * 100,
-          avgElixir: els.reduce((a, b) => a + b, 0) / 8,
-          cycle: [...els].sort((a, b) => a - b).slice(0, 4).reduce((a, b) => a + b, 0),
+          avgElixir: st.avgElixir,
+          cycle: st.cycle,
           matchups: [...d.vs.entries()].map(([vsSlug, v]) => ({ vs: v.name, vsSlug, games: v.games, wins: v.wins })).sort((a, b) => b.games - a.games).slice(0, 8),
         };
       })
