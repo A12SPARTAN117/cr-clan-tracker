@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { checkTag, searchHref } from '@/lib/tags';
 import { getTheme, toggleTheme, type Theme } from './fx/motion';
 import s from './SiteNav.module.css';
@@ -101,8 +101,21 @@ function NavSearch() {
   );
 }
 
+/** Global nav. The pathname is runtime data on dynamic routes, so it streams in under Suspense. */
 export function SiteNav() {
-  const pathname = usePathname();
+  return (
+    <Suspense fallback={<NavView pathname={null} />}>
+      <NavWithPath />
+    </Suspense>
+  );
+}
+
+function NavWithPath() {
+  return <NavView pathname={usePathname()} />;
+}
+
+function NavView({ pathname: path }: { pathname: string | null }) {
+  const pathname = path ?? '';
   const overlay = pathname === '/';
   const [scrolled, setScrolled] = useState(false);
 
