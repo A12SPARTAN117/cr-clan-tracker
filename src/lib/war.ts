@@ -15,3 +15,14 @@ export function warDay(now: Date): WarDay {
 }
 
 export const WAR_DAYS = ['THU', 'FRI', 'SAT', 'SUN'] as const;
+
+/**
+ * The race week a moment belongs to, as the UTC date (YYYY-MM-DD) of its first war day
+ * (Thursday). Works for "now" during a race and for a race-log entry's end time (Monday).
+ */
+export function warWeekKey(at: Date): string {
+  const shifted = new Date(at.getTime() - RESET_MIN * 60_000 - 60_000);
+  const back = (shifted.getUTCDay() - 4 + 7) % 7;
+  const thu = new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate() - back));
+  return thu.toISOString().slice(0, 10);
+}

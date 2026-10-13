@@ -3,6 +3,10 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // Embedded Postgres ships WASM + data files; load it from node_modules at runtime.
+  serverExternalPackages: ['@electric-sql/pglite'],
+  // Migrations are read from disk on first database use.
+  outputFileTracingIncludes: { '/**': ['./drizzle/**/*'] },
   // Custom cache lifetimes for Clash Royale API data (seconds).
   cacheLife: {
     // Player and clan snapshots: the dashboard promises a refresh at least every 10 minutes.

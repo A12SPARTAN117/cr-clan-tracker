@@ -1,0 +1,142 @@
+import 'server-only';
+import { and, desc, eq, gte, inArray, isNull, lte } from 'drizzle-orm';
+import { connection } from 'next/server';
+import { getDb, schema } from '../db';
+
+/**
+ * Clan and player history built from our own snapshots (the official API is current-state
+ * only). Every reader returns null when there is no database or the clan isn't tracked yet,
+ * and pages fall back to their "Data since" / partial states.
+ *
+ * These reads are deliberately uncached: callers merge them into cached API data at request time.
+ */
+
+const { trackedClans, clanMembers, rosterEvents, memberDaily, warDays } = schema;
+
+export type RosterEventKind = 'joined' | 'left' | 'kicked' | 'promoted' | 'demoted';
+
+export type RosterEvent = {
+  at: string; // ISO
+  tag: string;
+  name: string;
+  kind: RosterEventKind;
+  /** e.g. "to Elder" for promotions. */
+  detail?: string;
+};
+
+export type ClanHistory = {
+  /** When this clan was first snapshotted. */
+  trackedSince: string;
+  /** Member tag → when they joined (ISO). Only for members who joined after tracking began. */
+  firstSeen: Record<string, string>;
+  /** Members already in the clan at the first snapshot (join date unknown). */
+  baseline: string[];
+  rosterEvents: RosterEvent[];
+  /** Race week (YYYY-MM-DD of its Thursday) → member tag → decks per war day (null = no snapshot). */
+  dailyDecks: Record<string, Record<string, (number | null)[]>>;
+  /** Member tag → trophies about a week ago (oldest snapshot in the last 7 days). */
+  trophiesWeekAgo: Record<string, number>;
+};
+
+const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
+const isoDay = (d: Date) => d.toISOString().slice(0, 10);
+
+export async function getClanHistory(tagRaw: string): Promise<ClanHistory | null> {
+  await connection(); // request-time data, never prerendered
+  const tag = bare(tagRaw);
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const [tracked] = await db.select().from(trackedClans).where(eq(trackedClans.tag, tag));
+    if (!tracked) return null;
+    const now = new Date();
+    const weeksBack = isoDay(new Date(now.getTime() - 11 * 7 * 86400_000));
+    const weekAgo = isoDay(new Date(now.getTime() - 7 * 86400_000));
+    const [members, events, decks, daily] = await Promise.all([
+      db.select().from(clanMembers).where(and(eq(clanMembers.clanTag, tag), isNull(clanMembers.leftAt))),
+      db.select().from(rosterEvents).where(eq(rosterEvents.clanTag, tag)).orderBy(desc(rosterEvents.at)).limit(300),
+      db.select().from(warDays).where(and(eq(warDays.clanTag, tag), gte(warDays.week, weeksBack))),
+      db.select().from(memberDaily).where(and(eq(memberDaily.clanTag, tag), gte(memberDaily.day, weekAgo))).orderBy(memberDaily.day),
+    ]);
+
+    const firstSeen: Record<string, string> = {};
+    const baseline: string[] = [];
+    for (const m of members) {
+      if (m.baseline) baseline.push(m.playerTag);
+      else firstSeen[m.playerTag] = m.firstSeenAt.toISOString();
+    }
+
+    const dailyDecks: ClanHistory['dailyDecks'] = {};
+    for (const r of decks) {
+      const wk = (dailyDecks[r.week] ??= {});
+      const row = (wk[r.playerTag] ??= [null, null, null, null]);
+      row[r.day - 1] = r.decks;
+    }
+
+    const trophiesWeekAgo: Record<string, number> = {};
+    for (const r of daily) if (!(r.playerTag in trophiesWeekAgo)) trophiesWeekAgo[r.playerTag] = r.trophies;
+
+    return {
+      trackedSince: tracked.trackedSince.toISOString(),
+      firstSeen,
+      baseline,
+      rosterEvents: events.map((e) => ({ at: e.at.toISOString(), tag: e.playerTag, name: e.name, kind: e.kind as RosterEventKind, detail: e.detail ?? undefined })),
+      dailyDecks,
+      trophiesWeekAgo,
+    };
+  } catch (e) {
+    console.error('[history] clan read failed:', e instanceof Error ? e.message : e);
+    return null;
+  }
+}
+
+export type PlayerHistory = {
+  /** Clans this player has been seen in, newest stint first. */
+  clans: { clanTag: string; clanName: string; role: string; from: string; to: string | null; baseline: boolean }[];
+  /** Daily trophies from tracked-clan snapshots, oldest first. */
+  trophies: { day: string; trophies: number }[];
+  /** Per-day war decks, newest week first. */
+  war: { week: string; days: (number | null)[] }[];
+};
+
+export async function getPlayerHistory(tagRaw: string): Promise<PlayerHistory | null> {
+  await connection(); // request-time data, never prerendered
+  const tag = bare(tagRaw);
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    const stints = await db.select().from(clanMembers).where(eq(clanMembers.playerTag, tag)).orderBy(desc(clanMembers.firstSeenAt));
+    if (!stints.length) return null;
+    const clanTags = [...new Set(stints.map((s) => s.clanTag))];
+    const [clans, trophies, war] = await Promise.all([
+      db.select({ tag: trackedClans.tag, name: trackedClans.name }).from(trackedClans).where(inArray(trackedClans.tag, clanTags)),
+      db.select({ day: memberDaily.day, trophies: memberDaily.trophies }).from(memberDaily).where(eq(memberDaily.playerTag, tag)).orderBy(memberDaily.day),
+      db.select().from(warDays).where(and(eq(warDays.playerTag, tag), lte(warDays.day, 4))).orderBy(desc(warDays.week)),
+    ]);
+    const names = new Map(clans.map((c) => [c.tag, c.name]));
+    // Two tracked clans can both hold a snapshot for the same day; keep the highest.
+    const byDay = new Map<string, number>();
+    for (const t of trophies) byDay.set(t.day, Math.max(byDay.get(t.day) ?? 0, t.trophies));
+    const weeks = new Map<string, (number | null)[]>();
+    for (const w of war) {
+      const row = weeks.get(w.week) ?? [null, null, null, null];
+      row[w.day - 1] = w.decks;
+      weeks.set(w.week, row);
+    }
+    return {
+      clans: stints.map((s) => ({
+        clanTag: s.clanTag,
+        clanName: names.get(s.clanTag) ?? s.clanTag,
+        role: s.role,
+        from: s.firstSeenAt.toISOString(),
+        to: s.leftAt?.toISOString() ?? null,
+        baseline: !!s.baseline,
+      })),
+      trophies: [...byDay.entries()].map(([day, t]) => ({ day, trophies: t })),
+      war: [...weeks.entries()].map(([week, days]) => ({ week, days })),
+    };
+  } catch (e) {
+    console.error('[history] player read failed:', e instanceof Error ? e.message : e);
+    return null;
+  }
+}
