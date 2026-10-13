@@ -2,9 +2,9 @@ import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getBattleLog, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags } from '../cr/api';
 import type { ApiRole, Battle, Clan, CurrentRiverRace, RiverRaceLogEntry } from '../cr/types';
-import { getClanHistory, type RosterEvent } from '../history';
+import type { ClanHistory, RosterEvent } from '../history';
 import { parseApiDate } from '../format';
-import { warDay } from '../war';
+import { warDay, warWeekKey } from '../war';
 import { factorScores, type FactorScores, type ScoreInputs } from './score';
 
 /** A war-day cell: decks used, null = not in clan, 'pending' = day not played yet, 'untracked' = no per-day snapshot. */
@@ -41,6 +41,8 @@ export type DashMember = {
   tenureKnown: 'exact' | 'atLeast';
   joined: string | null;
   isNew: boolean;
+  /** Trophy change over ~7 days, from snapshots. */
+  trophyTrend: number | null;
   hist: WeekHistory[];
   participation: number | null;
   inputs: ScoreInputs;
@@ -111,7 +113,11 @@ async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Prom
 }
 
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
-const raceKey = (e: RiverRaceLogEntry) => `${e.seasonId}:${e.sectionIndex}`;
+/** Race week key (Thursday's date) so log entries line up with our per-day snapshots. */
+const raceKey = (e: RiverRaceLogEntry) => {
+  const end = parseApiDate(e.createdDate);
+  return end ? warWeekKey(end) : `${e.seasonId}:${e.sectionIndex}`;
+};
 const raceLabel = (e: RiverRaceLogEntry) => `S${e.seasonId} · W${e.sectionIndex + 1}`;
 
 function battleStats(log: Battle[] | null, selfTag: string) {
@@ -176,8 +182,14 @@ function raceInfo(race: CurrentRiverRace | null, ourTag: string, now: Date) {
   };
 }
 
+function raceStreak(hist: WeekHistory[]): number {
+  let n = 0;
+  while (n < hist.length && hist[n]) n++;
+  return n;
+}
+
 async function build(tag: string): Promise<Dashboard | null> {
-  const [clanR, raceR, logR, history] = await Promise.all([getClan(tag), getCurrentRiverRace(tag), getRiverRaceLog(tag, 10), getClanHistory(tag)]);
+  const [clanR, raceR, logR] = await Promise.all([getClan(tag), getCurrentRiverRace(tag), getRiverRaceLog(tag, 10)]);
   if (!clanR.ok) return null;
   const clan = clanR.data;
   const ourTag = bare(clan.tag);
@@ -207,30 +219,23 @@ async function build(tag: string): Promise<Dashboard | null> {
     const decks = cp?.decksUsed ?? 0;
     const decksToday = cp?.decksUsedToday ?? 0;
 
-    // Per-day cells for this week: today is exact; earlier days need snapshots.
-    const snapDays = history?.dailyDecks.current?.[t];
+    // Per-day cells for this week: today is exact; earlier days come from snapshots (applyHistory).
     const days: DayCell[] = [0, 1, 2, 3].map((d) => {
       if (war?.kind === 'training' || d + 1 > warDayNum) return 'pending';
       if (d + 1 === warDayNum) return decksToday;
-      return snapDays?.[d] ?? 'untracked';
+      return 'untracked';
     });
 
     const hist: WeekHistory[] = logParts.map(({ entry, parts }) => {
       const p = parts.get(t);
       if (!p) return null;
-      const snap = history?.dailyDecks[raceKey(entry)]?.[t] ?? null;
-      return { key: raceKey(entry), label: raceLabel(entry), decks: p.decksUsed, fame: p.fame, days: snap };
+      return { key: raceKey(entry), label: raceLabel(entry), decks: p.decksUsed, fame: p.fame, days: null };
     });
     const present = hist.filter((h): h is NonNullable<WeekHistory> => !!h);
     const participation = present.length ? present.reduce((a, h) => a + h.decks, 0) / (present.length * 16) : null;
 
-    // Tenure: exact from snapshots, otherwise consecutive tracked races (a lower bound).
-    let streak = 0;
-    while (streak < hist.length && hist[streak]) streak++;
-    const first = history?.firstSeen[t];
-    const isNewByLog = log.length > 0 && !hist[0];
-    const tenureDays = first ? (now.getTime() - new Date(first).getTime()) / 86400_000 : streak * 7;
-    const tenureKnown: 'exact' | 'atLeast' = first ? 'exact' : 'atLeast';
+    // Tenure from the race log: consecutive recent races (a lower bound). applyHistory refines it.
+    const tenureDays = raceStreak(hist) * 7;
 
     const pl = players[i];
     const pol = pl.ok ? pl.data.currentPathOfLegendSeasonResult : undefined;
@@ -265,9 +270,10 @@ async function build(tag: string): Promise<Dashboard | null> {
       days,
       ...bs,
       tenureDays,
-      tenureKnown,
-      joined: first ?? null,
-      isNew: first ? tenureDays < 7 : isNewByLog,
+      tenureKnown: 'atLeast',
+      joined: null,
+      isNew: log.length > 0 && !hist[0],
+      trophyTrend: null,
       hist,
       participation,
       inputs,
@@ -319,7 +325,7 @@ async function build(tag: string): Promise<Dashboard | null> {
     past,
     former: [...former.values()],
     members,
-    history: history ? { trackedSince: history.trackedSince, events: history.rosterEvents } : null,
+    history: null,
     logsRead: logs.filter((l) => l.ok).length,
   };
 }
@@ -335,3 +341,39 @@ export async function getDashboard(tag: string): Promise<Dashboard | null> {
 }
 
 
+
+/**
+ * Merges snapshot history into a (cached) dashboard: per-day war decks, exact join dates,
+ * trophy trends and roster events. Pure, so it runs per request on top of the cache.
+ */
+export function applyHistory(d: Dashboard, h: ClanHistory | null): Dashboard {
+  if (!h) return d;
+  const now = new Date(d.generatedAt).getTime();
+  const week = warWeekKey(new Date(d.generatedAt));
+  const trackedDays = Math.max(0, (now - new Date(h.trackedSince).getTime()) / 86400_000);
+  const baseline = new Set(h.baseline);
+  const members = d.members.map((m) => {
+    const snap = h.dailyDecks[week]?.[m.tag];
+    const days = m.days.map((c, i) => (c === 'untracked' ? (snap?.[i] ?? 'untracked') : c));
+    const hist = m.hist.map((w) => (w ? { ...w, days: h.dailyDecks[w.key]?.[m.tag] ?? null } : null));
+    const first = h.firstSeen[m.tag];
+    const streakDays = raceStreak(hist) * 7;
+    // Members present at the first snapshot have been here at least since tracking began.
+    const tenureDays = first ? (now - new Date(first).getTime()) / 86400_000 : baseline.has(m.tag) ? Math.max(streakDays, trackedDays) : streakDays;
+    const before = h.trophiesWeekAgo[m.tag];
+    const inputs = { ...m.inputs, tenureDays };
+    return {
+      ...m,
+      days,
+      hist,
+      tenureDays,
+      tenureKnown: first ? ('exact' as const) : ('atLeast' as const),
+      joined: first ?? null,
+      isNew: first ? tenureDays < 7 : m.isNew,
+      trophyTrend: before != null ? m.trophies - before : null,
+      inputs,
+      factors: factorScores(inputs),
+    };
+  });
+  return { ...d, members, history: { trackedSince: h.trackedSince, events: h.rosterEvents } };
+}

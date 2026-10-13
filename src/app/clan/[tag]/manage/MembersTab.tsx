@@ -48,7 +48,7 @@ export const SORTERS: Record<SortKey, (m: Scored) => number | string> = {
   fWin: (m) => m.fWin ?? -1,
   score: (m) => m.score,
   tenure: (m) => m.tenureDays,
-  trend: (m) => m.rankMove,
+  trend: (m) => m.trophyTrend ?? m.rankMove,
 };
 
 export type Filters = {
@@ -89,6 +89,20 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
 }
 
 const TRO_STEPS = [0, 8000, 9000, 10000];
+
+/** Trophy change over 7 days once snapshots exist; until then, clan rank movement. */
+function Trend({ m }: { m: Scored }) {
+  const v = m.trophyTrend ?? m.rankMove;
+  return (
+    <td
+      className={s.right}
+      style={{ padding: '10px 14px 10px 12px', fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap', color: v > 0 ? 'var(--blue)' : v < 0 ? 'var(--ember)' : 'var(--text-3)' }}
+      title={m.trophyTrend != null ? 'Trophy change over the last 7 days' : 'Clan rank change since the weekly reset'}
+    >
+      {v > 0 ? `▲ ${v}` : v < 0 ? `▼ ${-v}` : '— 0'}
+    </td>
+  );
+}
 
 export function MembersTab({
   all,
@@ -327,13 +341,7 @@ export function MembersTab({
                 <td className={`${s.right} ${s.muted}`} style={{ fontSize: 12 }} title={m.tenureKnown === 'exact' ? undefined : 'At least: counted from the oldest tracked race'}>
                   {tenureText(m)}
                 </td>
-                <td
-                  className={s.right}
-                  style={{ padding: '10px 14px 10px 12px', fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap', color: m.rankMove > 0 ? 'var(--blue)' : m.rankMove < 0 ? 'var(--ember)' : 'var(--text-3)' }}
-                  title="Clan rank change since the weekly reset"
-                >
-                  {m.rankMove > 0 ? `▲ ${m.rankMove}` : m.rankMove < 0 ? `▼ ${-m.rankMove}` : '— 0'}
-                </td>
+                <Trend m={m} />
               </tr>
             ))}
           </tbody>
