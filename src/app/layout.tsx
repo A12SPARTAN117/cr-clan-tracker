@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Suspense } from 'react';
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import { MotionLayer } from '@/components/fx/MotionLayer';
 import { Grain } from '@/components/fx/Grain';
@@ -33,7 +34,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         {children}
         <SiteFooter />
         <Grain />
-        <MotionLayer />
+        <Suspense fallback={null}>
+          <MotionLayer />
+        </Suspense>
       </body>
     </html>
   );
