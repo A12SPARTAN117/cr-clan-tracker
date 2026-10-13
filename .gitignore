@@ -1,0 +1,29 @@
+# Secrets — never commit the API key
+.env
+.env.*
+!.env.example
+
+# Dependencies & build output
+node_modules/
+dist/
+.next/
+out/
+.vercel/
+
+# Local API response dumps
+.cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Card art downloaded by scripts/fetch-cards.mjs (large; the site uses API image URLs)
+design-kit/images/
+design-kit/*.zip
+design-kit/moodboard/
+vendor/
+design-kit/royaleapi/
+design-kit/prompts/
