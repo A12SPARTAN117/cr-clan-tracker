@@ -341,10 +341,7 @@ img {
   box-shadow: var(--glow);
 }
 
-/* ---------- reveal / draw (driven by useMotion) ---------- */
-[data-reveal] {
-  will-change: transform, opacity, clip-path;
-}
+/* ---------- reveal / draw (see components/fx/Reveal.tsx) ---------- */
 .oa-reveal-pre {
   opacity: 0;
   transform: translateY(28px);
@@ -473,6 +470,11 @@ img {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+  .oa-reveal-pre,
+  .oa-draw-pre {
+    clip-path: none;
+    transform: none;
   }
   .oa-reveal-in {
     clip-path: none;
