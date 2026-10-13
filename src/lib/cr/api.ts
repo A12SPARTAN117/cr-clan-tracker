@@ -6,6 +6,8 @@ import type {
   ClanRanking,
   ClanSearchItem,
   CurrentRiverRace,
+  EventLeaderboard,
+  EventRanked,
   Location,
   Paged,
   Player,
@@ -114,6 +116,17 @@ export async function getClanRankings(location: string | number = 'global', limi
 export async function getClanWarRankings(location: string | number = 'global', limit = 100) {
   'use cache';
   return settle(await request<Paged<ClanRanking>>(`/locations/${location}/rankings/clanwars?limit=${limit}`), 'cr');
+}
+
+/** Event leaderboards (2v2 League, Merge Tactics, Touchdown…). Many entries have no name. */
+export async function getEventLeaderboards() {
+  'use cache';
+  return settle(await request<Paged<EventLeaderboard>>('/leaderboards'), 'cr');
+}
+
+export async function getEventLeaderboard(id: number, limit = 100) {
+  'use cache';
+  return settle(await request<Paged<EventRanked>>(`/leaderboard/${id}?limit=${limit}`), 'cr');
 }
 
 export async function getLocations() {
