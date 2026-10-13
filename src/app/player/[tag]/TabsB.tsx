@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
+import { EmptyState } from '@/components/EmptyState';
 import { agoShort, fmt } from '@/lib/format';
 import type { PlayerProfile } from '@/lib/player/profile';
 import s from './player.module.css';
@@ -196,15 +197,7 @@ export function DecksTab({ p }: { p: PlayerProfile }) {
 }
 
 /* ---------------- History ---------------- */
-export function EmptyChest({ text }: { text: string }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: 36, textAlign: 'center' }}>
-      {/* eslint-disable-next-line @next/next/no-img-element -- static chest art */}
-      <img src="/scenes/chest.jpg" alt="" width={160} height={86} style={{ objectFit: 'cover', borderRadius: 6, opacity: 0.8, filter: 'grayscale(.4)' }} />
-      <span style={{ font: '500 11px/1.6 var(--mono)', letterSpacing: '.1em', color: 'var(--text-3)', maxWidth: 420 }}>{text}</span>
-    </div>
-  );
-}
+const EmptyChest = EmptyState;
 
 function Table({ head, rows, empty }: { head: [string, 'left' | 'right'][]; rows: string[][]; empty?: string }) {
   return (
