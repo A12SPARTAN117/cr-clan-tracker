@@ -98,7 +98,8 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
     cacheLife('crError');
     return null;
   }
-  const logs = await pool(top.data.items, 8, (p) => getBattleLog(p.tag.replace('#', '')));
+  // A wide fan-out keeps a cold snapshot well under 10s (the dev server flags slower cache fills).
+  const logs = await pool(top.data.items, 25, (p) => getBattleLog(p.tag.replace('#', '')));
 
   const windowHours = 24;
   const now = Date.now();
