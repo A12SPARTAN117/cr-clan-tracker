@@ -178,6 +178,7 @@ export type RiverRaceLogEntry = {
 
 export type PolRankedPlayer = { tag: string; name: string; expLevel: number; eloRating: number; rank: number; clan?: ClanRef };
 
+/** In /rankings/clanwars, clanScore is the clan's war trophies. */
 export type ClanRanking = {
   tag: string;
   name: string;
@@ -189,5 +190,8 @@ export type ClanRanking = {
   members: number;
   badgeId: number;
 };
+
+export type EventLeaderboard = { id: number; name: string | null };
+export type EventRanked = { tag: string; name: string; rank: number; score: number; clan?: ClanRef };
 
 export type Paged<T> = { items: T[]; paging?: { cursors?: { after?: string; before?: string } } };
