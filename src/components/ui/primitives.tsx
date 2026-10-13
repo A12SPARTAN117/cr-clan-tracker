@@ -174,10 +174,11 @@ export function ScoreGauge({ score, size = 32, big = false, label }: { score: nu
 }
 
 /* ---------- war heatmap cell ---------- */
-export type HeatValue = number | null | 'pending';
+export type HeatValue = number | null | 'pending' | 'untracked';
 
 export function heatStyle(n: HeatValue): { style: CSSProperties; text: string; title: string } {
   if (n === 'pending') return { style: { background: 'transparent', border: '1px dashed var(--hair)', color: 'var(--text-3)' }, text: '·', title: 'Not played yet' };
+  if (n === 'untracked') return { style: { background: 'transparent', border: '1px dashed var(--hair)', color: 'var(--text-3)' }, text: '–', title: 'No daily snapshot for this day' };
   if (n == null)
     return {
       style: { background: 'repeating-linear-gradient(135deg,var(--well) 0 3px,transparent 3px 6px)', border: '1px solid var(--hair)', color: 'transparent' },

@@ -26,7 +26,7 @@ export function SceneHeader({
   style?: CSSProperties;
 }) {
   return (
-    <section className={s.scene} style={{ height, ...style }}>
+    <section className={s.scene} style={{ minHeight: height, ...style }}>
       <div className={s.still} style={{ backgroundImage: `url(${scene})` }} />
       <Fog density={fog} />
       {character && <div className={s.char} style={{ backgroundImage: `url(${character})` }} aria-hidden />}
