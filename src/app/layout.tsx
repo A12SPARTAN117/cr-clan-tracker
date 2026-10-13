@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
+import { MotionLayer } from '@/components/fx/MotionLayer';
+import { Grain } from '@/components/fx/Grain';
+import { SiteNav } from '@/components/SiteNav';
+import { SiteFooter } from '@/components/SiteFooter';
 import './globals.css';
 
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500', '700', '800'], variable: '--font-mono' });
@@ -24,7 +28,13 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <SiteNav />
+        {children}
+        <SiteFooter />
+        <Grain />
+        <MotionLayer />
+      </body>
     </html>
   );
 }
