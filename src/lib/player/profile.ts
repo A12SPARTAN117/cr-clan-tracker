@@ -6,6 +6,7 @@ import { CARDS, TOWER_TROOPS, cardById, realLevel, type Rarity } from '../cards'
 import { characterFor } from '../characters';
 import { deckKey, deckLink, deckName, deckStats, toDeckCard, winConOf, type DeckCard } from '../decks';
 import { parseApiDate } from '../format';
+import { warWeekKey } from '../war';
 
 export type LeveledCard = DeckCard & { level: number | null };
 
@@ -87,7 +88,7 @@ export type PlayerProfile = {
   achievements: { name: string; info: string; stars: number; value: number; target: number }[];
   battles: BattleRow[];
   decks: PlayerDeck[];
-  war: { label: string; decks: number; fame: number }[] | null;
+  war: { label: string; week: string | null; decks: number; fame: number }[] | null;
 };
 
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
@@ -251,7 +252,8 @@ async function build(tag: string): Promise<PlayerProfile | null> {
     war = raceLog.data.items.flatMap((e) => {
       const st = e.standings.find((s) => bare(s.clan.tag) === clanTag);
       const me = st?.clan.participants.find((x) => bare(x.tag) === bare(p.tag));
-      return me ? [{ label: `S${e.seasonId} · W${e.sectionIndex + 1}`, decks: me.decksUsed, fame: me.fame }] : [];
+      const end = parseApiDate(e.createdDate);
+      return me ? [{ label: `S${e.seasonId} · W${e.sectionIndex + 1}`, week: end ? warWeekKey(end) : null, decks: me.decksUsed, fame: me.fame }] : [];
     });
   }
 

@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { EmptyState } from '@/components/EmptyState';
-import { agoShort, fmt } from '@/lib/format';
+import { agoShort, dstr, fmt } from '@/lib/format';
 import type { PlayerProfile } from '@/lib/player/profile';
+import type { PlayerHistory } from '@/lib/history';
 import s from './player.module.css';
 
 /* ---------------- Stats ---------------- */
@@ -229,8 +230,72 @@ function Table({ head, rows, empty }: { head: [string, 'left' | 'right'][]; rows
   );
 }
 
-export function HistoryTab({ p }: { p: PlayerProfile }) {
-  const [h, setH] = useState<'trophy' | 'clan' | 'pol' | 'war'>('pol');
+function TrophyChart({ points }: { points: { day: string; trophies: number }[] }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const n = points.length;
+  const vals = points.map((p) => p.trophies);
+  const mn = Math.min(...vals) - 20;
+  const mx = Math.max(...vals) + 20;
+  const X = (i: number) => (n === 1 ? 500 : (i / (n - 1)) * 1000);
+  const Y = (v: number) => 240 - ((v - mn) / Math.max(1, mx - mn)) * 240;
+  const bestSoFar = vals.reduce<number[]>((acc, v) => [...acc, Math.max(acc[acc.length - 1] ?? 0, v)], []);
+  const bestLine = bestSoFar.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const line = vals.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const h = hover != null ? points[hover] : null;
+  return (
+    <div className="panel" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+        <span className="label" style={{ letterSpacing: '.14em' }}>
+          Trophies · tracked days
+        </span>
+        <span style={{ font: '500 11px/1 var(--mono)', color: 'var(--text-2)' }}>{h ? `${dstr(new Date(h.day)).toUpperCase()} · ${fmt(h.trophies)} TROPHIES` : 'HOVER THE LINE'}</span>
+      </div>
+      <svg
+        viewBox="0 0 1000 260"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={`Trophies over ${n} tracked days, from ${fmt(vals[0])} to ${fmt(vals[n - 1])}`}
+        style={{ width: '100%', height: 260, overflow: 'visible' }}
+        onMouseMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          setHover(Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left) / r.width) * (n - 1)))));
+        }}
+        onMouseLeave={() => setHover(null)}
+      >
+        {[0, 80, 160, 240].map((y) => (
+          <line key={y} x1="0" x2="1000" y1={y} y2={y} stroke="var(--hair)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+        ))}
+        <polyline points={line} fill="none" stroke="var(--text-1)" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
+        <polyline points={bestLine} fill="none" stroke="#3AA0FF" strokeWidth="1.2" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+        {hover != null && (
+          <>
+            <line x1={X(hover)} x2={X(hover)} y1="0" y2="240" stroke="rgba(140,203,255,.5)" vectorEffect="non-scaling-stroke" />
+            <circle cx={X(hover)} cy={Y(vals[hover])} r="5" fill="#8CCBFF" style={{ filter: 'drop-shadow(0 0 6px #3AA0FF)' }} />
+          </>
+        )}
+      </svg>
+      <div style={{ display: 'flex', justifyContent: 'space-between', font: '500 9px/1 var(--mono)', letterSpacing: '.12em', color: 'var(--text-3)' }}>
+        <span>{dstr(new Date(points[0].day)).toUpperCase()}</span>
+        <span>{dstr(new Date(points[n - 1].day)).toUpperCase()}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 20, font: '500 10px/1 var(--mono)', letterSpacing: '.1em', color: 'var(--text-2)' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 16, height: 1.5, background: 'var(--text-1)' }} />
+          TROPHIES
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 16, borderTop: '1.5px dashed #3AA0FF' }} />
+          BEST SO FAR
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const ROLE_TXT: Record<string, string> = { leader: 'Leader', coLeader: 'Co-Leader', elder: 'Elder', member: 'Member' };
+
+export function HistoryTab({ p, h: hist }: { p: PlayerProfile; h: PlayerHistory | null }) {
+  const [h, setH] = useState<'trophy' | 'clan' | 'pol' | 'war'>(hist?.trophies.length ? 'trophy' : 'pol');
   const seasons = (
     [
       ['Current season', p.pol.current],
@@ -238,16 +303,22 @@ export function HistoryTab({ p }: { p: PlayerProfile }) {
       ['Best season', p.pol.best],
     ] as const
   ).filter(([, x]) => x);
+  const since = hist?.clans.length ? hist.clans[hist.clans.length - 1].from : null;
+  const perDay = new Map((hist?.war ?? []).map((w) => [w.week, w.days]));
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-      <div className="data-since">History builds up from when we start tracking a player. The API only shows the present, plus the seasons below.</div>
+      <div className="data-since">
+        {since
+          ? `Tracking started on ${dstr(new Date(since))}. History builds up from then.`
+          : 'History builds up once a clan this player is in gets tracked. The API only shows the present, plus the seasons below.'}
+      </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         {(
           [
+            ['trophy', 'Trophy history'],
+            ['clan', 'Clan history'],
             ['pol', 'Path of Legends'],
             ['war', 'Clan wars'],
-            ['clan', 'Clan history'],
-            ['trophy', 'Trophy history'],
           ] as const
         ).map(([k, l]) => (
           <button key={k} type="button" className="chip" style={{ height: 32 }} aria-pressed={h === k} onClick={() => setH(k)}>
@@ -275,7 +346,11 @@ export function HistoryTab({ p }: { p: PlayerProfile }) {
             ['DECKS', 'right'],
             ['FAME', 'right'],
           ]}
-          rows={(p.war ?? []).map((w) => [w.label, p.clan?.name ?? '—', `${w.decks}/16`, fmt(w.fame)])}
+          rows={(p.war ?? []).map((w) => {
+            const days = w.week ? perDay.get(w.week) : undefined;
+            const split = days ? ` (${days.map((d) => (d == null ? '–' : d)).join(' ')})` : '';
+            return [w.label, p.clan?.name ?? '—', `${w.decks}/16${split}`, fmt(w.fame)];
+          })}
           empty={p.war?.length ? undefined : p.clan ? 'No races for this player in the clan’s last 10 races.' : 'Not in a clan, so no river races to show.'}
         />
       )}
@@ -287,11 +362,22 @@ export function HistoryTab({ p }: { p: PlayerProfile }) {
             ['FROM', 'left'],
             ['TO', 'left'],
           ]}
-          rows={p.clan ? [[p.clan.name, p.role ?? '—', 'Before tracking', 'Now']] : []}
-          empty="Earlier clans were not tracked. Clan moves appear here once tracking starts."
+          rows={
+            hist?.clans.length
+              ? hist.clans.map((c) => [c.clanName, ROLE_TXT[c.role] ?? c.role, c.baseline ? `Before ${dstr(new Date(c.from))}` : dstr(new Date(c.from)), c.to ? dstr(new Date(c.to)) : 'Now'])
+              : p.clan
+                ? [[p.clan.name, p.role ? ROLE_TXT[p.role] : '—', 'Before tracking', 'Now']]
+                : []
+          }
+          empty={hist?.clans.length ? undefined : 'Earlier clans were not tracked. Clan moves appear here once tracking starts.'}
         />
       )}
-      {h === 'trophy' && <EmptyChest text="Trophy history needs daily snapshots. The chart fills in once tracking starts for this player." />}
+      {h === 'trophy' &&
+        (hist && hist.trophies.length >= 2 ? (
+          <TrophyChart points={hist.trophies} />
+        ) : (
+          <EmptyChest text="Trophy history needs daily snapshots. The chart fills in once this player’s clan is tracked." />
+        ))}
     </div>
   );
 }

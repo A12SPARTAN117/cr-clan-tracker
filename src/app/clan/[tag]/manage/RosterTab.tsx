@@ -18,7 +18,6 @@ const FILTERS: ['all' | RosterEventKind, string][] = [
   ['all', 'All'],
   ['joined', 'Joins'],
   ['left', 'Leaves'],
-  ['kicked', 'Kicks'],
   ['promoted', 'Promotions'],
   ['demoted', 'Demotions'],
 ];
@@ -38,7 +37,9 @@ export function RosterTab({ data }: { data: Dashboard }) {
           ))}
         </div>
         {data.history ? (
-          <div className="data-since">Data since {dstr(new Date(data.history.trackedSince))}. Earlier roster changes were not tracked.</div>
+          <div className="data-since">
+            Data since {dstr(new Date(data.history.trackedSince))}. Earlier roster changes were not tracked. The API can&apos;t tell a kick from a leave, so both show as left.
+          </div>
         ) : (
           <div className="data-since">Roster tracking starts once history is on. Joins, leaves, kicks and role changes appear here from then.</div>
         )}

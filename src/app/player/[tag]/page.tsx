@@ -4,6 +4,7 @@ import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getPlayer } from '@/lib/cr/api';
 import { getPlayerProfile } from '@/lib/player/profile';
+import { getPlayerHistory } from '@/lib/history';
 import { checkTag } from '@/lib/tags';
 import { PlayerView } from './PlayerView';
 
@@ -20,9 +21,9 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (c.kind !== 'valid') return <LostScene variant="player" tag={raw.replace(/^#/, '').toUpperCase()} />;
   const r = await getPlayer(c.tag);
   if (!r.ok) return <LostScene variant={r.status === 404 ? 'player' : 'error'} tag={c.tag} />;
-  const p = await getPlayerProfile(c.tag);
+  const [p, history] = await Promise.all([getPlayerProfile(c.tag), getPlayerHistory(c.tag)]);
   if (!p) return <LostScene variant="error" tag={c.tag} />;
-  return <PlayerView p={p} />;
+  return <PlayerView p={p} history={history} />;
 }
 
 export default function PlayerPage({ params }: PageProps<'/player/[tag]'>) {
