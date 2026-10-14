@@ -6,7 +6,7 @@ import { getClan } from '@/lib/cr/api';
 import { getClanProfile } from '@/lib/clan/profile';
 import { getClanHistory } from '@/lib/history';
 import { indexClanMembers } from '@/lib/directory';
-import { after } from 'next/server';
+import { after, connection } from 'next/server';
 import { checkTag } from '@/lib/tags';
 import { ClanProfileView } from './ClanProfileView';
 
@@ -23,6 +23,8 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (c.kind !== 'valid') return <LostScene variant="clan" tag={raw.replace(/^#/, '').toUpperCase()} />;
   const r = await getClan(c.tag);
   if (!r.ok) return <LostScene variant={r.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
+  // Background work below reads the clock, so it must run at request time, not in a prerender.
+  await connection();
   after(() => indexClanMembers(r.data));
   const [data, history] = await Promise.all([getClanProfile(c.tag), getClanHistory(c.tag)]);
   if (!data) return <LostScene variant="error" tag={c.tag} />;

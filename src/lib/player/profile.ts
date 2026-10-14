@@ -6,7 +6,7 @@ import { CARDS, TOWER_TROOPS, cardById, realLevel, type Rarity } from '../cards'
 import { characterFor } from '../characters';
 import { deckKey, deckLink, deckName, deckStats, toDeckCard, winConOf, type DeckCard } from '../decks';
 import { parseApiDate } from '../format';
-import { warWeekKey } from '../war';
+import { riverBattleKind, warWeekKey } from '../war';
 
 export type LeveledCard = DeckCard & { level: number | null };
 
@@ -104,7 +104,7 @@ function leveled(c: ApiCard): LeveledCard {
 export function modeLabel(b: Battle): string {
   if (b.team.length > 1) return '2v2';
   if (b.type === 'pathOfLegend') return 'Path of Legends';
-  if (b.type.startsWith('riverRace')) return 'Clan War';
+  if (b.type.startsWith('riverRace')) return riverBattleKind(b.type, parseApiDate(b.battleTime)) === 'training' ? 'War training' : 'Clan War';
   if (b.type === 'boatBattle') return 'Boat battle';
   if (b.type === 'clanMate') return 'Friendly';
   if (b.type === 'PvP') return /ladder/i.test(b.gameMode?.name ?? '') ? 'Ladder' : 'Event';

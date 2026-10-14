@@ -112,7 +112,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
             {c.race && (
               <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#F3F4F6' }}>
                 <span className="live-dot" />
-                Live · {c.race.label}
+                Live · River race · {c.race.label}
               </span>
             )}
             {c.history && <span>Tracked since {dstr(new Date(c.history.trackedSince))}</span>}
@@ -250,6 +250,12 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
               <span className="label" style={{ letterSpacing: '.14em', marginBottom: 10 }}>
                 Current river race{c.race ? ` · ${c.race.label}` : ''}
               </span>
+              {c.race?.training && (
+                <div className="data-since" role="note" style={{ marginBottom: 10 }}>
+                  River race in progress: training days. Training battles are practice and don&apos;t count as war. War starts{' '}
+                  {new Date(c.race.warStarts).toUTCString().slice(0, 11)} at {new Date(c.race.warStarts).toISOString().slice(11, 16)} UTC.
+                </div>
+              )}
               {c.race ? (
                 c.race.clans.map((r, i) => {
                   const max = Math.max(10000, ...c.race!.clans.map((x) => x.fame));

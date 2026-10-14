@@ -1,4 +1,6 @@
 import type { Battle } from './cr/types';
+import { parseApiDate } from './format';
+import { riverBattleKind } from './war';
 
 /**
  * Game modes for the meta. Ranked, Ultimate Champion, Ladder, Clan War and 2v2 always exist;
@@ -48,11 +50,12 @@ function kindOf(label: string, raw: string): ModeKind {
 }
 
 /** The meta modes a battle counts towards (a ranked Ultimate Champion battle counts for both). */
-export function modesOfBattle(b: Pick<Battle, 'type' | 'gameMode' | 'leagueNumber' | 'team' | 'opponent'>): ModeInfo[] {
+export function modesOfBattle(b: Pick<Battle, 'type' | 'gameMode' | 'leagueNumber' | 'team' | 'opponent' | 'battleTime'>): ModeInfo[] {
   const name = b.gameMode?.name ?? '';
   if (PRIVATE.has(b.type) || /friendly/i.test(name)) return [];
   if (b.type === 'pathOfLegend') return (b.leagueNumber ?? 0) >= UC_LEAGUE ? [CORE_MODES[0], CORE_MODES[1]] : [CORE_MODES[0]];
-  if (WAR.has(b.type)) return [CORE_MODES[3]];
+  // Training-day river race battles are practice, not war.
+  if (WAR.has(b.type)) return riverBattleKind(b.type, parseApiDate(b.battleTime)) === 'war' ? [CORE_MODES[3]] : [];
   if (name === 'Ladder') return [CORE_MODES[2]];
   if (b.team.length === 2 && b.opponent.length === 2) return name === 'TeamVsTeam' ? [CORE_MODES[4]] : [];
   if (b.team.length !== 1 || b.opponent.length !== 1 || !b.gameMode?.id) return [];
