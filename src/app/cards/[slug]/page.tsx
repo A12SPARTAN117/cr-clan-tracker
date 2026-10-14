@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
 import { deckHref } from '@/lib/decks';
 import { CARDS, TOWER_TROOPS, cardBySlug } from '@/lib/cards';
-import { getMeta, MODE_LABEL, type MetaMode } from '@/lib/meta';
+import { getMeta } from '@/lib/meta';
 import { CardsHeader } from '../CardsHeader';
 import { CardArt } from './CardArt';
 
@@ -23,7 +23,7 @@ const pct = (n: number) => n.toFixed(1);
 async function MetaPanel({ slug, isTower }: { slug: string; isTower: boolean }) {
   const meta = await getMeta();
   if (!meta) return <p className="body">Meta stats are unavailable right now.</p>;
-  const modes = (Object.keys(meta.modes) as MetaMode[]).map((m) => ({ mode: m, s: meta.modes[m].cards.find((c) => c.slug === slug), sides: meta.modes[m].sides }));
+  const modes = meta.order.map((m) => ({ mode: m, label: meta.modes[m].label, s: meta.modes[m].cards.find((c) => c.slug === slug), sides: meta.modes[m].sides })).filter((m) => m.sides > 0);
   const pol = meta.modes.pol.cards.find((c) => c.slug === slug);
   const decks = meta.modes.pol.decks.filter((d) => d.cards.some((c) => c.slug === slug) || d.tower?.slug === slug).slice(0, 3);
   const maxUse = Math.max(1, ...modes.map((m) => m.s?.use ?? 0));
@@ -39,9 +39,9 @@ async function MetaPanel({ slug, isTower }: { slug: string; isTower: boolean }) 
             Tower troops are tracked per deck; see the decks below.
           </p>
         ) : (
-          modes.map(({ mode, s }) => (
+          modes.map(({ mode, label, s }) => (
             <div key={mode} style={{ display: 'grid', gridTemplateColumns: '130px 1fr 54px 60px', gap: 12, alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--hair)' }}>
-              <span style={{ font: '500 13px/1.2 var(--sans)' }}>{MODE_LABEL[mode]}</span>
+              <span style={{ font: '500 13px/1.2 var(--sans)' }}>{label}</span>
               <span style={{ height: 4, borderRadius: 2, background: 'var(--well)' }}>
                 <span style={{ display: 'block', height: '100%', width: `${((s?.use ?? 0) / maxUse) * 100}%`, background: 'var(--text-1)' }} />
               </span>

@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
+import { metaDeck } from '@/components/DeckBlock';
 import { Draw, Reveal } from '@/components/fx/Reveal';
 import { Fog } from '@/components/fx/Fog';
 import { LeagueIcon } from '@/components/ui/primitives';
 import { NEWS } from '@/content/news';
 import { getPolLeaderboard } from '@/lib/cr/api';
 import { dstr, fmt } from '@/lib/format';
-import { deckHref } from '@/lib/decks';
 import { getMeta } from '@/lib/meta';
+import { HomeDecks, type HomeMode } from './HomeDecks';
 import { HomeHero } from './HomeHero';
 import { Pinned } from './Pinned';
 import s from './home.module.css';
@@ -23,25 +23,25 @@ async function Hero() {
 
 async function TopDecks() {
   const meta = await getMeta();
-  const decks = meta?.modes.pol.decks.slice(0, 6) ?? [];
-  if (!decks.length)
+  if (!meta?.modes.pol?.decks.length)
     return (
       <p className="body" style={{ padding: '24px 0' }}>
         The meta snapshot is still being built. Check back in a few minutes.
       </p>
     );
-  return (
-    <div>
-      <DeckGrid>
-        {decks.map((d, i) => (
-          <DeckBlock key={d.key} {...metaDeck(d)} rank={i + 1} href={deckHref(d.key)} />
-        ))}
-      </DeckGrid>
-      <p className="label-sm" style={{ marginTop: 14, lineHeight: 1.6 }}>
-        From {fmt(meta?.battles)} battles of the global top {meta?.players} in the last {meta?.windowHours}h
-      </p>
-    </div>
-  );
+  const modes: HomeMode[] = meta.order.map((k) => {
+    const m = meta.modes[k];
+    return {
+      key: k,
+      label: m.label,
+      kind: m.kind,
+      count: m.decks.length,
+      windowHours: m.windowHours,
+      battles: m.battles,
+      decks: m.decks.slice(0, 6).map((d) => ({ key: d.key, ...metaDeck(d) })),
+    };
+  });
+  return <HomeDecks modes={modes} players={meta.players} />;
 }
 
 async function PolTop() {
@@ -102,7 +102,7 @@ export default function Home() {
         <section className={s.section} style={{ gap: 16 }}>
           <div className={s.sectionHead}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <span className="label">02 · Path of Legends meta · last 24h</span>
+              <span className="label">02 · Meta decks · pick a game mode</span>
               <h2 className="display-m" style={{ fontSize: 'clamp(26px,3.2vw,44px)' }}>
                 Top decks right now
               </h2>
