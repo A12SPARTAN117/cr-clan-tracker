@@ -103,7 +103,12 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
     },
     war && war.kind !== 'training'
       ? { label: 'Decks today', value: String(war.decksToday), unit: '/200', delta: `${Math.max(0, 200 - war.decksToday)} remaining`, tone: 'neutral' as const }
-      : { label: 'Decks today', value: '—', delta: 'Training day', tone: 'muted' as const },
+      : {
+          label: 'Decks today',
+          value: '—',
+          delta: war ? `Training · ${war.trainingDecksToday} practice decks, not counted` : 'No race data',
+          tone: 'muted' as const,
+        },
     { label: 'Avg asset score', value: String(avg), unit: '/100', delta: 'With your weights', tone: 'muted' as const },
     { label: 'Flagged inactive', value: String(flagged), delta: decksPossible > 0 ? '3+ days or 0 decks' : '3+ days away', tone: flagged ? ('down' as const) : ('muted' as const) },
   ];
@@ -122,7 +127,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
           <>
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#F3F4F6' }}>
               <span className="live-dot" />
-              Live · {war ? `River race ${war.label.toLowerCase()}` : 'River race unavailable'}
+              Live · {war ? `River race ${war.label.toLowerCase()}${war.kind === 'training' ? ' · practice only' : ''}` : 'River race unavailable'}
             </span>
             <span>Manage · leader view</span>
             <span>Last sync {lastSync}</span>

@@ -26,7 +26,7 @@ function useCountdown(target: string | undefined) {
 
 export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Scored[]; onOpen: (tag: string) => void }) {
   const war = data.war;
-  const countdown = useCountdown(war?.nextReset);
+  const countdown = useCountdown(war?.kind === 'training' ? war.warStarts : war?.nextReset);
   const [openWeek, setOpenWeek] = useState<string | null>(null);
   const training = war?.kind === 'training';
   const maxFame = Math.max(10000, ...(war?.clans.map((c) => c.fame) ?? [0]));
@@ -55,22 +55,28 @@ export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Sc
             <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <span className="label" style={{ letterSpacing: '.14em' }}>
-                  Day ends in
+                  {training ? 'War starts in' : 'Day ends in'}
                 </span>
                 <span style={{ font: '700 28px/1 var(--mono)', fontVariantNumeric: 'tabular-nums', color: 'var(--blue-hi)', textShadow: '0 0 18px rgba(58,160,255,.5)' }}>{countdown}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <span className="label" style={{ letterSpacing: '.14em' }}>
-                  Our decks today
+                  {training ? 'Practice decks today' : 'Our decks today'}
                 </span>
-                <span style={{ font: '700 28px/1 var(--mono)', fontVariantNumeric: 'tabular-nums' }}>
-                  {war.decksToday}
-                  <span style={{ color: 'var(--text-3)', fontSize: 16 }}>/200</span>
+                <span style={{ font: '700 28px/1 var(--mono)', fontVariantNumeric: 'tabular-nums', color: training ? 'var(--text-2)' : undefined }}>
+                  {training ? war.trainingDecksToday : war.decksToday}
+                  {!training && <span style={{ color: 'var(--text-3)', fontSize: 16 }}>/200</span>}
                 </span>
               </div>
             </div>
           )}
         </div>
+        {training && (
+          <div className="data-since" role="note">
+            The river race is in its training days. Training battles are practice: they don&apos;t count as playing war here, and nobody is flagged
+            for skipping them. War days run Thursday to Sunday.
+          </div>
+        )}
         {war && (
           <div style={{ display: 'flex', gap: 4 }}>
             {WAR_DAYS.map((d, i) => {

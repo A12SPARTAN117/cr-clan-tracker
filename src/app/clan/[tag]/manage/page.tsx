@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getClan } from '@/lib/cr/api';
-import { after } from 'next/server';
+import { after, connection } from 'next/server';
 import { applyHistory, getDashboard } from '@/lib/clan/dashboard';
 import { getClanHistory } from '@/lib/history';
 import { indexClanMembers } from '@/lib/directory';
@@ -35,6 +35,8 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (c.kind !== 'valid') return <LostScene variant="clan" tag={raw.replace(/^#/, '').toUpperCase()} />;
   const clan = await getClan(c.tag);
   if (!clan.ok) return <LostScene variant={clan.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
+  // Background work below reads the clock, so it must run at request time, not in a prerender.
+  await connection();
   after(() => indexClanMembers(clan.data));
   const [data, history] = await Promise.all([getDashboard(c.tag), getClanHistory(c.tag)]);
   if (!data) return <LostScene variant="error" tag={c.tag} />;
