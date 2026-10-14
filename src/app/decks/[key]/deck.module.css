@@ -1,0 +1,151 @@
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: clamp(18px, 3vw, 32px);
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(58, 160, 255, 0.1), transparent 60%),
+    var(--charcoal);
+  overflow: hidden;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: clamp(8px, 1.4vw, 18px);
+}
+@media (max-width: 760px) {
+  .cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: 1px;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--obsidian);
+}
+.factRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+.factV {
+  font: 800 24px/1 var(--mono);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 16px;
+}
+.wlBar {
+  display: flex;
+  height: 14px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--well);
+}
+.wlBar span {
+  min-width: 0;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.table th {
+  padding: 12px 14px;
+  text-align: left;
+  font: 500 10px/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: var(--glass);
+  border-bottom: 1px solid var(--hair);
+}
+.table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hair);
+  font: 500 14px/1.2 var(--sans);
+  white-space: nowrap;
+}
+.num {
+  text-align: right !important;
+  font-family: var(--mono) !important;
+}
+.swatch {
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  margin-right: 10px;
+  vertical-align: -2px;
+  border-radius: 1px;
+}
+.crownBar {
+  display: block;
+  height: 10px;
+  min-width: 80px;
+  background: var(--well);
+  border-radius: 2px;
+}
+.crownBar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--text-3);
+}
+.matchup {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.2fr) 1fr 70px 80px;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--hair);
+}
+.muBar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--well);
+  overflow: hidden;
+}
+.muBar span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+.muBar i {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--frame);
+}
+@media (max-width: 600px) {
+  .matchup {
+    grid-template-columns: 1fr 64px;
+  }
+  .matchup > :nth-child(2),
+  .matchup > :nth-child(4) {
+    display: none;
+  }
+}

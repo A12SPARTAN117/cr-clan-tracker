@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
+import { DeckBlock, DeckGrid } from '@/components/DeckBlock';
 import { EmptyState } from '@/components/EmptyState';
 import { agoShort, dstr, fmt } from '@/lib/format';
 import type { PlayerProfile } from '@/lib/player/profile';
@@ -163,36 +164,20 @@ export function DecksTab({ p }: { p: PlayerProfile }) {
       <span className="label" style={{ letterSpacing: '.14em', paddingBottom: 14 }}>
         Decks from the battle log · win rates are based on tracked games only
       </span>
-      {p.decks.map((d) => {
-        const win = (d.wins / d.games) * 100;
-        return (
-          <div key={d.key} className={s.deckRow}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <span style={{ font: '600 16px/1.2 var(--sans)' }}>{d.name}</span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {d.cards.map((c, i) => (
-                  <CardTile key={`${c.id}-${i}`} slug={c.slug} label={c.name} img={c.img} rarity={c.rarity} evo={c.evo} hero={c.hero} size="S" />
-                ))}
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 28, justifyContent: 'flex-end' }}>
-              {[
-                ['GAMES', String(d.games), 'var(--text-1)'],
-                ['WIN %', `${win.toFixed(1)}%`, win >= 60 ? 'var(--blue-hi)' : win < 40 ? 'var(--ember)' : 'var(--text-1)'],
-              ].map(([k, v, fg]) => (
-                <span key={k} style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
-                  <span className="label-sm">{k}</span>
-                  <span style={{ font: '700 22px/1 var(--mono)', color: fg }}>{v}</span>
-                </span>
-              ))}
-              <span style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
-                <span className="label-sm">LAST USED</span>
-                <span style={{ font: '500 14px/22px var(--mono)', color: 'var(--text-2)' }}>{agoShort(d.lastHours).toUpperCase()} AGO</span>
-              </span>
-            </div>
-          </div>
-        );
-      })}
+      <DeckGrid>
+        {p.decks.map((d) => (
+          <DeckBlock
+            key={d.key}
+            name={d.name}
+            cards={d.cards}
+            avgElixir={d.avgElixir}
+            cycle={d.cycle}
+            games={d.games}
+            win={(d.wins / d.games) * 100}
+            action={<span className="label-sm">{agoShort(d.lastHours).toUpperCase()} AGO</span>}
+          />
+        ))}
+      </DeckGrid>
     </div>
   );
 }

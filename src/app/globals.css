@@ -342,6 +342,10 @@ img {
 }
 
 /* ---------- reveal / draw (see components/fx/Reveal.tsx) ---------- */
+.oa-reveal-pre,
+.oa-reveal-in {
+  display: block;
+}
 .oa-reveal-pre {
   opacity: 0;
   transform: translateY(28px);

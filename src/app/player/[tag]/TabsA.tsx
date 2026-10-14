@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
+import { DeckBlock } from '@/components/DeckBlock';
 import { Decode } from '@/components/fx/Reveal';
 import type { Rarity } from '@/lib/cards';
 import { fmt } from '@/lib/format';
@@ -42,43 +43,28 @@ export function OverviewTab({ p, onCopy }: { p: PlayerProfile; onCopy: (t: strin
       </div>
 
       {p.deck && (
-        <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: 'clamp(20px,3vw,32px)' }}>
-          <div style={{ position: 'absolute', inset: 10, border: '1px solid var(--hair)', borderRadius: 4, pointerEvents: 'none' }} />
-          <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <span className="label">Current deck</span>
-              <h2 style={{ margin: 0, font: '600 24px/1.2 var(--sans)' }}>{p.deck.name}</h2>
-            </div>
-            <div style={{ display: 'flex', gap: 20, font: '500 11px/1 var(--mono)', letterSpacing: '.12em', color: 'var(--text-2)', flexWrap: 'wrap' }}>
-              <span>
-                AVG ELIXIR <b style={{ color: 'var(--text-1)' }}>{p.deck.avgElixir.toFixed(1)}</b>
-              </span>
-              <span>
-                4-CARD CYCLE <b style={{ color: 'var(--text-1)' }}>{p.deck.cycle}</b>
-              </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 660 }}>
+          <span className="label">Current deck</span>
+          <DeckBlock
+            name={p.deck.name}
+            cards={p.deck.cards}
+            tower={p.deck.tower}
+            avgElixir={p.deck.avgElixir}
+            cycle={p.deck.cycle}
+            action={
               <button
                 type="button"
                 onClick={() => {
                   navigator.clipboard?.writeText(p.deck!.link).catch(() => {});
                   onCopy('Deck link copied · opens in game');
                 }}
-                style={{ background: 'none', border: 0, padding: 0, color: 'var(--blue)', font: 'inherit', letterSpacing: 'inherit', cursor: 'pointer' }}
+                className="link-mono"
+                style={{ background: 'none', border: 0, padding: 0, color: 'var(--blue)', cursor: 'pointer', fontSize: 10 }}
               >
-                COPY DECK →
+                Copy deck →
               </button>
-            </div>
-          </div>
-          <div style={{ position: 'relative', display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'flex-end' }}>
-            {p.deck.cards.map((c) => (
-              <CardTile key={`${c.id}`} slug={c.slug} label={c.name} img={c.img} rarity={c.rarity} evo={c.evo} hero={c.hero} level={c.level} elixir={c.elixir} size="L" />
-            ))}
-            {p.deck.tower && (
-              <>
-                <span style={{ width: 1, height: 110, background: 'var(--hair)', margin: '0 6px' }} />
-                <CardTile slug={p.deck.tower.slug} label={p.deck.tower.name} img={p.deck.tower.img} rarity="tower" level={p.deck.tower.level} size="L" />
-              </>
-            )}
-          </div>
+            }
+          />
         </div>
       )}
 
@@ -204,7 +190,7 @@ export function CollectionTab({ p }: { p: PlayerProfile }) {
       <div className={s.cardGrid}>
         {list.map((c) => (
           <div key={c.id} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <CardTile slug={c.slug} label={c.name} rarity={c.rarity} elixir={c.elixir} owned={c.owned} level={c.level} size="M" showLabel {...tileProps(c, art)} />
+            <CardTile slug={c.slug} label={c.name} rarity={c.rarity} owned={c.owned} level={c.level} size="M" showLabel {...tileProps(c, art)} />
             <span style={{ font: '500 9px/1.3 var(--mono)', letterSpacing: '.06em', color: 'var(--text-3)' }}>
               {c.owned ? `${c.stars ? '★'.repeat(c.stars) : '☆0'} · ${fmt(c.count)} copies` : 'NOT FOUND'}
             </span>
