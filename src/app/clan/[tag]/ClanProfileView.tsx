@@ -174,7 +174,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
               ['TYPE', TYPE[c.type].split(' ')[0].toUpperCase(), '', null],
             ] as const
           ).map(([k, v, sub, icon]) => (
-            <div key={k} data-spot="" className="spot" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 18px', minWidth: 0 }}>
+            <div key={k} data-spot="" data-stat={k} className="spot" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 18px', minWidth: 0 }}>
               <span style={{ font: '500 10px/1.2 var(--mono)', letterSpacing: '.12em', color: 'var(--text-3)' }}>{k}</span>
               <FitValue value={v} unit={sub || undefined} icon={icon ?? undefined} max={30} />
             </div>
@@ -224,6 +224,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                   return (
                     <tr
                       key={m.tag}
+                      data-member={m.tag}
                       tabIndex={0}
                       className="oa-row"
                       onClick={() => router.push(`/player/${m.tag}`)}

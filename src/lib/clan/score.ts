@@ -34,10 +34,11 @@ export type ScoreInputs = {
   tenureDays: number;
 };
 
+/** 100 within a day, then down 0.8/h to 61.6 at 3 days, then 1 point per 5 h (continuous). */
 export function activityScore(h: number): number {
   if (h < 24) return 100;
   if (h < 72) return Math.round(100 - (h - 24) * 0.8);
-  return Math.max(0, Math.round(58 - (h - 72) / 5));
+  return Math.max(0, Math.round(61.6 - (h - 72) / 5));
 }
 
 export function factorScores(m: ScoreInputs): FactorScores {

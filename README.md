@@ -48,6 +48,16 @@ Search routes through `/t/{tag}`, which works out whether a tag is a player or a
 
 Useful scripts: `npm run build`, `npm run lint`, `npm run typecheck`.
 
+## Tests
+
+| Command | What it checks |
+|---|---|
+| `npm test` | Unit tests (tags, river race calendar, game modes, decks, Asset Score, exact meta aggregation on fixture battles, training-day war rules) and React component tests in jsdom |
+| `npm run test:data` | Live accuracy: recomputes clan, dashboard, player, meta and search data through our code and compares every number with the raw API (needs `CR_API_KEY`) |
+| `npm run test:e2e` | Playwright in your installed Chrome (or Edge): every page loads without errors or sideways scroll (desktop + phone), decks / deck stats / search flows, and the numbers on screen match the API |
+
+`TEST_CLAN` and `TEST_PLAYER` choose which clan / player the live tests use; `E2E_BASE_URL` points the UI tests at another server (default: the dev server on :3000, started if needed).
+
 ## History and snapshots
 
 - A clan is **tracked** from the first time someone opens its dashboard. The first snapshot is a baseline (everyone present, no events).
