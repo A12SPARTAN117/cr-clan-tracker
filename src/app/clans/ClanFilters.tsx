@@ -52,6 +52,12 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to typing
   }, [q]);
 
+  // Results render on the server; dim them while a filter change is loading.
+  useEffect(() => {
+    document.documentElement.toggleAttribute('data-results-busy', pending);
+    return () => document.documentElement.removeAttribute('data-results-busy');
+  }, [pending]);
+
   const tagLike = q.trim() && checkTag(q).kind === 'valid';
   const type = params.get('type') ?? 'all';
 
