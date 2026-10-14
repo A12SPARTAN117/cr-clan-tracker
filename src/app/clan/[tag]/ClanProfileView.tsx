@@ -158,6 +158,9 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
             >
               Manage this clan →
             </Link>
+            <Link href={`/compare?type=clan&tags=${c.tag}`} className="btn btn-scene" style={{ height: 56 }}>
+              Compare ⇄
+            </Link>
           </div>
         </div>
       </section>
