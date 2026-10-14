@@ -299,9 +299,8 @@ export function StatTile({
 }
 
 /* ---------- league + badges ---------- */
-/** Path of Legends leagues as the live API numbers them (1–7); 7 is Ultimate Champion. */
-export const POL_LEAGUES = ['Master I', 'Master II', 'Master III', 'Champion', 'Grand Champion', 'Royal Champion', 'Ultimate Champion'];
-export const leagueName = (n: number | null | undefined) => (n ? (POL_LEAGUES[n - 1] ?? `League ${n}`) : 'No league');
+import { leagueName } from '@/lib/leagues';
+export { leagueName, POL_LEAGUES } from '@/lib/leagues';
 
 /** Path of Legends league badge (game art). API league n uses the classic art for league n + 3. */
 export function LeagueIcon({ league, size = 22 }: { league: number | null | undefined; size?: number }) {

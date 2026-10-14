@@ -12,6 +12,7 @@ const LINKS = [
   { href: '/clans', label: 'Clans', match: ['/clans', '/clan/'] },
   { href: '/my-clan', label: 'My Clan', match: ['/my-clan', '/manage'] },
   { href: '/decks', label: 'Decks', match: ['/decks'] },
+  { href: '/compare', label: 'Compare', match: ['/compare'] },
   { href: '/leaderboards', label: 'Leaderboards', match: ['/leaderboards'] },
   { href: '/news', label: 'News', match: ['/news'] },
 ];
