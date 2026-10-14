@@ -35,6 +35,7 @@ export function TagSearch({
   scope = 'all',
   then,
   resultsPath = '/search',
+  onPick,
 }: {
   size?: 'hero' | 'default';
   /** Sits on an always-dark header scene (keeps dark colours in light theme). */
@@ -46,6 +47,8 @@ export function TagSearch({
   then?: 'manage';
   /** Where Enter on a name goes; pages with their own results list pass themselves. */
   resultsPath?: string;
+  /** Pick mode: hand the chosen player / clan to the caller instead of navigating. */
+  onPick?: (it: { kind: 'player' | 'clan'; tag: string; name: string }) => void;
 }) {
   const router = useRouter();
   const listId = useId();
@@ -97,6 +100,14 @@ export function TagSearch({
   const open = focus && trimmed.replace(/^#/, '').length >= 2 && !typo && (items.length > 0 || busy);
 
   const go = (it?: Item) => {
+    if (onPick) {
+      const pick = it ?? (open ? items[0] : undefined) ?? (surelyTag(trimmed) && c.kind === 'valid' ? { kind: scope === 'clan' ? ('clan' as const) : ('player' as const), tag: c.tag, name: `#${c.tag}`, sub: '' } : undefined);
+      if (pick) {
+        onPick({ kind: pick.kind, tag: pick.tag, name: pick.name });
+        setQ('');
+      }
+      return;
+    }
     if (it) return router.push(hrefOf(it));
     if (typo || !trimmed) return;
     if (surelyTag(trimmed) && c.kind === 'valid') {
