@@ -4,6 +4,7 @@ import { getClan, getCurrentRiverRace } from '../cr/api';
 import type { ApiRole } from '../cr/types';
 import { getDb, schema } from '../db';
 import { warWeekKey } from '../war';
+import { indexClanMembers } from '../directory';
 
 const { trackedClans, clanMembers, rosterEvents, memberDaily, warDays } = schema;
 
@@ -25,6 +26,7 @@ export async function snapshotClan(tagRaw: string): Promise<SnapshotResult> {
   const [clanR, raceR] = await Promise.all([getClan(tag), getCurrentRiverRace(tag)]);
   if (!clanR.ok) return { tag, ok: false, reason: `clan: ${clanR.status} ${clanR.reason}` };
   const clan = clanR.data;
+  await indexClanMembers(clan);
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
 

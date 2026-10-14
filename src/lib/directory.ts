@@ -1,0 +1,102 @@
+import 'server-only';
+import { desc, like, sql } from 'drizzle-orm';
+import { getDb, schema } from './db';
+
+/**
+ * Player directory for name search. The official API only finds players by tag, so every
+ * roster and profile the site fetches is recorded here. Stored in Postgres when DATABASE_URL
+ * is set; otherwise (or if the table is not migrated yet) in this server process's memory.
+ */
+
+export type DirPlayer = { tag: string; name: string; clanTag: string | null; clanName: string | null; trophies: number | null };
+
+const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
+const MEM_MAX = 50_000;
+const g = globalThis as unknown as { __crDir?: Map<string, DirPlayer> };
+const mem = () => (g.__crDir ??= new Map());
+
+function remember(rows: DirPlayer[]) {
+  const m = mem();
+  for (const r of rows) {
+    m.delete(r.tag); // re-insert so the newest entries survive trimming
+    m.set(r.tag, r);
+  }
+  if (m.size > MEM_MAX) for (const k of [...m.keys()].slice(0, m.size - MEM_MAX)) m.delete(k);
+}
+
+/** Records players (deduped by tag). Never throws: search is best-effort. */
+export async function indexPlayers(input: { tag: string; name: string; clanTag?: string | null; clanName?: string | null; trophies?: number | null }[]) {
+  const rows: DirPlayer[] = [
+    ...new Map(
+      input
+        .filter((p) => p.tag && p.name)
+        .map((p) => [bare(p.tag), { tag: bare(p.tag), name: p.name, clanTag: p.clanTag ? bare(p.clanTag) : null, clanName: p.clanName ?? null, trophies: p.trophies ?? null }]),
+    ).values(),
+  ];
+  if (!rows.length) return;
+  remember(rows);
+  const db = await getDb();
+  if (!db) return;
+  try {
+    const now = new Date();
+    for (let i = 0; i < rows.length; i += 200) {
+      await db
+        .insert(schema.players)
+        .values(rows.slice(i, i + 200).map((r) => ({ ...r, nameLower: r.name.toLowerCase(), updatedAt: now })))
+        .onConflictDoUpdate({
+          target: schema.players.tag,
+          set: {
+            name: sql`excluded.name`,
+            nameLower: sql`excluded.name_lower`,
+            clanTag: sql`excluded.clan_tag`,
+            clanName: sql`excluded.clan_name`,
+            trophies: sql`coalesce(excluded.trophies, ${schema.players.trophies})`,
+            updatedAt: now,
+          },
+        });
+    }
+  } catch (e) {
+    console.warn('[directory] index failed (is the players migration applied?):', e instanceof Error ? e.message : e);
+  }
+}
+
+/** Records every member of a clan roster. */
+export function indexClanMembers(clan: { tag: string; name: string; memberList: { tag: string; name: string; trophies: number }[] }) {
+  return indexPlayers(clan.memberList.map((m) => ({ tag: m.tag, name: m.name, clanTag: clan.tag, clanName: clan.name, trophies: m.trophies })));
+}
+
+/** Case-insensitive name search; exact and prefix matches first, then by trophies. */
+export function rankByName<T extends { name: string; trophies: number | null }>(rows: T[], q: string, limit: number): T[] {
+  const n = q.trim().toLowerCase();
+  const score = (r: T) => {
+    const l = r.name.toLowerCase();
+    return l === n ? 0 : l.startsWith(n) ? 1 : 2;
+  };
+  return rows
+    .filter((r) => r.name.toLowerCase().includes(n))
+    .sort((a, b) => score(a) - score(b) || (b.trophies ?? 0) - (a.trophies ?? 0) || a.name.localeCompare(b.name))
+    .slice(0, limit);
+}
+
+export async function findPlayersByName(q: string, limit = 20): Promise<DirPlayer[]> {
+  const n = q.trim().toLowerCase();
+  if (n.length < 2) return [];
+  const found = new Map<string, DirPlayer>();
+  const db = await getDb();
+  if (db) {
+    try {
+      const esc = n.replace(/[\\%_]/g, (c) => `\\${c}`);
+      const rows = await db
+        .select({ tag: schema.players.tag, name: schema.players.name, clanTag: schema.players.clanTag, clanName: schema.players.clanName, trophies: schema.players.trophies })
+        .from(schema.players)
+        .where(like(schema.players.nameLower, `%${esc}%`))
+        .orderBy(desc(schema.players.trophies))
+        .limit(200);
+      for (const r of rows) found.set(r.tag, r);
+    } catch {
+      // Table not migrated yet: fall through to memory.
+    }
+  }
+  for (const r of mem().values()) if (!found.has(r.tag) && r.name.toLowerCase().includes(n)) found.set(r.tag, r);
+  return rankByName([...found.values()], n, limit);
+}
