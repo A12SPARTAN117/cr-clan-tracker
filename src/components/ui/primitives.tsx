@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { agoShort } from '@/lib/format';
 import { Decode } from '../fx/Reveal';
+import { MedalIcon } from './icons';
 
 /* ---------- roles ---------- */
 import type { ApiRole } from '@/lib/cr/types';
@@ -277,26 +278,35 @@ export function StatTile({
 }
 
 /* ---------- league + badges ---------- */
-/** Path of Legends league marker. Numbered circle until league art that matches the live API is supplied. */
+/** Path of Legends leagues as the live API numbers them (1–7); 7 is Ultimate Champion. */
+export const POL_LEAGUES = ['Master I', 'Master II', 'Master III', 'Champion', 'Grand Champion', 'Royal Champion', 'Ultimate Champion'];
+export const leagueName = (n: number | null | undefined) => (n ? (POL_LEAGUES[n - 1] ?? `League ${n}`) : 'No league');
+
+/** Path of Legends league badge (game art). API league n uses the classic art for league n + 3. */
 export function LeagueIcon({ league, size = 22 }: { league: number | null | undefined; size?: number }) {
+  if (!league)
+    return (
+      <span
+        title="No Path of Legends league"
+        style={{ flex: 'none', width: size, height: size, borderRadius: '50%', border: '1px dashed var(--hair)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', font: `700 ${Math.round(size * 0.4)}px/1 var(--mono)`, color: 'var(--text-3)' }}
+      >
+        —
+      </span>
+    );
+  const art = Math.min(10, Math.max(1, league + 3));
   return (
-    <span
-      title={league ? `Path of Legends league ${league}` : 'No Path of Legends league'}
-      style={{
-        flex: 'none',
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        border: '1px solid var(--frame)',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        font: `700 ${Math.round(size * 0.4)}px/1 var(--mono)`,
-        color: 'var(--text-1)',
-        background: 'var(--obsidian)',
-      }}
-    >
-      {league ?? '—'}
+    // eslint-disable-next-line @next/next/no-img-element -- static league art
+    <img src={`/leagues/league${art}.png`} alt={leagueName(league)} title={`Path of Legends · ${leagueName(league)}`} width={size} height={size} style={{ flex: 'none', objectFit: 'contain' }} />
+  );
+}
+
+/** A Path of Legends rating ("Ultimate Champion medals") with the medal icon in front. */
+export function PolRating({ rating, size = 16, style }: { rating: number | null | undefined; size?: number; style?: CSSProperties }) {
+  if (rating == null) return <span style={style}>—</span>;
+  return (
+    <span title="Ultimate Champion medals (Path of Legends rating)" style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(size * 0.4), whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', ...style }}>
+      <MedalIcon size={size} />
+      {rating.toLocaleString('en-US')}
     </span>
   );
 }
