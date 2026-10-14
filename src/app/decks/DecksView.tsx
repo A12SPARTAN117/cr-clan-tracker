@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
 import { Reveal } from '@/components/fx/Reveal';
+import { EmberField } from '@/components/fx/EmberField';
 import { Fog } from '@/components/fx/Fog';
 import { EmptyState } from '@/components/EmptyState';
 import { ModeFilter } from '@/components/ModeFilter';
@@ -60,6 +61,7 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
       <section className={s.header}>
         <div className={s.scene} />
         <Fog density={0.8} />
+        <EmberField count={200} gold={0.2} />
         <div className={s.slots} aria-hidden>
           {Array.from({ length: 8 }, (_, i) => {
             const c = lit ? (i < 2 ? 'rgba(163,91,255,.8)' : 'rgba(58,160,255,.7)') : 'rgba(255,255,255,.08)';

@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { EmberField } from './fx/EmberField';
 import { Fog } from './fx/Fog';
 import s from './SceneHeader.module.css';
 
@@ -29,6 +30,7 @@ export function SceneHeader({
     <section className={s.scene} style={{ minHeight: height, ...style }}>
       <div className={s.still} style={{ backgroundImage: `url(${scene})` }} />
       <Fog density={fog} />
+      <EmberField />
       {character && <div className={s.char} style={{ backgroundImage: `url(${character})` }} aria-hidden />}
       {extra}
       <div className={s.scrim} />

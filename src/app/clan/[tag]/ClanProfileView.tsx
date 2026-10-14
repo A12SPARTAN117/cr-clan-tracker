@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { EmberField } from '@/components/fx/EmberField';
+import { RiverRace3D } from '@/components/fx/RiverRace3D';
 import { Fog } from '@/components/fx/Fog';
 import { Reveal } from '@/components/fx/Reveal';
 import { EmptyState } from '@/components/EmptyState';
@@ -99,6 +101,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
           ))}
         </div>
         <Fog density={1.2} />
+        <EmberField gold={0.6} />
         <div
           style={{
             position: 'absolute',
@@ -258,6 +261,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                   {new Date(c.race.warStarts).toUTCString().slice(0, 11)} at {new Date(c.race.warStarts).toISOString().slice(11, 16)} UTC.
                 </div>
               )}
+              {c.race && <RiverRace3D clans={c.race.clans} training={c.race.training} />}
               {c.race ? (
                 c.race.clans.map((r, i) => {
                   const max = Math.max(10000, ...c.race!.clans.map((x) => x.fame));

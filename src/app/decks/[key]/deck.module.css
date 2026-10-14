@@ -12,6 +12,7 @@
   overflow: hidden;
 }
 .cards {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: clamp(8px, 1.4vw, 18px);
@@ -22,6 +23,7 @@
   }
 }
 .facts {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
   gap: 1px;
