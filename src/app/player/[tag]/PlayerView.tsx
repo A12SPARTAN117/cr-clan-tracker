@@ -4,16 +4,19 @@ import Link from 'next/link';
 import { useCallback, useState, useTransition } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Decode, Reveal } from '@/components/fx/Reveal';
-import { LeagueIcon, RoleIcon, ROLE_LABEL } from '@/components/ui/primitives';
-import { ExpIcon, MedalIcon, StreakIcon, TowerIcon, TrophyIcon } from '@/components/ui/icons';
+import { LeagueIcon, leagueName, RoleIcon, ROLE_LABEL } from '@/components/ui/primitives';
+import { CardsIcon, MedalIcon, StreakIcon, TowerIcon, TrophyIcon } from '@/components/ui/icons';
 import { Tabs } from '@/components/ui/Tabs';
 import { agoShort, fmt } from '@/lib/format';
 import { setPin, usePins } from '@/lib/pins';
 import type { PlayerProfile } from '@/lib/player/profile';
 import type { PlayerHistory } from '@/lib/history';
 import { refreshPlayer } from './actions';
-import { BadgesTab, CollectionTab, OverviewTab } from './TabsA';
-import { BattlesTab, DecksTab, HistoryTab, StatsTab } from './TabsB';
+import { BadgesTab } from './Badges';
+import { BattlesTab } from './Battles';
+import { CollectionTab } from './Collection';
+import { OverviewTab } from './Overview';
+import { DecksTab, HistoryTab, StatsTab } from './TabsB';
 import s from './player.module.css';
 
 type Tab = 'overview' | 'collection' | 'badges' | 'stats' | 'battles' | 'decks' | 'history';
@@ -29,19 +32,21 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
     window.setTimeout(() => setToast((c) => (c === t ? '' : c)), 1800);
   }, []);
 
-  const streak = p.streak > 0 ? `W${p.streak}` : p.streak < 0 ? `L${-p.streak}` : '—';
+  const run = p.streakRun;
+  const streak = run.kind ? `${run.kind === 'win' ? 'W' : 'L'}${run.count}` : '—';
   const facts: { k: string; v: string; sub?: string; fg?: string; league?: number | null; icon?: React.ReactNode }[] = [
     { k: 'KING TOWER', v: p.kingTower != null ? String(p.kingTower) : '—', icon: <TowerIcon size={18} /> },
-    { k: 'EXP', v: String(p.expLevel), icon: <ExpIcon size={18} /> },
+    { k: 'COLLECTION LVL', v: p.collectionLevel != null ? fmt(p.collectionLevel) : '—', icon: <CardsIcon size={18} /> },
     { k: 'ARENA', v: p.arena ?? '—' },
-    { k: 'TROPHIES', v: fmt(p.trophies), sub: `BEST ${fmt(p.bestTrophies)}`, icon: <TrophyIcon size={18} /> },
+    { k: 'TROPHIES', v: fmt(p.seasonal?.trophies ?? p.trophies), sub: `BEST ${fmt(p.seasonal?.best ?? p.bestTrophies)}`, icon: <TrophyIcon size={18} /> },
     {
       k: 'PATH OF LEGENDS',
-      v: p.pol.current ? fmt(p.pol.current.rating) : '—',
+      // Below Ultimate Champion the API reports progress, not a rating: show the league.
+      v: !p.pol.current ? '—' : p.pol.current.league >= 7 ? fmt(p.pol.current.rating) : leagueName(p.pol.current.league),
       league: p.pol.current?.league ?? null,
       icon: (p.pol.current?.league ?? 0) >= 7 ? <MedalIcon size={18} title="Ultimate Champion medals" /> : undefined,
     },
-    { k: 'STREAK', v: streak, fg: p.streak > 0 ? '#8CCBFF' : p.streak < 0 ? '#FF5464' : '#F3F4F6', icon: p.streak !== 0 ? <StreakIcon size={18} /> : undefined },
+    { k: 'STREAK', v: streak, fg: run.kind === 'win' ? '#FFB35C' : run.kind === 'loss' ? '#FF5464' : '#F3F4F6', icon: run.kind === 'win' ? <StreakIcon size={18} /> : undefined },
   ];
 
   return (
