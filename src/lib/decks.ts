@@ -80,3 +80,6 @@ export const deckKey = (cards: DeckCard[]) =>
     .map((c) => `${c.id}${c.evo ? 'e' : ''}${c.hero ? 'h' : ''}`)
     .sort()
     .join('-');
+
+/** The deck stats page for a meta deck (optionally pinned to a game mode). */
+export const deckHref = (key: string, mode?: string | null) => `/decks/${encodeURIComponent(key)}${mode && mode !== 'pol' ? `?mode=${mode}` : ''}`;

@@ -29,7 +29,7 @@ export function CardArt({ c }: { c: CardInfo }) {
         </div>
       )}
       <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', padding: '20px 0' }}>
-        <CardTile slug={c.slug} label={c.name} img={img} img2={split ? c.icons.hero : null} split={split} rarity={c.rarity} evo={evo} hero={hero} elixir={c.elixir} size="XL" />
+        <CardTile slug={c.slug} label={c.name} img={img} img2={split ? c.icons.hero : null} split={split} rarity={c.rarity} evo={evo} hero={hero} size="XL" />
       </div>
     </>
   );
