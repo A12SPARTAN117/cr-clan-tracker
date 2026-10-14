@@ -18,6 +18,18 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
   const [minM, setMinM] = useState(Number(params.get('minM') ?? 0));
   const [minW, setMinW] = useState(Number(params.get('minW') ?? 0));
 
+  // The URL is the source of truth. Next keeps this page's state alive between visits, so
+  // arriving with a new ?q= (from another page's search) must overwrite what was typed last
+  // time; otherwise the debounce below would push the old query straight back.
+  const urlKey = params.toString();
+  const [synced, setSynced] = useState(urlKey);
+  if (synced !== urlKey) {
+    setSynced(urlKey);
+    setQ(params.get('q') ?? '');
+    setMinM(Number(params.get('minM') ?? 0));
+    setMinW(Number(params.get('minW') ?? 0));
+  }
+
   const push = (patch: Record<string, string | number | null>) => {
     const next = new URLSearchParams(params.toString());
     for (const [k, v] of Object.entries(patch)) {
@@ -76,7 +88,7 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
             onKeyDown={(e) => {
               if (e.key !== 'Enter') return;
               const c = checkTag(q);
-              if (c.kind === 'valid' && (q.trim().startsWith('#') || /\d/.test(q))) router.push(`/t/${c.tag}`);
+              if (c.kind === 'valid' && (q.trim().startsWith('#') || /\d/.test(q))) router.push(`/clan/${c.tag}`);
               else if (q.trim().length >= 3) push({ q: q.trim() });
             }}
             aria-label="Clan name or tag"

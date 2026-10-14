@@ -6,6 +6,7 @@ import { getClan } from '@/lib/cr/api';
 import { after } from 'next/server';
 import { applyHistory, getDashboard } from '@/lib/clan/dashboard';
 import { getClanHistory } from '@/lib/history';
+import { indexClanMembers } from '@/lib/directory';
 import { trackClan } from '@/lib/history/snapshot';
 import { checkTag } from '@/lib/tags';
 import { ClanDashboard } from './ClanDashboard';
@@ -34,6 +35,7 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (c.kind !== 'valid') return <LostScene variant="clan" tag={raw.replace(/^#/, '').toUpperCase()} />;
   const clan = await getClan(c.tag);
   if (!clan.ok) return <LostScene variant={clan.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
+  after(() => indexClanMembers(clan.data));
   const [data, history] = await Promise.all([getDashboard(c.tag), getClanHistory(c.tag)]);
   if (!data) return <LostScene variant="error" tag={c.tag} />;
   // Opening a dashboard starts (or refreshes) history tracking for the clan.
