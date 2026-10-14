@@ -50,7 +50,7 @@ export default function PlayersPage() {
           ANY PLAYER
         </Reveal>
         <div style={{ maxWidth: 640 }}>
-          <TagSearch size="default" />
+          <TagSearch size="default" scope="player" />
         </div>
       </header>
       <PinnedPlayer />

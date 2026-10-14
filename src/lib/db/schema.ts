@@ -74,3 +74,22 @@ export const warDays = pgTable(
   },
   (t) => [primaryKey({ columns: [t.clanTag, t.playerTag, t.week, t.day] })],
 );
+
+/**
+ * Player directory for name search (the API can only look players up by tag). Filled from
+ * every roster and profile the site fetches, so it grows with use.
+ */
+export const players = pgTable(
+  'players',
+  {
+    tag: text('tag').primaryKey(),
+    name: text('name').notNull(),
+    /** Lower-cased name for case-insensitive search. */
+    nameLower: text('name_lower').notNull(),
+    clanTag: text('clan_tag'),
+    clanName: text('clan_name'),
+    trophies: integer('trophies'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('players_name_lower').on(t.nameLower)],
+);
