@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Reveal } from '@/components/fx/Reveal';
+import { RiverRace3D } from '@/components/fx/RiverRace3D';
 import { HeatCell } from '@/components/ui/primitives';
 import { ClanBadge } from '@/components/ui/ClanBadge';
 import type { Dashboard } from '@/lib/clan/dashboard';
@@ -101,6 +102,7 @@ export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Sc
             })}
           </div>
         )}
+        {war && <RiverRace3D clans={war.clans} training={training} height={240} />}
         <div>
           {war?.clans.map((c, i) => (
             <div key={c.tag} className={s.raceRow}>
