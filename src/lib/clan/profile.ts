@@ -4,6 +4,7 @@ import { getClan, getCurrentRiverRace, getRiverRaceLog, tags } from '../cr/api';
 import type { ApiRole, Clan } from '../cr/types';
 import type { RosterEvent } from '../history';
 import { parseApiDate } from '../format';
+import { nextWarStart } from '../war';
 
 export type ClanProfile = {
   generatedAt: string;
@@ -18,7 +19,7 @@ export type ClanProfile = {
   requiredTrophies: number;
   donationsPerWeek: number;
   members: { tag: string; name: string; role: ApiRole; trophies: number; expLevel: number; donations: number; hours: number; clanRank: number }[];
-  race: { label: string; clans: { tag: string; name: string; badgeId: number; fame: number; us: boolean }[] } | null;
+  race: { label: string; training: boolean; warStarts: string; clans: { tag: string; name: string; badgeId: number; fame: number; us: boolean }[] } | null;
   past: { label: string; rank: number | null; fame: number; decksUsed: number; participants: number }[];
   history: { trackedSince: string; events: RosterEvent[] } | null;
 };
@@ -35,9 +36,12 @@ async function build(tag: string): Promise<ClanProfile | null> {
   if (race.ok) {
     const r = race.data;
     const idx = r.periodIndex % 7;
-    const label = r.periodType === 'training' ? `Training day ${Math.min(3, idx + 1)}` : `War day ${Math.max(1, Math.min(4, idx - 2))} / 4`;
+    const training = r.periodType === 'training';
+    const label = training ? `Training day ${Math.min(3, idx + 1)} / 3` : `${r.periodType === 'colosseum' ? 'Colosseum' : 'War'} day ${Math.max(1, Math.min(4, idx - 2))} / 4`;
     raceInfo = {
       label,
+      training,
+      warStarts: nextWarStart(new Date(now)).toISOString(),
       clans: r.clans.map((x) => ({ tag: bare(x.tag), name: x.name, badgeId: x.badgeId, fame: x.fame, us: bare(x.tag) === ours })).sort((a, b) => b.fame - a.fame),
     };
   }
