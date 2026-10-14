@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
+import { AmbientEmbers } from '@/components/fx/AmbientEmbers';
 import { MotionLayer } from '@/components/fx/MotionLayer';
 import { Grain } from '@/components/fx/Grain';
 import { SiteNav } from '@/components/SiteNav';
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>
+        <AmbientEmbers />
         <SiteNav />
         {children}
         <SiteFooter />
