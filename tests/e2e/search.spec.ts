@@ -37,9 +37,10 @@ test.describe('search', () => {
     const box = visible(page, 'input[role="combobox"]').first();
     await box.fill(m.name);
     await box.press('Enter');
-    await expect(page).toHaveURL(/\/search\?.*type=player/);
+    // Results stay on the players page and only list players.
+    await expect(page).toHaveURL(/\/players\?q=/);
     await expect(visible(page, `a[href="/player/${m.tag.replace('#', '')}"]`).first()).toBeVisible({ timeout: 60_000 });
-    await expect(page.getByText(/Clans named/)).toHaveCount(0);
+    await expect(visible(page, 'a[href^="/clan/"]')).toHaveCount(0);
   });
 
   test('my clan searches clans and opens their dashboard', async ({ page }) => {

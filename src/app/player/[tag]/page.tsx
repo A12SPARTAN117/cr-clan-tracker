@@ -28,6 +28,8 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   after(() => indexPlayers([{ tag: r.data.tag, name: r.data.name, clanTag: r.data.clan?.tag, clanName: r.data.clan?.name, trophies: r.data.trophies }]));
   const [p, history] = await Promise.all([getPlayerProfile(c.tag), getPlayerHistory(c.tag)]);
   if (!p) return <LostScene variant="error" tag={c.tag} />;
+  // Everyone they played against goes into the name-search directory too.
+  after(() => indexPlayers(p.battles.flatMap((b) => (b.them.tag ? [{ tag: b.them.tag, name: b.them.name, clanName: b.them.clan }] : []))));
   return <PlayerView p={p} history={history} />;
 }
 

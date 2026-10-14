@@ -6,6 +6,9 @@ import { TagSearch } from '@/components/TagSearch';
 import { LeagueIcon, PolRating } from '@/components/ui/primitives';
 import { getPolLeaderboard } from '@/lib/cr/api';
 import { PinnedPlayer } from './PinnedPlayer';
+import { TrophyIcon } from '@/components/ui/icons';
+import { fmt } from '@/lib/format';
+import { search } from '@/lib/search';
 
 export const metadata: Metadata = { title: 'Players' };
 
@@ -39,7 +42,52 @@ async function TopPlayers() {
   );
 }
 
-export default function PlayersPage() {
+/** Player-only search results for ?q= (names contain the text, or an exact tag). */
+async function PlayerResults({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const q = (Array.isArray(sp.q) ? sp.q[0] : sp.q)?.trim().slice(0, 40) ?? '';
+  if (!q) return null;
+  const r = await search(q, 'player', 100);
+  const rows = [...(r.tagPlayer ? [r.tagPlayer] : []), ...r.players.filter((p) => p.tag !== r.tagPlayer?.tag)];
+  return (
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+        <span className="label">Players matching &quot;{q}&quot;</span>
+        <span className="label">{rows.length} results</span>
+      </div>
+      {rows.length ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))', gap: 1, background: 'var(--hair)', border: '1px solid var(--hair)', borderRadius: 8, overflow: 'hidden' }}>
+          {rows.map((p) => (
+            <Link key={p.tag} href={`/player/${p.tag}`} data-spot="" className="spot" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center', padding: '14px 16px', color: 'var(--text-1)' }}>
+              <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+                <span style={{ font: '600 15px/1.1 var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                <span className="label-sm" style={{ letterSpacing: '.1em' }}>
+                  #{p.tag} · {p.clanName ?? 'No clan'}
+                </span>
+              </span>
+              {p.trophies != null && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '600 13px/1 var(--mono)', color: 'var(--text-2)' }}>
+                  <TrophyIcon size={14} />
+                  {fmt(p.trophies)}
+                </span>
+              )}
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p className="body" style={{ fontSize: 14 }}>
+          No players by that name yet. Search by #tag to find anyone.
+        </p>
+      )}
+      <span style={{ font: '500 10px/1.6 var(--mono)', letterSpacing: '.08em', color: 'var(--text-3)' }}>
+        The Clash Royale API only finds players by tag, so names are matched against the Path of Legends leaderboards of every country, plus
+        everyone in a clan or battle log opened on this site.
+      </span>
+    </section>
+  );
+}
+
+export default function PlayersPage(props: PageProps<'/players'>) {
   return (
     <main className="page" style={{ maxWidth: 1180 }}>
       <header style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -50,9 +98,12 @@ export default function PlayersPage() {
           ANY PLAYER
         </Reveal>
         <div style={{ maxWidth: 640 }}>
-          <TagSearch size="default" scope="player" />
+          <TagSearch size="default" scope="player" resultsPath="/players" />
         </div>
       </header>
+      <Suspense fallback={<span className="skeleton" style={{ height: 120 }} />}>
+        <PlayerResults searchParams={props.searchParams} />
+      </Suspense>
       <PinnedPlayer />
       <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>

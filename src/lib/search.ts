@@ -1,7 +1,7 @@
 import 'server-only';
 import { connection } from 'next/server';
-import { getClan, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
-import { findPlayersByName, indexPlayers, rankByName, type DirPlayer } from './directory';
+import { getClan, getLocations, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
+import { findPlayersByName, indexPlayers, rankByName, seedDirectory, type DirPlayer } from './directory';
 import { checkTag } from './tags';
 
 /**
@@ -27,8 +27,18 @@ export type SearchResults = {
 
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
-export async function search(raw: string, scope: SearchScope = 'all', limit = 20): Promise<SearchResults> {
+export async function search(raw: string, scope: SearchScope = 'all', limit = 100): Promise<SearchResults> {
   await connection(); // per-request: results depend on the live directory
+  seedDirectory({
+    locations: async () => {
+      const r = await getLocations();
+      return r.ok ? r.data.items : [];
+    },
+    board: async (loc) => {
+      const r = await getPolLeaderboard(loc, 1000);
+      return r.ok ? r.data.items : [];
+    },
+  });
   const q = raw.trim();
   const out: SearchResults = { q, tagPlayer: null, tagClan: null, players: [], clans: [], clanError: false };
   if (!q) return out;
@@ -40,7 +50,7 @@ export async function search(raw: string, scope: SearchScope = 'all', limit = 20
   const [player, clan, clans, dir, top] = await Promise.all([
     tag.kind === 'valid' && wantP ? getPlayer(tag.tag) : null,
     tag.kind === 'valid' && wantC ? getClan(tag.tag) : null,
-    wantC && name.length >= 3 ? searchClans({ name, limit: 30 }) : null,
+    wantC && name.length >= 3 ? searchClans({ name, limit: Math.min(100, limit) }) : null,
     wantP ? findPlayersByName(name, limit) : [],
     wantP && name.length >= 2 ? getPolLeaderboard('global', 1000) : null,
   ]);
@@ -76,12 +86,6 @@ export async function search(raw: string, scope: SearchScope = 'all', limit = 20
     const merged = new Map(dir.map((p) => [p.tag, p]));
     for (const p of rankByName(fromTop, name, limit)) if (!merged.has(p.tag)) merged.set(p.tag, p);
     out.players = rankByName([...merged.values()], name, limit);
-    // Remember the leaderboard players (at most hourly) so later searches find them too.
-    const g = globalThis as unknown as { __crTopIndexed?: number };
-    if (top?.ok && Date.now() - (g.__crTopIndexed ?? 0) > 3600_000) {
-      g.__crTopIndexed = Date.now();
-      void indexPlayers(fromTop);
-    }
   }
   if (out.tagPlayer) void indexPlayers([out.tagPlayer]);
   return out;
