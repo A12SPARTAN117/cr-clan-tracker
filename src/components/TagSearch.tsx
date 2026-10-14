@@ -34,6 +34,7 @@ export function TagSearch({
   autoFocus = false,
   scope = 'all',
   then,
+  resultsPath = '/search',
 }: {
   size?: 'hero' | 'default';
   /** Sits on an always-dark header scene (keeps dark colours in light theme). */
@@ -43,6 +44,8 @@ export function TagSearch({
   autoFocus?: boolean;
   scope?: Scope;
   then?: 'manage';
+  /** Where Enter on a name goes; pages with their own results list pass themselves. */
+  resultsPath?: string;
 }) {
   const router = useRouter();
   const listId = useId();
@@ -101,9 +104,9 @@ export function TagSearch({
     }
     if (trimmed.replace(/^#/, '').length < 2) return;
     const params = new URLSearchParams({ q: trimmed });
-    if (scope !== 'all') params.set('type', scope);
+    if (scope !== 'all' && resultsPath === '/search') params.set('type', scope);
     if (then) params.set('then', then);
-    router.push(`/search?${params}`);
+    router.push(`${resultsPath}?${params}`);
   };
 
   let hint: string = defaultHint ?? HINTS[scope];

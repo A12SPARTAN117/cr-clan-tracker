@@ -11,7 +11,7 @@ import { getDb, schema } from './db';
 export type DirPlayer = { tag: string; name: string; clanTag: string | null; clanName: string | null; trophies: number | null };
 
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
-const MEM_MAX = 50_000;
+const MEM_MAX = 250_000;
 const g = globalThis as unknown as { __crDir?: Map<string, DirPlayer> };
 const mem = () => (g.__crDir ??= new Map());
 
@@ -78,7 +78,7 @@ export function rankByName<T extends { name: string; trophies: number | null }>(
     .slice(0, limit);
 }
 
-export async function findPlayersByName(q: string, limit = 20): Promise<DirPlayer[]> {
+export async function findPlayersByName(q: string, limit = 100): Promise<DirPlayer[]> {
   const n = q.trim().toLowerCase();
   if (n.length < 2) return [];
   const found = new Map<string, DirPlayer>();
@@ -91,7 +91,7 @@ export async function findPlayersByName(q: string, limit = 20): Promise<DirPlaye
         .from(schema.players)
         .where(like(schema.players.nameLower, `%${esc}%`))
         .orderBy(desc(schema.players.trophies))
-        .limit(200);
+        .limit(500);
       for (const r of rows) found.set(r.tag, r);
     } catch {
       // Table not migrated yet: fall through to memory.
@@ -99,4 +99,38 @@ export async function findPlayersByName(q: string, limit = 20): Promise<DirPlaye
   }
   for (const r of mem().values()) if (!found.has(r.tag) && r.name.toLowerCase().includes(n)) found.set(r.tag, r);
   return rankByName([...found.values()], n, limit);
+}
+
+/**
+ * Seeds the directory from every Path of Legends leaderboard (global + each country, up to
+ * 1,000 players each), at most once a day per server, in the background. The first search
+ * after a cold start therefore sees a partial directory; later ones see up to ~200k players.
+ */
+export function seedDirectory(fetchers: {
+  locations: () => Promise<{ id: number; isCountry: boolean }[]>;
+  board: (loc: number | 'global') => Promise<{ tag: string; name: string; clan?: { tag: string; name: string } }[]>;
+}) {
+  const g = globalThis as unknown as { __crSeed?: { at: number; running: boolean } };
+  const st = (g.__crSeed ??= { at: 0, running: false });
+  if (st.running || Date.now() - st.at < 24 * 3600_000) return;
+  st.running = true;
+  void (async () => {
+    try {
+      const locs = [{ id: 'global' as const }, ...(await fetchers.locations()).filter((l) => l.isCountry)];
+      let i = 0;
+      // A gentle fan-out: the leaderboard calls share the API key with live pages.
+      await Promise.all(
+        Array.from({ length: 6 }, async () => {
+          while (i < locs.length) {
+            const loc = locs[i++];
+            const items = await fetchers.board(loc.id).catch(() => []);
+            await indexPlayers(items.map((p) => ({ tag: p.tag, name: p.name, clanTag: p.clan?.tag, clanName: p.clan?.name })));
+          }
+        }),
+      );
+      st.at = Date.now();
+    } finally {
+      st.running = false;
+    }
+  })();
 }

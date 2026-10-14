@@ -102,12 +102,3 @@
   padding: 9px 0;
   border-bottom: 1px solid var(--hair);
 }
-@media (max-width: 760px) {
-  .battleBtn {
-    grid-template-columns: 84px 1fr 52px;
-  }
-  .battleBtn > :nth-child(4),
-  .battleBtn > :nth-child(5) {
-    display: none;
-  }
-}
