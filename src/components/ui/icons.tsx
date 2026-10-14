@@ -280,3 +280,78 @@ export function IconStat({ icon, children, gap = 6, style }: { icon: ReactNode; 
     </span>
   );
 }
+
+/** Clan war: a shield with crossed swords. */
+export function ClanWarIcon(p: P) {
+  return (
+    <Svg {...p}>
+      <g strokeLinecap="round">
+        <path d="M3.5 3.5L18 18" stroke="#D7DBE2" strokeWidth="2" />
+        <path d="M20.5 3.5L6 18" stroke="#D7DBE2" strokeWidth="2" />
+      </g>
+      <path d="M12 6.5L17.5 8.7V12.6C17.5 16 15.3 18.4 12 19.6C8.7 18.4 6.5 16 6.5 12.6V8.7Z" fill="#0A48C9" stroke="#8CCBFF" strokeWidth="1.3" />
+      <path d="M12 9.5V16.5M9.2 12.2H14.8" stroke="#F5D58A" strokeWidth="1.4" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+/** 2v2: two helmets side by side. */
+export function TeamIcon(p: P) {
+  return (
+    <Svg {...p}>
+      <path d="M2.5 14C2.5 9.5 5 7 8.5 7S14.5 9.5 14.5 14V17H2.5Z" fill="#3AA0FF" stroke="#0A48C9" strokeWidth="1.1" />
+      <path d="M9.5 14C9.5 9.5 12 7 15.5 7S21.5 9.5 21.5 14V17H9.5Z" fill="#FF5464" stroke="#8E1222" strokeWidth="1.1" />
+      <path d="M4.5 12.5H12.5M11.5 12.5H19.5" stroke="#07080A" strokeWidth="1.6" />
+      <rect x="2" y="17" width="20" height="2.6" rx="1" fill="#E6B34A" />
+    </Svg>
+  );
+}
+
+/** Challenges: a laurel wreath around a trophy. */
+export function ChallengeIcon(p: P) {
+  return (
+    <Svg {...p}>
+      <g fill="none" stroke="#E6B34A" strokeWidth="1.6" strokeLinecap="round">
+        <path d="M5 6C3 9 3 14 6.5 17.5" />
+        <path d="M19 6C21 9 21 14 17.5 17.5" />
+        <path d="M4.2 9.5L6 10.2M4 13L6 13.2M5 16L6.8 15.5M19.8 9.5L18 10.2M20 13L18 13.2M19 16L17.2 15.5" />
+      </g>
+      <path d="M8.5 5H15.5V8.5A3.5 3.5 0 0 1 8.5 8.5Z" fill="#F2B83A" stroke="#7A4A08" strokeWidth=".9" />
+      <path d="M11 12H13L13.5 14.5H10.5Z" fill="#E0A12F" />
+      <rect x="9" y="14.5" width="6" height="2.3" rx=".8" fill="#C88A1E" />
+    </Svg>
+  );
+}
+
+/** Draft: three cards fanned out. */
+export function DraftIcon(p: P) {
+  return (
+    <Svg {...p}>
+      <rect x="4" y="5" width="9" height="13" rx="1.6" fill="#262930" stroke="#A4A9B4" strokeWidth="1.2" transform="rotate(-16 8.5 11.5)" />
+      <rect x="11" y="5" width="9" height="13" rx="1.6" fill="#262930" stroke="#A4A9B4" strokeWidth="1.2" transform="rotate(16 15.5 11.5)" />
+      <rect x="7.5" y="4" width="9" height="14" rx="1.6" fill="#1A1C20" stroke="#C79BFF" strokeWidth="1.4" />
+      <path d="M12 8L13.8 11L12 14L10.2 11Z" fill="#C79BFF" />
+    </Svg>
+  );
+}
+
+/** Chess events: a knight piece. */
+export function ChessIcon(p: P) {
+  return (
+    <Svg {...p}>
+      <path d="M7 20H17L16 17H8Z" fill="#E6B34A" stroke="#7A4A08" strokeWidth="1" />
+      <path d="M8.5 17C8.5 13.5 10 12.5 9.5 11L7 12.2L5.8 10.4L10 4.5C13.5 4 17 6.5 16.8 11.5L16 17Z" fill="#A35BFF" stroke="#3A0F7A" strokeWidth="1.1" strokeLinejoin="round" />
+      <circle cx="11" cy="8" r=".9" fill="#fff" />
+    </Svg>
+  );
+}
+
+/** Generic live event: a starburst. */
+export function EventIcon(p: P) {
+  return (
+    <Svg {...p}>
+      <path d="M12 2L14.2 7.2L19.8 6L16.6 10.7L21 14.3L15.4 14.8L15.6 20.5L12 16.2L8.4 20.5L8.6 14.8L3 14.3L7.4 10.7L4.2 6L9.8 7.2Z" fill="#FF5464" stroke="#8E1222" strokeWidth="1" strokeLinejoin="round" />
+      <circle cx="12" cy="11.8" r="3" fill="#F5D58A" />
+    </Svg>
+  );
+}
