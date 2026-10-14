@@ -241,6 +241,28 @@ export function Sparkline({ values, width = 64, height = 20 }: { values: number[
 export type Tone = 'up' | 'down' | 'muted' | 'neutral';
 const TONE: Record<Tone, string> = { up: 'var(--blue)', down: 'var(--ember)', muted: 'var(--text-3)', neutral: 'var(--text-2)' };
 
+/**
+ * Font size that fits `chars` monospace characters into the nearest inline-size container
+ * (≈0.6em per character), capped at `max`. Big numbers shrink instead of being clipped.
+ */
+export const fitSize = (chars: number, max: number, min = 14) => `clamp(${min}px, calc(100cqi / ${(Math.max(3, chars) * 0.62).toFixed(2)}), ${max}px)`;
+
+/** A big stat value that shrinks to fit its box. Optional icon in front, unit behind. */
+export function FitValue({ value, unit, icon, max = 40, min = 14, decode = true, style }: { value: string; unit?: string; icon?: ReactNode; max?: number; min?: number; decode?: boolean; style?: CSSProperties }) {
+  // Icon ≈ 1.2 characters, unit text is ~40% the size of the value.
+  const chars = value.length + (icon ? 1.4 : 0) + (unit ? unit.length * 0.4 + 0.3 : 0);
+  const fs = fitSize(chars, max, min);
+  return (
+    <div style={{ containerType: 'inline-size', width: '100%', minWidth: 0 }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: '.25em', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', font: `800 ${fs}/1 var(--mono)`, letterSpacing: '-.04em', ...style }}>
+        {icon && <span className="fit-icon">{icon}</span>}
+        {decode ? <Decode>{value}</Decode> : value}
+        {unit && <span style={{ font: '500 .38em/1 var(--mono)', letterSpacing: 0, color: 'var(--text-3)', alignSelf: 'flex-end', paddingBottom: '.12em' }}>{unit}</span>}
+      </span>
+    </div>
+  );
+}
+
 export function StatTile({
   label,
   value,
@@ -249,6 +271,7 @@ export function StatTile({
   tone = 'neutral',
   spark,
   className,
+  icon,
 }: {
   label: string;
   value: string;
@@ -257,6 +280,7 @@ export function StatTile({
   tone?: Tone;
   spark?: number[];
   className?: string;
+  icon?: ReactNode;
 }) {
   return (
     <div
@@ -265,10 +289,7 @@ export function StatTile({
       style={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16, minHeight: 132, padding: '16px 18px' }}
     >
       <div style={{ font: '500 10px/1.3 var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text-3)' }}>{label}</div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, fontVariantNumeric: 'tabular-nums' }}>
-        <Decode style={{ font: '800 clamp(34px,3.2vw,46px)/1 var(--mono)', letterSpacing: '-.05em' }}>{value}</Decode>
-        {unit && <span style={{ font: '500 13px/1 var(--mono)', color: 'var(--text-3)' }}>{unit}</span>}
-      </div>
+      <FitValue value={value} unit={unit} icon={icon} max={46} />
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
         <span style={{ font: '500 10px/1.3 var(--mono)', letterSpacing: '.08em', textTransform: 'uppercase', color: TONE[tone] }}>{delta}</span>
         {spark && <Sparkline values={spark} />}

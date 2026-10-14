@@ -7,6 +7,7 @@ import { SceneHeader } from '@/components/SceneHeader';
 import { Portal } from '@/components/fx/Portal';
 import { Reveal } from '@/components/fx/Reveal';
 import { ClanBadge } from '@/components/ui/ClanBadge';
+import { AlertIcon, BadgeIcon, CardsIcon, ClanWarIcon, ClockIcon, IconStat, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { StatTile } from '@/components/ui/primitives';
 import { Tabs } from '@/components/ui/Tabs';
 import type { Dashboard } from '@/lib/clan/dashboard';
@@ -91,8 +92,8 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
   const flagged = all.filter((m) => m.hours >= 72 || (decksPossible > 0 && m.decks === 0)).length;
 
   const tiles = [
-    { label: 'Members', value: String(data.clan.members), unit: '/50', delta: `${50 - data.clan.members} slots open`, tone: 'muted' as const },
-    { label: 'Active · 24h', value: String(act24), delta: `3d ${act3} · 7d ${act7}`, tone: 'neutral' as const },
+    { label: 'Members', value: String(data.clan.members), unit: '/50', delta: `${50 - data.clan.members} slots open`, tone: 'muted' as const, icon: <MembersIcon /> },
+    { label: 'Active · 24h', value: String(act24), delta: `3d ${act3} · 7d ${act7}`, tone: 'neutral' as const, icon: <ClockIcon /> },
     {
       label: decksPossible > 0 ? 'War participation' : 'War participation · last race',
       value: partNow == null ? '—' : String(Math.round(partNow * 100)),
@@ -100,17 +101,19 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
       delta: partDelta == null ? 'No earlier race' : `${partDelta >= 0 ? '▲' : '▼'} ${Math.abs(partDelta)} vs ${decksPossible > 0 ? 'last race' : 'race before'}`,
       tone: partDelta == null ? ('muted' as const) : partDelta >= 0 ? ('up' as const) : ('down' as const),
       spark: spark.length > 1 ? spark : undefined,
+      icon: <ClanWarIcon />,
     },
     war && war.kind !== 'training'
-      ? { label: 'Decks today', value: String(war.decksToday), unit: '/200', delta: `${Math.max(0, 200 - war.decksToday)} remaining`, tone: 'neutral' as const }
+      ? { label: 'Decks today', value: String(war.decksToday), unit: '/200', delta: `${Math.max(0, 200 - war.decksToday)} remaining`, tone: 'neutral' as const, icon: <CardsIcon /> }
       : {
           label: 'Decks today',
           value: '—',
           delta: war ? `Training · ${war.trainingDecksToday} practice decks, not counted` : 'No race data',
           tone: 'muted' as const,
+          icon: <CardsIcon />,
         },
-    { label: 'Avg asset score', value: String(avg), unit: '/100', delta: 'With your weights', tone: 'muted' as const },
-    { label: 'Flagged inactive', value: String(flagged), delta: decksPossible > 0 ? '3+ days or 0 decks' : '3+ days away', tone: flagged ? ('down' as const) : ('muted' as const) },
+    { label: 'Avg asset score', value: String(avg), unit: '/100', delta: 'With your weights', tone: 'muted' as const, icon: <BadgeIcon /> },
+    { label: 'Flagged inactive', value: String(flagged), delta: decksPossible > 0 ? '3+ days or 0 decks' : '3+ days away', tone: flagged ? ('down' as const) : ('muted' as const), icon: <AlertIcon /> },
   ];
 
   const selected = all.filter((m) => sel.has(m.tag));
@@ -162,9 +165,9 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
                 </button>
                 <span>{TYPE_LABEL[data.clan.type]}</span>
                 {data.clan.location && <span>{data.clan.location}</span>}
-                <span>Req. {fmt(data.clan.requiredTrophies)}</span>
-                <span>Clan score {fmt(data.clan.clanScore)}</span>
-                <span>War trophies {fmt(data.clan.clanWarTrophies)}</span>
+                <IconStat icon={<TrophyIcon size={14} title="Required trophies" />}>Req. {fmt(data.clan.requiredTrophies)}</IconStat>
+                <IconStat icon={<TrophyIcon size={14} title="Clan score" />}>Clan score {fmt(data.clan.clanScore)}</IconStat>
+                <IconStat icon={<WarTrophyIcon size={14} title="Clan war trophies" />}>War trophies {fmt(data.clan.clanWarTrophies)}</IconStat>
               </div>
             </div>
           </div>

@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { DeckBlock } from '@/components/DeckBlock';
-import { Decode } from '@/components/fx/Reveal';
+import { BadgeIcon, CardsIcon, CrownIcon, DonationIcon, ExpIcon, SwordsIcon, WinRateIcon } from '@/components/ui/icons';
+import { FitValue } from '@/components/ui/primitives';
 import type { Rarity } from '@/lib/cards';
 import { fmt } from '@/lib/format';
 import type { Badge, BadgeGroup, CollectionCard, PlayerProfile } from '@/lib/player/profile';
@@ -14,16 +15,16 @@ export function OverviewTab({ p, onCopy }: { p: PlayerProfile; onCopy: (t: strin
   const t = p.totals;
   const owned = p.collection.filter((c) => c.owned);
   const avgLevel = owned.length ? owned.reduce((a, c) => a + (c.level ?? 0), 0) / owned.length : 0;
-  const tiles: [string, string, string][] = [
-    ['Wins', fmt(t.wins), ''],
-    ['Losses', fmt(t.losses), ''],
-    ['Win %', t.wins + t.losses ? ((t.wins / (t.wins + t.losses)) * 100).toFixed(1) : '—', '%'],
-    ['3-crown wins', fmt(t.threeCrown), ''],
-    ['Battles', fmt(t.battleCount), ''],
-    ['Cards found', String(owned.length), `/${p.collection.length}`],
-    ['Avg card level', avgLevel.toFixed(1), 'lvl'],
-    ['Star points', fmt(t.starPoints), ''],
-    ['Donations', fmt(t.totalDonations), 'total'],
+  const tiles: [string, string, string, React.ReactNode][] = [
+    ['Wins', fmt(t.wins), '', <CrownIcon key="i" />],
+    ['Losses', fmt(t.losses), '', <SwordsIcon key="i" />],
+    ['Win %', t.wins + t.losses ? ((t.wins / (t.wins + t.losses)) * 100).toFixed(1) : '—', '%', <WinRateIcon key="i" />],
+    ['3-crown wins', fmt(t.threeCrown), '', <CrownIcon key="i" />],
+    ['Battles', fmt(t.battleCount), '', <SwordsIcon key="i" />],
+    ['Cards found', String(owned.length), `/${p.collection.length}`, <CardsIcon key="i" />],
+    ['Avg card level', avgLevel.toFixed(1), 'lvl', <ExpIcon key="i" />],
+    ['Star points', fmt(t.starPoints), '', <BadgeIcon key="i" />],
+    ['Donations', fmt(t.totalDonations), 'total', <DonationIcon key="i" />],
   ];
   const form = [...p.battles].reverse().slice(-30);
   const wins = form.filter((b) => b.result === 'win').length;
@@ -31,13 +32,10 @@ export function OverviewTab({ p, onCopy }: { p: PlayerProfile; onCopy: (t: strin
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
       <div className={s.tiles}>
-        {tiles.map(([k, v, sub]) => (
-          <div key={k} data-spot="" className={`spot ${s.tile}`}>
+        {tiles.map(([k, v, sub, icon]) => (
+          <div key={k} data-spot="" className={`spot ${s.tile}`} style={{ minWidth: 0 }}>
             <span style={{ font: '500 10px/1.3 var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text-3)' }}>{k}</span>
-            <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <Decode style={{ font: '800 clamp(28px,2.6vw,38px)/1 var(--mono)', letterSpacing: '-.05em', fontVariantNumeric: 'tabular-nums' }}>{v}</Decode>
-              <span style={{ font: '500 11px/1 var(--mono)', color: 'var(--text-3)' }}>{sub}</span>
-            </span>
+            <FitValue value={v} unit={sub || undefined} icon={icon} max={38} />
           </div>
         ))}
       </div>
