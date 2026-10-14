@@ -341,6 +341,32 @@ img {
   box-shadow: var(--glow);
 }
 
+/* Server-rendered results dim while a filter change loads (see ClanFilters). */
+[data-results] {
+  position: relative;
+  transition: opacity 0.2s;
+}
+[data-results-busy] [data-results] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+[data-results-busy] [data-results]::before {
+  content: 'Updating…';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--obsidian);
+  border: 1px solid rgba(58, 160, 255, 0.6);
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--blue-hi);
+  z-index: 2;
+}
+
 /* Icons inside FitValue scale with the (auto-fitted) number. */
 .fit-icon {
   display: inline-flex;
