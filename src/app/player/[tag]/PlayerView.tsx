@@ -5,6 +5,7 @@ import { useCallback, useState, useTransition } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Decode, Reveal } from '@/components/fx/Reveal';
 import { LeagueIcon, RoleIcon, ROLE_LABEL } from '@/components/ui/primitives';
+import { ExpIcon, MedalIcon, StreakIcon, TowerIcon, TrophyIcon } from '@/components/ui/icons';
 import { Tabs } from '@/components/ui/Tabs';
 import { agoShort, fmt } from '@/lib/format';
 import { setPin, usePins } from '@/lib/pins';
@@ -29,13 +30,18 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
   }, []);
 
   const streak = p.streak > 0 ? `W${p.streak}` : p.streak < 0 ? `L${-p.streak}` : '—';
-  const facts = [
-    { k: 'KING TOWER', v: p.kingTower != null ? String(p.kingTower) : '—' },
-    { k: 'EXP', v: String(p.expLevel) },
+  const facts: { k: string; v: string; sub?: string; fg?: string; league?: number | null; icon?: React.ReactNode }[] = [
+    { k: 'KING TOWER', v: p.kingTower != null ? String(p.kingTower) : '—', icon: <TowerIcon size={18} /> },
+    { k: 'EXP', v: String(p.expLevel), icon: <ExpIcon size={18} /> },
     { k: 'ARENA', v: p.arena ?? '—' },
-    { k: 'TROPHIES', v: fmt(p.trophies), sub: `BEST ${fmt(p.bestTrophies)}` },
-    { k: 'PATH OF LEGENDS', v: p.pol.current ? fmt(p.pol.current.rating) : '—', league: p.pol.current?.league ?? null },
-    { k: 'STREAK', v: streak, fg: p.streak > 0 ? '#8CCBFF' : p.streak < 0 ? '#FF5464' : '#F3F4F6' },
+    { k: 'TROPHIES', v: fmt(p.trophies), sub: `BEST ${fmt(p.bestTrophies)}`, icon: <TrophyIcon size={18} /> },
+    {
+      k: 'PATH OF LEGENDS',
+      v: p.pol.current ? fmt(p.pol.current.rating) : '—',
+      league: p.pol.current?.league ?? null,
+      icon: (p.pol.current?.league ?? 0) >= 7 ? <MedalIcon size={18} title="Ultimate Champion medals" /> : undefined,
+    },
+    { k: 'STREAK', v: streak, fg: p.streak > 0 ? '#8CCBFF' : p.streak < 0 ? '#FF5464' : '#F3F4F6', icon: p.streak !== 0 ? <StreakIcon size={18} /> : undefined },
   ];
 
   return (
@@ -95,7 +101,8 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
               <div key={f.k} className={s.fact}>
                 <span className={s.factK}>{f.k}</span>
                 <span className={s.factV} style={{ color: f.fg ?? '#F3F4F6' }}>
-                  {f.league != null && <LeagueIcon league={f.league} size={20} />}
+                  {f.league != null && <LeagueIcon league={f.league} size={22} />}
+                  {f.icon}
                   <Decode>{f.v}</Decode>
                   {f.sub && <span style={{ font: '500 11px/1 var(--mono)', color: '#80868F' }}>{f.sub}</span>}
                 </span>
