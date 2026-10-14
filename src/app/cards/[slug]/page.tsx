@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
 import { deckHref } from '@/lib/decks';
+import { ElixirIcon } from '@/components/ui/icons';
 import { CARDS, TOWER_TROOPS, cardBySlug } from '@/lib/cards';
 import { getMeta } from '@/lib/meta';
 import { CardsHeader } from '../CardsHeader';
@@ -123,7 +124,10 @@ export default async function CardPage({ params }: PageProps<'/cards/[slug]'>) {
               {facts.map(([k, v, fg]) => (
                 <div key={k} style={{ padding: '12px 14px', background: 'var(--obsidian)', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <span className="label-sm">{k}</span>
-                  <span style={{ font: '700 15px/1.1 var(--mono)', color: fg ?? 'var(--text-1)' }}>{v}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '700 15px/1.1 var(--mono)', color: fg ?? 'var(--text-1)', overflowWrap: 'anywhere' }}>
+                    {k === 'ELIXIR' && c.elixir != null && <ElixirIcon size={15} />}
+                    {v}
+                  </span>
                 </div>
               ))}
             </div>
