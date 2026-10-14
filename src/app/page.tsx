@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { metaDeck } from '@/components/DeckBlock';
 import { Draw, Reveal } from '@/components/fx/Reveal';
+import { EmberField } from '@/components/fx/EmberField';
 import { Fog } from '@/components/fx/Fog';
 import { LeagueIcon, PolRating } from '@/components/ui/primitives';
 import { NEWS } from '@/content/news';
@@ -149,6 +150,7 @@ export default function Home() {
         <section className={s.cta}>
           <div className={s.ctaScene} />
           <Fog density={0.7} />
+          <EmberField count={220} gold={0.55} />
           <div className={s.ctaShade} />
           <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(255,255,255,.5)', borderRadius: 4, pointerEvents: 'none' }} />
           <div className={s.ctaCopy}>

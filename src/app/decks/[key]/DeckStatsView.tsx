@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
 import { EmptyState } from '@/components/EmptyState';
+import { CardFan3D } from '@/components/fx/CardFan3D';
+import { EmberField } from '@/components/fx/EmberField';
 import { Decode } from '@/components/fx/Reveal';
 import { CycleIcon, ElixirIcon, MedalIcon, SwordsIcon, WinRateIcon } from '@/components/ui/icons';
 import { Tabs } from '@/components/ui/Tabs';
@@ -74,6 +76,8 @@ export function DeckStatsView({
       </div>
 
       <section className={s.hero}>
+        <EmberField count={140} gold={0.3} intensity={0.8} />
+        <CardFan3D images={deck.cards.map((c) => c.img ?? cardBySlug(c.slug)?.icons.normal ?? '').filter(Boolean)} />
         <div className={s.cards}>
           {deck.cards.map((c) => (
             <CardTile key={`${c.id}${c.evo}${c.hero}`} slug={c.slug} label={c.name} img={c.img} rarity={c.rarity} evo={c.evo} hero={c.hero} size="fluid" showLabel />
