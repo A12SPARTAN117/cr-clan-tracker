@@ -1,21 +1,39 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { checkTag, searchHref } from '@/lib/tags';
+import { useEffect, useId, useRef, useState } from 'react';
+import { checkTag, surelyTag } from '@/lib/tags';
+import { ClanBadge } from './ui/ClanBadge';
+import { MembersIcon, TrophyIcon } from './ui/icons';
 
-const HINT_DEFAULT = 'Find your tag in-game: tap your name on the main screen. It sits under your name, starting with #.';
+const HINTS = {
+  all: 'Player name or #tag, clan name or #tag. Your tag is under your name in-game.',
+  player: 'Player name or #tag. Your tag is under your name in-game, starting with #.',
+  clan: 'Clan name or #tag. The clan tag is under the clan name in-game.',
+} as const;
+
+type Scope = keyof typeof HINTS;
+type Suggest = {
+  tagPlayer: { tag: string; name: string; clanName: string | null; trophies: number | null } | null;
+  tagClan: { tag: string; name: string; badgeId: number; members: number } | null;
+  players: { tag: string; name: string; clanName: string | null; trophies: number | null }[];
+  clans: { tag: string; name: string; badgeId: number; members: number; location: string | null }[];
+};
+type Item = { kind: 'player' | 'clan'; tag: string; name: string; sub: string; badgeId?: number; trophies?: number | null; members?: number };
 
 /**
- * The big tag search: # chip, blinking block cursor when empty, blue glow on focus,
- * ember border + named character when a tag contains an invalid character.
+ * The search box: one field for player names and tags, clan names and tags. Suggests matches
+ * while typing; Enter opens the highlighted match, a tag directly, or the full results page.
+ * `scope` limits it to players or clans; `then="manage"` sends clans to their dashboard.
  */
 export function TagSearch({
   size = 'hero',
   onScene = false,
   placeholder = '',
-  defaultHint = HINT_DEFAULT,
+  defaultHint,
   autoFocus = false,
+  scope = 'all',
+  then,
 }: {
   size?: 'hero' | 'default';
   /** Sits on an always-dark header scene (keeps dark colours in light theme). */
@@ -23,35 +41,87 @@ export function TagSearch({
   placeholder?: string;
   defaultHint?: string;
   autoFocus?: boolean;
+  scope?: Scope;
+  then?: 'manage';
 }) {
   const router = useRouter();
-  const [tag, setTag] = useState('');
+  const listId = useId();
+  const [q, setQ] = useState('');
   const [focus, setFocus] = useState(false);
-  const c = checkTag(tag);
+  const [sug, setSug] = useState<{ q: string; items: Item[] } | null>(null);
+  const [sel, setSel] = useState(-1);
+  const [busy, setBusy] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
   const hero = size === 'hero';
-  // A single word with a bad character is a mistyped tag; anything else may be a clan name.
-  const typo = c.kind === 'invalid' && (tag.trim().startsWith('#') || !searchHref(tag));
+  const trimmed = q.trim();
+  const c = checkTag(q);
+  const typo = trimmed.startsWith('#') && c.kind === 'invalid';
 
-  let hint = defaultHint;
+  const clanHref = (tag: string) => (then === 'manage' ? `/clan/${tag}/manage` : `/clan/${tag}`);
+  const hrefOf = (it: Item) => (it.kind === 'player' ? `/player/${it.tag}` : clanHref(it.tag));
+
+  // Debounced suggestions.
+  useEffect(() => {
+    const term = q.trim();
+    if (term.replace(/^#/, '').length < 2 || typo) return;
+    const ctl = new AbortController();
+    const id = setTimeout(async () => {
+      setBusy(true);
+      try {
+        const r = await fetch(`/api/search?scope=${scope}&q=${encodeURIComponent(term)}`, { signal: ctl.signal });
+        if (!r.ok) return;
+        const d = (await r.json()) as Suggest;
+        const items: Item[] = [];
+        if (d.tagPlayer) items.push({ kind: 'player', tag: d.tagPlayer.tag, name: d.tagPlayer.name, sub: `#${d.tagPlayer.tag} · tag match`, trophies: d.tagPlayer.trophies });
+        if (d.tagClan) items.push({ kind: 'clan', tag: d.tagClan.tag, name: d.tagClan.name, sub: `#${d.tagClan.tag} · tag match`, badgeId: d.tagClan.badgeId, members: d.tagClan.members });
+        for (const p of d.players.slice(0, 5)) if (!items.some((i) => i.tag === p.tag)) items.push({ kind: 'player', tag: p.tag, name: p.name, sub: `#${p.tag}${p.clanName ? ` · ${p.clanName}` : ''}`, trophies: p.trophies });
+        for (const k of d.clans.slice(0, 5)) if (!items.some((i) => i.tag === k.tag)) items.push({ kind: 'clan', tag: k.tag, name: k.name, sub: `#${k.tag}${k.location ? ` · ${k.location}` : ''}`, badgeId: k.badgeId, members: k.members });
+        setSug({ q: term, items });
+        setSel(-1);
+      } catch {
+        // aborted or offline: keep the old list
+      } finally {
+        setBusy(false);
+      }
+    }, 250);
+    return () => {
+      clearTimeout(id);
+      ctl.abort();
+    };
+  }, [q, scope, typo]);
+
+  const items = sug && sug.q === trimmed ? sug.items : [];
+  const open = focus && trimmed.replace(/^#/, '').length >= 2 && !typo && (items.length > 0 || busy);
+
+  const go = (it?: Item) => {
+    if (it) return router.push(hrefOf(it));
+    if (typo || !trimmed) return;
+    if (surelyTag(trimmed) && c.kind === 'valid') {
+      return router.push(scope === 'player' ? `/player/${c.tag}` : scope === 'clan' ? clanHref(c.tag) : `/t/${c.tag}`);
+    }
+    if (trimmed.replace(/^#/, '').length < 2) return;
+    const params = new URLSearchParams({ q: trimmed });
+    if (scope !== 'all') params.set('type', scope);
+    if (then) params.set('then', then);
+    router.push(`/search?${params}`);
+  };
+
+  let hint: string = defaultHint ?? HINTS[scope];
   let hintFg = onScene ? '#A4A9B4' : 'var(--text-3)';
   if (typo && c.kind === 'invalid') {
     hint = `"${c.bad}" can't appear in a tag. Tags only use 0 2 8 9 P Y L Q G R J C U V.`;
     hintFg = onScene ? '#FF5464' : 'var(--ember)';
-  } else if (c.kind === 'valid') {
-    hint = `Valid tag · press Enter to look up #${c.tag}`;
+  } else if (surelyTag(trimmed)) {
+    hint = `Looks like a tag · Enter to open #${c.kind === 'valid' ? c.tag : ''}`;
     hintFg = onScene ? '#8CCBFF' : 'var(--blue-hi)';
-  } else if (searchHref(tag)) {
-    hint = `Press Enter to search clans named "${tag.trim()}"`;
+  } else if (trimmed.length >= 2) {
+    hint = `Enter to see every ${scope === 'player' ? 'player' : scope === 'clan' ? 'clan' : 'player and clan'} matching "${trimmed}"`;
   }
-  const go = () => {
-    if (typo) return;
-    const href = searchHref(tag);
-    if (href) router.push(href);
-  };
 
   const fg = onScene ? '#F3F4F6' : 'var(--text-1)';
+  const panelBg = onScene ? 'rgba(18,19,22,.96)' : 'var(--obsidian)';
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div ref={box} style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <label
         style={{
           position: 'relative',
@@ -63,21 +133,13 @@ export function TagSearch({
           background: onScene ? 'rgba(18,19,22,.82)' : 'var(--obsidian)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          border: `1px solid ${focus || c.kind === 'valid' ? 'rgba(58,160,255,.7)' : typo ? 'rgba(255,84,100,.6)' : onScene ? 'rgba(255,255,255,.18)' : 'var(--hair)'}`,
+          border: `1px solid ${focus || surelyTag(trimmed) ? 'rgba(58,160,255,.7)' : typo ? 'rgba(255,84,100,.6)' : onScene ? 'rgba(255,255,255,.18)' : 'var(--hair)'}`,
           borderRadius: 8,
           boxShadow: focus ? 'var(--glow)' : onScene ? '0 20px 60px rgba(0,0,0,.5)' : 'none',
           transition: 'box-shadow .3s, border-color .3s',
         }}
       >
-        <span
-          style={{
-            position: 'absolute',
-            inset: 5,
-            border: `1px solid ${onScene ? 'rgba(255,255,255,.14)' : 'var(--hair)'}`,
-            borderRadius: 5,
-            pointerEvents: 'none',
-          }}
-        />
+        <span style={{ position: 'absolute', inset: 5, border: `1px solid ${onScene ? 'rgba(255,255,255,.14)' : 'var(--hair)'}`, borderRadius: 5, pointerEvents: 'none' }} />
         <span
           aria-hidden
           style={{
@@ -94,21 +156,39 @@ export function TagSearch({
             textShadow: '0 0 10px rgba(58,160,255,.8)',
           }}
         >
-          #
+          {busy ? '…' : '#'}
         </span>
         <span style={{ position: 'relative', flex: 1, minWidth: 0, display: 'flex', alignItems: 'center' }}>
           <input
-            value={tag}
+            value={q}
             autoFocus={autoFocus}
-            onChange={(e) => setTag(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && go()}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown' && items.length) {
+                e.preventDefault();
+                setSel((i) => (i + 1) % items.length);
+              } else if (e.key === 'ArrowUp' && items.length) {
+                e.preventDefault();
+                setSel((i) => (i <= 0 ? items.length - 1 : i - 1));
+              } else if (e.key === 'Escape') {
+                setSel(-1);
+                (e.target as HTMLInputElement).blur();
+              } else if (e.key === 'Enter') {
+                e.preventDefault();
+                go(open && sel >= 0 ? items[sel] : undefined);
+              }
+            }}
             onFocus={() => setFocus(true)}
-            onBlur={() => setFocus(false)}
-            aria-label="Player or clan tag, or clan name"
+            onBlur={() => setTimeout(() => setFocus(false), 150)}
+            role="combobox"
+            aria-expanded={open}
+            aria-controls={listId}
+            aria-autocomplete="list"
+            aria-activedescendant={open && sel >= 0 ? `${listId}-${sel}` : undefined}
+            aria-label={scope === 'player' ? 'Player name or tag' : scope === 'clan' ? 'Clan name or tag' : 'Player or clan name or tag'}
             aria-invalid={typo || undefined}
             placeholder={focus ? '' : placeholder}
             spellCheck={false}
-            autoCapitalize="characters"
             autoComplete="off"
             style={{
               width: '100%',
@@ -119,11 +199,10 @@ export function TagSearch({
               color: fg,
               caretColor: '#3AA0FF',
               font: `700 ${hero ? 'clamp(16px,2vw,22px)' : '16px'}/1 var(--mono)`,
-              letterSpacing: '.1em',
-              textTransform: 'uppercase',
+              letterSpacing: '.06em',
             }}
           />
-          {!tag && !focus && !placeholder && (
+          {!q && !focus && !placeholder && (
             <span
               aria-hidden
               style={{
@@ -142,13 +221,102 @@ export function TagSearch({
         <button
           type="button"
           data-magnet=""
-          onClick={go}
+          onClick={() => go()}
           className="btn btn-primary"
           style={{ height: hero ? 48 : 40, padding: hero ? '0 22px' : '0 16px', borderRadius: 5, fontSize: hero ? 12 : 11 }}
         >
-          {c.kind === 'valid' ? 'LOOK UP ↵' : 'SEARCH'}
+          {surelyTag(trimmed) ? 'LOOK UP ↵' : 'SEARCH'}
         </button>
       </label>
+      {open && (
+        <div
+          id={listId}
+          role="listbox"
+          aria-label="Suggestions"
+          style={{
+            position: 'absolute',
+            // In the hero the box sits at the bottom of a clipped scene, so open upwards.
+            ...(onScene ? { bottom: 'calc(100% + 6px)' } : { top: (hero ? 68 : 56) + 6 }),
+            left: 0,
+            right: 0,
+            zIndex: 30,
+            maxHeight: 360,
+            overflowY: 'auto',
+            padding: 6,
+            background: panelBg,
+            border: `1px solid ${onScene ? 'rgba(255,255,255,.18)' : 'var(--hair)'}`,
+            borderRadius: 8,
+            boxShadow: '0 24px 60px rgba(0,0,0,.55)',
+            color: fg,
+          }}
+        >
+          {items.length === 0 && <div style={{ padding: '12px 10px', font: '500 11px/1 var(--mono)', letterSpacing: '.1em', color: '#80868F' }}>SEARCHING…</div>}
+          {items.map((it, i) => (
+            <div
+              key={`${it.kind}${it.tag}`}
+              id={`${listId}-${i}`}
+              role="option"
+              aria-selected={i === sel}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                go(it);
+              }}
+              onMouseEnter={() => setSel(i)}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '28px 1fr auto',
+                gap: 12,
+                alignItems: 'center',
+                padding: '9px 10px',
+                borderRadius: 5,
+                cursor: 'pointer',
+                background: i === sel ? (onScene ? '#262930' : 'var(--slate)') : 'transparent',
+              }}
+            >
+              {it.kind === 'clan' && it.badgeId != null ? (
+                <ClanBadge badgeId={it.badgeId} size={26} />
+              ) : (
+                <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#262930', font: '700 11px/1 var(--mono)', color: '#8CCBFF' }}>
+                  {it.name.slice(0, 1).toUpperCase()}
+                </span>
+              )}
+              <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+                <span style={{ font: '600 14px/1.15 var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.name}</span>
+                <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.08em', color: '#80868F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {it.kind === 'player' ? 'PLAYER' : 'CLAN'} · {it.sub}
+                </span>
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '600 12px/1 var(--mono)', color: '#A4A9B4', whiteSpace: 'nowrap' }}>
+                {it.kind === 'player' && it.trophies != null && (
+                  <>
+                    <TrophyIcon size={14} />
+                    {it.trophies.toLocaleString('en-US')}
+                  </>
+                )}
+                {it.kind === 'clan' && it.members != null && (
+                  <>
+                    <MembersIcon size={14} />
+                    {it.members}/50
+                  </>
+                )}
+              </span>
+            </div>
+          ))}
+          {items.length > 0 && (
+            <div
+              role="option"
+              aria-selected={false}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                go();
+              }}
+              style={{ padding: '10px', font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: '#8CCBFF', cursor: 'pointer' }}
+            >
+              SEE ALL RESULTS FOR &quot;{trimmed.toUpperCase()}&quot; →
+            </div>
+          )}
+        </div>
+      )}
       <span role="status" style={{ font: '500 10px/1.6 var(--mono)', letterSpacing: '.1em', color: hintFg }}>
         {hint}
       </span>
