@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Fog } from '@/components/fx/Fog';
-import { Decode, Reveal } from '@/components/fx/Reveal';
+import { Reveal } from '@/components/fx/Reveal';
 import { EmptyState } from '@/components/EmptyState';
 import { ClanBadge } from '@/components/ui/ClanBadge';
-import { activityOf, ROLE_LABEL } from '@/components/ui/primitives';
+import { activityOf, FitValue, ROLE_LABEL } from '@/components/ui/primitives';
+import { ClockIcon, DonationIcon, ExpIcon, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { Tabs } from '@/components/ui/Tabs';
 import type { ClanProfile } from '@/lib/clan/profile';
 import { agoShort, dstr, fmt } from '@/lib/format';
@@ -40,14 +41,14 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
   };
   const g = key[sort.k];
   const rows = [...ranked].sort((a, b) => ((g(a) < g(b) ? -1 : g(a) > g(b) ? 1 : 0) * sort.d) || a.rank - b.rank);
-  const cols: [SortKey, string, 'left' | 'right'][] = [
+  const cols: [SortKey, string, 'left' | 'right', React.ReactNode?][] = [
     ['rank', '#', 'left'],
     ['name', 'NAME', 'left'],
     ['role', 'ROLE', 'left'],
-    ['trophies', 'TROPHIES', 'right'],
-    ['exp', 'EXP', 'right'],
-    ['don', 'DON. / WK', 'right'],
-    ['seen', 'LAST SEEN', 'right'],
+    ['trophies', 'TROPHIES', 'right', <TrophyIcon key="i" size={12} />],
+    ['exp', 'KING LVL', 'right', <ExpIcon key="i" size={12} />],
+    ['don', 'DON. / WK', 'right', <DonationIcon key="i" size={12} />],
+    ['seen', 'LAST SEEN', 'right', <ClockIcon key="i" size={12} />],
   ];
 
   const n = c.members.length;
@@ -162,20 +163,17 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
         <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 1, background: 'var(--hair)', border: '1px solid var(--hair)', borderRadius: 8, overflow: 'hidden', marginTop: -20 }}>
           {(
             [
-              ['CLAN SCORE', fmt(c.clanScore), ''],
-              ['WAR TROPHIES', fmt(c.clanWarTrophies), ''],
-              ['REQUIRED', fmt(c.requiredTrophies), 'TR'],
-              ['DONATIONS / WK', fmt(c.donationsPerWeek), ''],
-              ['MEMBERS', String(n), '/50'],
-              ['TYPE', TYPE[c.type].split(' ')[0].toUpperCase(), ''],
+              ['CLAN SCORE', fmt(c.clanScore), '', <TrophyIcon key="i" title="Clan score" />],
+              ['WAR TROPHIES', fmt(c.clanWarTrophies), '', <WarTrophyIcon key="i" title="Clan war trophies" />],
+              ['REQUIRED', fmt(c.requiredTrophies), 'TR', <TrophyIcon key="i" title="Required trophies" />],
+              ['DONATIONS / WK', fmt(c.donationsPerWeek), '', <DonationIcon key="i" title="Cards donated this week" />],
+              ['MEMBERS', String(n), '/50', <MembersIcon key="i" title="Members" />],
+              ['TYPE', TYPE[c.type].split(' ')[0].toUpperCase(), '', null],
             ] as const
-          ).map(([k, v, sub]) => (
-            <div key={k} data-spot="" className="spot" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 18px' }}>
+          ).map(([k, v, sub, icon]) => (
+            <div key={k} data-spot="" className="spot" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 18px', minWidth: 0 }}>
               <span style={{ font: '500 10px/1.2 var(--mono)', letterSpacing: '.12em', color: 'var(--text-3)' }}>{k}</span>
-              <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <Decode style={{ font: '800 30px/1 var(--mono)', letterSpacing: '-.04em' }}>{v}</Decode>
-                <span style={{ font: '500 11px/1 var(--mono)', color: 'var(--text-3)' }}>{sub}</span>
-              </span>
+              <FitValue value={v} unit={sub || undefined} icon={icon ?? undefined} max={30} />
             </div>
           ))}
         </div>
@@ -197,7 +195,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
             <table style={{ width: '100%', minWidth: 720, borderCollapse: 'collapse', fontVariantNumeric: 'tabular-nums' }}>
               <thead>
                 <tr>
-                  {cols.map(([k, label, al]) => {
+                  {cols.map(([k, label, al, icon]) => {
                     const on = sort.k === k;
                     return (
                       <th key={k} aria-sort={on ? (sort.d < 0 ? 'descending' : 'ascending') : 'none'} style={{ padding: 0, background: 'var(--glass)', borderBottom: '1px solid var(--hair)', textAlign: al }}>
@@ -206,7 +204,11 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                           onClick={() => setSort((st) => ({ k, d: st.k === k ? ((-st.d) as 1 | -1) : k === 'name' || k === 'rank' || k === 'role' || k === 'seen' ? 1 : -1 }))}
                           style={{ width: '100%', height: 42, padding: '0 14px', background: 'none', border: 0, cursor: 'pointer', textAlign: al, font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: on ? 'var(--text-1)' : 'var(--text-3)' }}
                         >
-                          {label} <span style={{ color: 'var(--blue)' }}>{on ? (sort.d < 0 ? '▼' : '▲') : ''}</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            {icon}
+                            {label}
+                            <span style={{ color: 'var(--blue)' }}>{on ? (sort.d < 0 ? '▼' : '▲') : ''}</span>
+                          </span>
                         </button>
                       </th>
                     );
@@ -230,7 +232,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                         {ROLE_LABEL[m.role]}
                       </td>
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.trophies)}</td>
-                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{m.expLevel}</td>
+                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{m.expLevel || '—'}</td>
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.donations)}</td>
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 12px/1 var(--mono)', color: a === 'active' ? 'var(--blue)' : a === 'risk' ? 'var(--text-2)' : 'var(--ember)' }}>
                         {a === 'active' ? '● ' : a === 'risk' ? '◐ ' : '○ '}

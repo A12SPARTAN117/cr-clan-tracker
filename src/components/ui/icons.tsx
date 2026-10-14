@@ -355,3 +355,14 @@ export function EventIcon(p: P) {
     </Svg>
   );
 }
+
+/** Warning triangle: flagged / inactive. */
+export function AlertIcon(p: P) {
+  return (
+    <Svg {...p}>
+      <path d="M12 3L22 20H2Z" fill="#3A1418" stroke="#FF5464" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M12 9.5V14" stroke="#FF5464" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="12" cy="17" r="1.2" fill="#FF5464" />
+    </Svg>
+  );
+}

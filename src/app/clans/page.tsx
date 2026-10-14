@@ -7,6 +7,7 @@ import { ClanBadge } from '@/components/ui/ClanBadge';
 import { getClanWarRankings, getLocations, searchClans } from '@/lib/cr/api';
 import type { Clan } from '@/lib/cr/types';
 import { fmt } from '@/lib/format';
+import { MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { ClanFilters } from './ClanFilters';
 
 export const metadata: Metadata = { title: 'Find a clan' };
@@ -43,16 +44,21 @@ function ClanCard({ c }: { c: Row }) {
         {c.rank != null && <span style={{ marginLeft: 'auto', font: '700 13px/1 var(--mono)', color: c.rank === 1 ? 'var(--gold)' : 'var(--text-3)' }}>#{c.rank}</span>}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, paddingTop: 14, borderTop: '1px solid var(--hair)' }}>
-        {[
-          ['MEMBERS', `${c.members}/50`],
-          ['WAR TR.', fmt(c.clanWarTrophies)],
-          ['REQ.', c.requiredTrophies != null ? fmt(c.requiredTrophies) : '—'],
-        ].map(([k, v]) => (
-          <span key={k} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {(
+          [
+            ['MEMBERS', `${c.members}/50`, <MembersIcon key="i" size={13} />],
+            ['WAR TR.', fmt(c.clanWarTrophies), <WarTrophyIcon key="i" size={13} />],
+            ['REQ.', c.requiredTrophies != null ? fmt(c.requiredTrophies) : '—', <TrophyIcon key="i" size={13} />],
+          ] as const
+        ).map(([k, v, icon]) => (
+          <span key={k} style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
             <span className="label-sm" style={{ letterSpacing: '.12em' }}>
               {k}
             </span>
-            <span style={{ font: '700 15px/1 var(--mono)' }}>{v}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, font: '700 15px/1 var(--mono)', whiteSpace: 'nowrap' }}>
+              {icon}
+              {v}
+            </span>
           </span>
         ))}
       </div>

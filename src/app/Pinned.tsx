@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { ClanBadge } from '@/components/ui/ClanBadge';
 import { LeagueIcon, PolRating, ROLE_LABEL } from '@/components/ui/primitives';
-import { TrophyIcon } from '@/components/ui/icons';
+import { FameIcon, MembersIcon, TrophyIcon } from '@/components/ui/icons';
 import { fmt } from '@/lib/format';
 import { setPin, usePins } from '@/lib/pins';
 import type { ClanSummary, PlayerSummary } from '@/lib/summary';
@@ -128,11 +128,14 @@ export function Pinned() {
                   <span className="label-sm">Your clan</span>
                   <span className={s.pinName}>{clan.data.name.toUpperCase()}</span>
                   <span className={s.pinMeta}>
-                    #{clan.data.tag} · {clan.data.members}/50 · {clan.data.inactive} flagged inactive
+                    #{clan.data.tag} · <MembersIcon size={11} /> {clan.data.members}/50 · {clan.data.inactive} flagged inactive
                   </span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                  <span style={{ font: '700 24px/1 var(--mono)' }}>{fmt(clan.data.fame)}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, font: '700 24px/1 var(--mono)' }}>
+                    <FameIcon size={20} title="River race fame" />
+                    {fmt(clan.data.fame)}
+                  </span>
                   <span style={{ font: '500 9px/1 var(--mono)', letterSpacing: '.14em', color: 'var(--text-2)' }}>
                     FAME{clan.data.raceRank ? ` · #${clan.data.raceRank} IN RACE` : ''}
                   </span>
