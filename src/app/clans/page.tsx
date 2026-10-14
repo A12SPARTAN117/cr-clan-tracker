@@ -98,7 +98,7 @@ async function Results({ searchParams }: { searchParams: Promise<Record<string, 
   const list = rows.filter((c) => (c.clanWarTrophies ?? 0) >= minW && (!type || type === 'all' || !c.type || c.type === type) && c.members >= minM);
 
   return (
-    <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <section data-results="" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
         <span className="label">{title}</span>
         <span className="label">{list.length} results</span>
