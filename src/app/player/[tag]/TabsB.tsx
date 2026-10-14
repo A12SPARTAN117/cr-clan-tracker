@@ -1,9 +1,29 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-import { CardTile } from '@/components/CardTile';
 import { LeagueIcon, leagueName, PolRating } from '@/components/ui/primitives';
+import {
+  AlertIcon,
+  BadgeIcon,
+  CardsIcon,
+  ChallengeIcon,
+  ChestIcon,
+  ClanWarIcon,
+  ClockIcon,
+  CrownIcon,
+  DonationIcon,
+  EventIcon,
+  ExpIcon,
+  FameIcon,
+  MedalIcon,
+  MembersIcon,
+  ReceivedIcon,
+  StreakIcon,
+  SwordsIcon,
+  TowerIcon,
+  TrophyIcon,
+  WinRateIcon,
+} from '@/components/ui/icons';
 import { DeckBlock, DeckGrid } from '@/components/DeckBlock';
 import { EmptyState } from '@/components/EmptyState';
 import { agoShort, dstr, fmt } from '@/lib/format';
@@ -12,147 +32,125 @@ import type { PlayerHistory } from '@/lib/history';
 import s from './player.module.css';
 
 /* ---------------- Stats ---------------- */
+type Row = [React.ReactNode, string, React.ReactNode];
+
 export function StatsTab({ p }: { p: PlayerProfile }) {
   const t = p.totals;
-  const pol = (x: PlayerProfile['pol']['current']) => (x ? `${leagueName(x.league)} · ${fmt(x.rating)}` : '—');
+  const own = p.collection.filter((c) => c.owned);
+  const badge = (name: string) => p.badges.find((b) => b.id === name);
+  const polRow = (x: PlayerProfile['pol']['current']) =>
+    x ? (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        <LeagueIcon league={x.league} size={18} />
+        {leagueName(x.league)} ·{x.league >= 7 ? <PolRating rating={x.rating} size={13} /> : fmt(x.rating)}
+      </span>
+    ) : (
+      '—'
+    );
   const rank = (x: PlayerProfile['pol']['current']) => (x?.rank ? `#${fmt(x.rank)}` : '—');
-  const secs: { title: string; rows: [string, string][] }[] = [
+  const form = p.battles.filter((b) => b.kind !== 'friendly');
+  const formWins = form.filter((b) => b.result === 'win').length;
+  const enemy = p.enemies[0];
+  const secs: { title: string; rows: Row[] }[] = [
     {
       title: 'RANKED · PATH OF LEGENDS',
       rows: [
-        ['Current season', pol(p.pol.current)],
-        ['Global rank (current)', rank(p.pol.current)],
-        ['Previous season', pol(p.pol.last)],
-        ['Previous rank', rank(p.pol.last)],
-        ['Best season', pol(p.pol.best)],
-        ['Best rank', rank(p.pol.best)],
+        [<MedalIcon key="i" size={16} />, 'Current season', polRow(p.pol.current)],
+        [<TrophyIcon key="i" size={16} />, 'Global rank (current)', rank(p.pol.current)],
+        [<MedalIcon key="i" size={16} />, 'Previous season', polRow(p.pol.last)],
+        [<TrophyIcon key="i" size={16} />, 'Previous rank', rank(p.pol.last)],
+        [<MedalIcon key="i" size={16} />, 'Best season', polRow(p.pol.best)],
+        [<TrophyIcon key="i" size={16} />, 'Best rank', rank(p.pol.best)],
       ],
     },
     {
-      title: 'CHALLENGE',
+      title: 'TROPHY ROAD',
       rows: [
-        ['Max challenge wins', fmt(t.challengeMaxWins)],
-        ['Challenge cards won', fmt(t.challengeCardsWon)],
-        ['Tournament battles', fmt(t.tournamentBattles)],
-        ['Tournament cards won', fmt(t.tournamentCardsWon)],
+        [<TrophyIcon key="i" size={16} />, 'Trophies', fmt(p.trophies)],
+        [<TrophyIcon key="i" size={16} />, 'Best trophies', fmt(p.bestTrophies)],
+        [<TrophyIcon key="i" size={16} />, p.seasonal ? `Seasonal road · ${p.seasonal.arena}` : 'Seasonal road', p.seasonal ? `${fmt(p.seasonal.trophies)} (best ${fmt(p.seasonal.best)})` : '—'],
+        [<TrophyIcon key="i" size={16} />, 'Legacy trophy road best', fmt(p.legacyHigh)],
+        [<TowerIcon key="i" size={16} />, 'Arena', p.arena ?? '—'],
       ],
     },
     {
       title: 'BATTLE',
       rows: [
-        ['Wins', fmt(t.wins)],
-        ['Losses', fmt(t.losses)],
-        ['Three-crown wins', fmt(t.threeCrown)],
-        ['Win %', t.wins + t.losses ? `${((t.wins / (t.wins + t.losses)) * 100).toFixed(1)}%` : '—'],
-        ['Battle count', fmt(t.battleCount)],
-        ['Trophies (best)', `${fmt(p.trophies)} (${fmt(p.bestTrophies)})`],
+        [<CrownIcon key="i" size={16} />, 'Wins', fmt(t.wins)],
+        [<SwordsIcon key="i" size={16} />, 'Losses', fmt(t.losses)],
+        [<WinRateIcon key="i" size={16} />, 'Win %', t.wins + t.losses ? `${((t.wins / (t.wins + t.losses)) * 100).toFixed(1)}%` : '—'],
+        [<CrownIcon key="i" size={16} />, 'Three-crown wins', fmt(t.threeCrown)],
+        [<SwordsIcon key="i" size={16} />, 'Battle count', fmt(t.battleCount)],
+        [<StreakIcon key="i" size={16} />, 'Current streak', p.streakRun.kind ? `${p.streakRun.count} ${p.streakRun.kind === 'win' ? 'wins' : 'losses'}` : '—'],
+        [<WinRateIcon key="i" size={16} />, `Win % · last ${form.length} games`, form.length ? `${Math.round((formWins / form.length) * 100)}%` : '—'],
+        [<AlertIcon key="i" size={16} />, 'Worst enemy (last 30)', enemy ? `${enemy.name} · lost ${enemy.losses}/${enemy.games}` : '—'],
       ],
     },
     {
-      title: 'MISC',
+      title: 'COLLECTION',
       rows: [
-        ['Donations (total)', fmt(t.totalDonations)],
-        ['Donated this week', fmt(t.donationsWeek)],
-        ['Received this week', fmt(t.receivedWeek)],
-        ['War day wins', fmt(t.warDayWins)],
-        ['Clan cards collected', fmt(t.clanCardsCollected)],
-        ['EXP level', String(p.expLevel)],
-        ['Star points', fmt(t.starPoints)],
+        [<CardsIcon key="i" size={16} />, 'Collection level', fmt(p.collectionLevel)],
+        [<CardsIcon key="i" size={16} />, 'Cards found', `${own.length} / ${p.collection.length}`],
+        [<CardsIcon key="i" size={16} />, 'Max-level cards', String(own.filter((c) => c.level === 16).length)],
+        [<ExpIcon key="i" size={16} />, 'Average card level', own.length ? (own.reduce((a, c) => a + (c.level ?? 0), 0) / own.length).toFixed(2) : '—'],
+        [<CardsIcon key="i" size={16} />, 'Evolutions unlocked', `${p.collection.filter((c) => c.evoUnlocked).length} / ${p.collection.filter((c) => c.canEvo).length}`],
+        [<CardsIcon key="i" size={16} />, 'Heroes unlocked', `${p.collection.filter((c) => c.heroUnlocked).length} / ${p.collection.filter((c) => c.canHero).length}`],
+        [<TowerIcon key="i" size={16} />, 'Tower troops', `${p.towers.filter((x) => x.owned).length} / ${p.towers.length}`],
+        [<BadgeIcon key="i" size={16} />, 'Card mastery', `${p.mastery.length} cards · sum ${p.mastery.reduce((a, m) => a + m.level, 0)}`],
+        [<BadgeIcon key="i" size={16} />, 'Badges', String(p.badges.length)],
+        [<EventIcon key="i" size={16} />, 'Emotes', fmt(badge('EmoteCollection')?.progress)],
+        [<FameIcon key="i" size={16} />, 'Banners', fmt(badge('BannerCollection')?.progress)],
+      ],
+    },
+    {
+      title: 'CHALLENGES & TOURNAMENTS',
+      rows: [
+        [<ChallengeIcon key="i" size={16} />, 'Max challenge wins', fmt(t.challengeMaxWins)],
+        [<ChestIcon key="i" size={16} />, 'Challenge cards won', fmt(t.challengeCardsWon)],
+        [<SwordsIcon key="i" size={16} />, 'Tournament battles', fmt(t.tournamentBattles)],
+        [<ChestIcon key="i" size={16} />, 'Tournament cards won', fmt(t.tournamentCardsWon)],
+      ],
+    },
+    {
+      title: 'CLAN & WAR',
+      rows: [
+        [<MembersIcon key="i" size={16} />, 'Clan', p.clan?.name ?? '—'],
+        [<DonationIcon key="i" size={16} />, 'Donations (total)', fmt(t.totalDonations)],
+        [<DonationIcon key="i" size={16} />, 'Donated this week', fmt(t.donationsWeek)],
+        [<ReceivedIcon key="i" size={16} />, 'Received this week', fmt(t.receivedWeek)],
+        [<ClanWarIcon key="i" size={16} />, 'War day wins', fmt(t.warDayWins)],
+        [<ClanWarIcon key="i" size={16} />, 'Clan war wins (badge)', fmt(badge('ClanWarWins')?.progress)],
+        [<CardsIcon key="i" size={16} />, 'Clan cards collected', fmt(t.clanCardsCollected)],
+      ],
+    },
+    {
+      title: 'PROGRESS',
+      rows: [
+        [<TowerIcon key="i" size={16} />, 'King tower level', p.kingTower != null ? String(p.kingTower) : '—'],
+        [<ExpIcon key="i" size={16} />, 'EXP level', String(p.expLevel)],
+        [<BadgeIcon key="i" size={16} />, 'Star points', fmt(t.starPoints)],
+        [<ExpIcon key="i" size={16} />, 'Total EXP', fmt(t.totalExp)],
+        [<ClockIcon key="i" size={16} />, 'Years played', fmt(badge('YearsPlayed')?.level)],
       ],
     },
   ];
   return (
     <div className={s.statGrid}>
       {secs.map((sec) => (
-        <div key={sec.title} className="panel" style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div key={sec.title} className="panel" style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
           <span style={{ position: 'absolute', top: -1, left: -1, width: 10, height: 10, borderTop: '1px solid var(--frame)', borderLeft: '1px solid var(--frame)' }} />
           <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.16em', color: 'var(--blue-hi)', marginBottom: 10 }}>{sec.title}</span>
-          {sec.rows.map(([k, v]) => (
+          {sec.rows.map(([icon, k, v]) => (
             <div key={k} className={s.statRow}>
-              <span style={{ font: '400 14px/1.2 var(--sans)', color: 'var(--text-2)' }}>{k}</span>
-              <span style={{ font: '600 14px/1.2 var(--mono)', fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>{v}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, font: '400 14px/1.2 var(--sans)', color: 'var(--text-2)', minWidth: 0 }}>
+                <span style={{ width: 18, display: 'inline-flex', justifyContent: 'center', flex: 'none' }}>{icon}</span>
+                {k}
+              </span>
+              <span style={{ font: '600 14px/1.2 var(--mono)', fontVariantNumeric: 'tabular-nums', textAlign: 'right', overflowWrap: 'anywhere' }}>{v}</span>
             </div>
           ))}
         </div>
       ))}
-    </div>
-  );
-}
-
-/* ---------------- Battles ---------------- */
-export function BattlesTab({ p }: { p: PlayerProfile }) {
-  const modes = [...new Set(p.battles.map((b) => b.mode))];
-  const [mode, setMode] = useState('all');
-  const [open, setOpen] = useState<string | null>(p.battles[0]?.id ?? null);
-  const list = p.battles.filter((b) => mode === 'all' || b.mode === mode);
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-        {['all', ...modes].map((m) => (
-          <button key={m} type="button" className="chip" aria-pressed={mode === m} onClick={() => setMode(m)}>
-            {m === 'all' ? 'All' : m}
-          </button>
-        ))}
-        <span style={{ marginLeft: 'auto', font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: 'var(--text-3)' }}>BATTLE LOG HOLDS THE LAST ~30 BATTLES</span>
-      </div>
-      {list.length ? (
-        <div style={{ border: '1px solid var(--hair)', borderRadius: 8, background: 'var(--charcoal)', overflow: 'hidden' }}>
-          {list.map((b) => {
-            const isOpen = open === b.id;
-            const fg = b.result === 'win' ? 'var(--blue)' : b.result === 'loss' ? 'var(--ember)' : 'var(--text-2)';
-            return (
-              <div key={b.id} style={{ borderBottom: '1px solid var(--hair)' }}>
-                <button type="button" className={s.battleBtn} aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : b.id)}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, font: '700 12px/1 var(--mono)', letterSpacing: '.1em', color: fg }}>
-                    <span style={{ width: 22, height: 22, borderRadius: 4, border: `1px solid ${fg}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {b.result === 'win' ? 'W' : b.result === 'loss' ? 'L' : 'D'}
-                    </span>
-                    {b.result.toUpperCase()}
-                  </span>
-                  <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-                    <span style={{ font: '600 14px/1.2 var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>vs {b.opp.name}</span>
-                    <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.08em', color: 'var(--text-3)', textTransform: 'uppercase' }}>
-                      {b.opp.clan ?? 'No clan'} · {b.mode} · {agoShort(b.hours)} ago
-                    </span>
-                  </span>
-                  <span style={{ font: '800 18px/1 var(--mono)', letterSpacing: '.04em' }}>
-                    {b.crowns[0]}–{b.crowns[1]}
-                  </span>
-                  <span style={{ textAlign: 'right', font: '600 13px/1 var(--mono)', color: b.trophyChange ? (b.trophyChange > 0 ? 'var(--blue)' : 'var(--ember)') : 'var(--text-3)' }}>
-                    {b.trophyChange ? `${b.trophyChange > 0 ? '+' : '−'}${Math.abs(b.trophyChange)}` : '—'}
-                  </span>
-                  <span style={{ textAlign: 'right', font: '500 14px/1 var(--mono)', color: 'var(--text-3)' }}>{isOpen ? '−' : '+'}</span>
-                </button>
-                {isOpen && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,380px),1fr))', gap: 20, padding: 18, background: 'var(--obsidian)', borderTop: '1px solid var(--hair)', animation: 'oaFade .3s' }}>
-                    {[
-                      { label: p.name, cards: b.mine, fg: 'var(--blue-hi)' },
-                      { label: b.opp.name, cards: b.theirs, fg: 'var(--text-3)', href: b.opp.tag ? `/player/${b.opp.tag}` : null },
-                    ].map((side) => (
-                      <div key={side.label} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {'href' in side && side.href ? (
-                          <Link href={side.href} style={{ font: '500 9px/1 var(--mono)', letterSpacing: '.14em', color: side.fg, textTransform: 'uppercase' }}>
-                            {side.label} →
-                          </Link>
-                        ) : (
-                          <span style={{ font: '500 9px/1 var(--mono)', letterSpacing: '.14em', color: side.fg, textTransform: 'uppercase' }}>{side.label}</span>
-                        )}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                          {side.cards.map((c, i) => (
-                            <CardTile key={`${c.id}-${i}`} slug={c.slug} label={c.name} img={c.img} rarity={c.rarity} evo={c.evo} hero={c.hero} level={c.level} size="M" />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <EmptyChest text="No battles in the log yet." />
-      )}
     </div>
   );
 }

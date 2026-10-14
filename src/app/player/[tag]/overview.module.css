@@ -1,0 +1,229 @@
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 168px), 1fr));
+  gap: 1px;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+  min-height: 108px;
+  padding: 16px 18px;
+}
+.tileK {
+  font: 500 10px/1.3 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- streak ---------- */
+.streak {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(18px, 2.4vw, 28px);
+  border-radius: 12px;
+  border: 1px solid var(--hair);
+  background:
+    radial-gradient(120% 90% at 0% 0%, var(--streak-glow, rgba(58, 160, 255, 0.12)), transparent 60%),
+    var(--charcoal);
+}
+.streak[data-kind='win'] {
+  --streak-glow: rgba(255, 140, 50, 0.22);
+  --streak-hi: #ffb35c;
+  border-color: rgba(255, 150, 60, 0.45);
+  box-shadow: 0 0 40px rgba(255, 120, 40, 0.12);
+}
+.streak[data-kind='loss'] {
+  --streak-glow: rgba(90, 140, 255, 0.18);
+  --streak-hi: #8ccbff;
+}
+.streakHead {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+}
+.streakBig {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.streakNum {
+  font: 800 clamp(56px, 7vw, 96px) / 0.85 var(--mono);
+  letter-spacing: -0.06em;
+  color: var(--streak-hi, var(--text-1));
+  text-shadow:
+    0 0 18px var(--streak-glow, transparent),
+    0 0 42px var(--streak-glow, transparent);
+  animation: streakPulse 2.4s ease-in-out infinite;
+}
+.streak[data-kind='win'] .streakNum {
+  background: linear-gradient(180deg, #fff3c4 0%, #ffb35c 45%, #ff5a2a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 14px rgba(255, 120, 40, 0.55));
+}
+.streakLabel {
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.streakMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  font: 500 11px/1.3 var(--mono);
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  text-align: right;
+}
+.streakMeta b {
+  color: var(--text-1);
+}
+.run {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 8px;
+}
+.runItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: 'icon score' 'mode mode' 'opp opp' 'ago ago';
+  gap: 4px 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--streak-hi, #8ccbff) 45%, transparent);
+  background: color-mix(in srgb, var(--streak-hi, #8ccbff) 8%, var(--obsidian));
+  animation: runIn 0.5s var(--ease-out) both;
+}
+.runItem > :first-child {
+  grid-area: icon;
+}
+.runScore {
+  grid-area: score;
+  font: 800 18px/1 var(--mono);
+  color: var(--streak-hi, var(--text-1));
+  justify-self: end;
+}
+.runMode {
+  grid-area: mode;
+  font: 500 9px/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.runOpp {
+  grid-area: opp;
+  font: 500 12px/1.2 var(--sans);
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.runAgo {
+  grid-area: ago;
+  font: 500 9px/1 var(--mono);
+  color: var(--text-3);
+}
+.form {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  gap: 4px;
+}
+.formCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0 5px;
+  border-radius: 5px;
+  font: 700 9px/1 var(--mono);
+  background: var(--well);
+  border: 1px solid var(--hair);
+  color: var(--text-3);
+}
+.formCell[data-r='win'] {
+  background: rgba(58, 160, 255, 0.16);
+  border-color: rgba(58, 160, 255, 0.55);
+  color: var(--blue-hi);
+}
+.formCell[data-r='loss'] {
+  border-color: rgba(255, 84, 100, 0.45);
+  color: var(--ember);
+}
+@media (max-width: 600px) {
+  .form {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+}
+
+/* ---------- worst enemy ---------- */
+.enemy {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(18px, 2.4vw, 28px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 84, 100, 0.35);
+  background:
+    radial-gradient(100% 80% at 100% 0%, rgba(255, 84, 100, 0.12), transparent 60%),
+    var(--charcoal);
+}
+.enemyMain {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+@keyframes streakPulse {
+  50% {
+    filter: brightness(1.15);
+  }
+}
+@keyframes runIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .streakNum,
+  .runItem {
+    animation: none;
+  }
+}
+.streak > :not([data-fx]) {
+  position: relative;
+}

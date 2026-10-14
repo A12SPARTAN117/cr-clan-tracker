@@ -42,6 +42,10 @@ export type Player = {
   tag: string;
   name: string;
   expLevel: number;
+  collectionLevel?: number;
+  legacyTrophyRoadHighScore?: number;
+  /** Per game-mode progress, e.g. "seasonal-trophy-road-202610" (trophies above 14,000). */
+  progress?: Record<string, { arena?: Arena; trophies: number; bestTrophies: number }>;
   kingTowerLevel?: number;
   trophies: number;
   bestTrophies: number;
