@@ -4,6 +4,7 @@ import { getBattleLog, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog,
 import type { ApiRole, Battle, Clan, CurrentRiverRace, RiverRaceLogEntry } from '../cr/types';
 import type { ClanHistory, RosterEvent } from '../history';
 import { parseApiDate } from '../format';
+import { pool } from '../pool';
 import { nextWarStart, riverBattleKind, warDay, warWeekKey } from '../war';
 import { factorScores, type FactorScores, type ScoreInputs } from './score';
 
@@ -105,19 +106,6 @@ export type Dashboard = {
 };
 
 
-async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Promise<R[]> {
-  const out: R[] = new Array(items.length);
-  let i = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(n, items.length) }, async () => {
-      while (i < items.length) {
-        const k = i++;
-        out[k] = await fn(items[k]);
-      }
-    }),
-  );
-  return out;
-}
 
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 /** Race week key (Thursday's date) so log entries line up with our per-day snapshots. */

@@ -7,6 +7,7 @@ import { deckKey, deckName, deckStats, toDeckCard, winConOf, type DeckCard } fro
 
 export type { DeckCard };
 import { parseApiDate } from './format';
+import { pool } from './pool';
 import { CORE_MODES, modesOfBattle, type ModeInfo, type ModeKind } from './modes';
 
 /**
@@ -78,19 +79,6 @@ const RANKED_HOURS = 24;
 const OTHER_HOURS = 72;
 const windowOf = (key: string) => (key === 'pol' || key === 'uc' ? RANKED_HOURS : OTHER_HOURS);
 
-async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Promise<R[]> {
-  const out: R[] = new Array(items.length);
-  let i = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(n, items.length) }, async () => {
-      while (i < items.length) {
-        const k = i++;
-        out[k] = await fn(items[k]);
-      }
-    }),
-  );
-  return out;
-}
 
 type DeckAcc = {
   cards: DeckCard[];

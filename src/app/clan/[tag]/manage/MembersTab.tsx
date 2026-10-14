@@ -1,6 +1,7 @@
 'use client';
 
 import type { KeyboardEvent } from 'react';
+import { CardsIcon, ClanWarIcon, ClockIcon, DonationIcon, FameIcon, MedalIcon, ReceivedIcon, SwordsIcon, TrophyIcon } from '@/components/ui/icons';
 import { HeatCell, LastSeen, LeagueIcon, PolRating, RoleChip, ROLE_LABEL, ScoreGauge, ActivityDot, activityOf } from '@/components/ui/primitives';
 import { FACTORS, FACTOR_INFO, weightSum, type Weights } from '@/lib/clan/score';
 import { agoShort, fmt } from '@/lib/format';
@@ -28,6 +29,19 @@ export const COLS: [SortKey, string, 'left' | 'right'][] = [
   ['tenure', 'In clan', 'right'],
   ['trend', 'Trend', 'right'],
 ];
+
+/** Icons shown in the column headers next to the numbers they describe. */
+const COL_ICON: Partial<Record<SortKey, React.ReactNode>> = {
+  trophies: <TrophyIcon size={12} />,
+  league: <MedalIcon size={12} />,
+  lastSeen: <ClockIcon size={12} />,
+  don: <DonationIcon size={12} />,
+  recv: <ReceivedIcon size={12} />,
+  fame: <FameIcon size={12} />,
+  decks: <CardsIcon size={12} />,
+  warWin: <ClanWarIcon size={12} />,
+  fWin: <SwordsIcon size={12} />,
+};
 
 /** First click sorts the most useful way: numbers high→low, names A→Z, last seen most recent first. */
 export const firstDir = (k: SortKey): 1 | -1 => (k === 'name' || k === 'rank' || k === 'lastSeen' || k === 'role' ? 1 : -1);
@@ -267,6 +281,7 @@ export function MembersTab({
                 return (
                   <th key={k} aria-sort={on ? (sort.d < 0 ? 'descending' : 'ascending') : 'none'} style={{ textAlign: align }}>
                     <button type="button" className={s.th} data-on={on} onClick={() => sortBy(k)} style={{ justifyContent: align === 'right' ? 'flex-end' : 'flex-start' }}>
+                      {COL_ICON[k]}
                       {label}
                       <span className={s.arrow}>{on ? (sort.d < 0 ? '▼' : '▲') : ''}</span>
                     </button>
