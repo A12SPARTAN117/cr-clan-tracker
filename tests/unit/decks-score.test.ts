@@ -105,3 +105,22 @@ describe('helpers', () => {
     expect(rankByName(rows, 'Rosa', 10).map((r) => r.name)).toEqual(['rosa', 'Rosa Parks', 'Super Rosa']);
   });
 });
+
+describe('card upgrades', async () => {
+  const { upgrades } = await import('@/lib/player/profile');
+
+  it('a maxed common has collected 23,086 copies (matches RoyaleAPI)', () => {
+    expect(upgrades('common', 16, 16, 0)).toEqual({ next: null, toMax: 0, collected: 23086 });
+  });
+
+  it('uses the modern costs from level 11 up, the same gold for every rarity', () => {
+    // A legendary at API level 7 of 8 is real level 15: 20 copies and 120,000 gold to 16.
+    expect(upgrades('legendary', 7, 8, 5).next).toEqual({ cards: 20, gold: 120000 });
+    // A champion at API level 5 of 6 (real 15).
+    expect(upgrades('champion', 5, 6, 0).next).toEqual({ cards: 15, gold: 120000 });
+    // A common at level 12: 2,500 copies to 13; til max counts every later step minus copies held.
+    const c = upgrades('common', 12, 16, 1000);
+    expect(c.next).toEqual({ cards: 2500, gold: 40000 });
+    expect(c.toMax).toBe(2500 + 3500 + 5500 + 7500 - 1000);
+  });
+});
