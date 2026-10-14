@@ -1,0 +1,133 @@
+/* RoyaleAPI-style deck: header, 4 × 2 card grid, footer facts. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--min, 320px)), 1fr));
+  gap: 16px;
+}
+.block {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background:
+    radial-gradient(320px circle at var(--mx, -500px) var(--my, -500px), rgba(58, 160, 255, 0.09), transparent 70%),
+    var(--charcoal);
+  transition: border-color 0.2s;
+}
+.block:hover {
+  border-color: rgba(58, 160, 255, 0.4);
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.chip {
+  display: inline-flex;
+  align-items: stretch;
+  flex: none;
+  height: 22px;
+  border-radius: 4px;
+  overflow: hidden;
+  font: 600 11px/22px var(--mono);
+  font-variant-numeric: tabular-nums;
+  background: var(--void);
+  border: 1px solid var(--hair);
+}
+.chip b {
+  padding: 0 7px;
+  background: var(--slate);
+  color: var(--text-1);
+  font-weight: 700;
+}
+.chip span {
+  padding: 0 7px;
+  color: var(--text-2);
+}
+.rank {
+  font: 700 11px/1 var(--mono);
+  color: var(--text-3);
+}
+.rank[data-first='true'] {
+  color: var(--gold);
+}
+.name {
+  flex: 1 1 140px;
+  min-width: 0;
+  font: 600 16px/1.25 var(--sans);
+  color: var(--text-1);
+  overflow-wrap: anywhere;
+}
+a.name:hover {
+  color: var(--blue-hi);
+}
+.stats {
+  flex: none;
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  color: var(--blue);
+  white-space: nowrap;
+}
+.stats:hover {
+  color: var(--blue-hi);
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(6px, 1.2vw, 12px);
+}
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair);
+}
+.tower {
+  display: inline-flex;
+  width: 30px;
+}
+.tower > div {
+  width: 30px !important;
+}
+.fact,
+.win {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font: 500 11px/1 var(--mono);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.fact b,
+.win b {
+  font-weight: 700;
+  color: var(--text-1);
+  font-size: 13px;
+}
+.factK {
+  letter-spacing: 0.06em;
+}
+.win {
+  margin-left: auto;
+}
+.win[data-tone='strong'] b {
+  color: var(--blue-hi);
+  text-shadow: 0 0 12px rgba(58, 160, 255, 0.55);
+}
+.win[data-tone='weak'] b {
+  color: var(--ember);
+}
+@media (max-width: 420px) {
+  .factK {
+    display: none;
+  }
+}

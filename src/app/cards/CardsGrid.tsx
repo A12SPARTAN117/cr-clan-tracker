@@ -71,7 +71,7 @@ export function CardsGrid({ cards }: { cards: CardInfo[] }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(88px,1fr))', gap: '24px 14px' }}>
         {list.map((c) => (
           <Link key={c.id} href={`/cards/${c.slug}`} aria-label={c.name} style={{ color: 'var(--text-1)' }}>
-            <CardTile slug={c.slug} label={c.name} img={c.icons.normal} rarity={c.rarity} evo={false} hero={false} elixir={c.elixir} size="M" showLabel />
+            <CardTile slug={c.slug} label={c.name} img={c.icons.normal} rarity={c.rarity} evo={false} hero={false} size="M" showLabel />
           </Link>
         ))}
       </div>

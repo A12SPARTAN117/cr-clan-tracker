@@ -19,6 +19,9 @@ export const MODE_LABEL: Record<MetaMode, string> = { pol: 'Path of Legends', la
 
 export type Matchup = { vs: string; vsSlug: string; games: number; wins: number };
 
+/** A player seen with a deck; rating is their Path of Legends rating when the battle was ranked. */
+export type DeckPlayer = { tag: string; name: string; rating: number | null; games: number; wins: number };
+
 export type DeckStat = {
   key: string;
   name: string;
@@ -27,11 +30,16 @@ export type DeckStat = {
   tower: { slug: string; name: string; img: string | null } | null;
   games: number;
   wins: number;
+  draws: number;
+  /** Games by crown difference, index 0 = -3 … index 6 = +3. */
+  crowns: number[];
   use: number;
   win: number;
   avgElixir: number;
   cycle: number;
   matchups: Matchup[];
+  /** Most active players with this deck (up to 12), highest rating first. */
+  players: DeckPlayer[];
 };
 
 export type CardStat = {
@@ -82,7 +90,16 @@ async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Prom
   return out;
 }
 
-type DeckAcc = { cards: DeckCard[]; tower: DeckStat['tower']; games: number; wins: number; vs: Map<string, { name: string; games: number; wins: number }> };
+type DeckAcc = {
+  cards: DeckCard[];
+  tower: DeckStat['tower'];
+  games: number;
+  wins: number;
+  draws: number;
+  crowns: number[];
+  vs: Map<string, { name: string; games: number; wins: number }>;
+  players: Map<string, DeckPlayer>;
+};
 type CardAcc = { c: DeckCard; games: number; wins: number; evo: number; evoW: number; hero: number; heroW: number };
 
 function emptyMode(): { sides: number; decks: Map<string, DeckAcc>; cards: Map<number, CardAcc> } {
@@ -108,16 +125,25 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
   const acc: Record<MetaMode, ReturnType<typeof emptyMode>> = { pol: emptyMode(), ladder: emptyMode(), war: emptyMode() };
   let battles = 0;
 
-  const addSide = (m: ReturnType<typeof emptyMode>, side: BattleSide, opp: BattleSide) => {
+  const addSide = (m: ReturnType<typeof emptyMode>, side: BattleSide, opp: BattleSide, ranked: boolean) => {
     if (!side?.cards || side.cards.length !== 8) return;
     const won = side.crowns > opp.crowns;
+    const diff = Math.max(-3, Math.min(3, side.crowns - opp.crowns));
     const cards = side.cards.map(toDeckCard);
     const key = deckKey(cards);
     const t = side.supportCards?.[0];
     const tower = t ? { slug: cardById(t.id)?.slug ?? slugify(t.name), name: t.name, img: t.iconUrls.medium ?? null } : null;
-    const d = m.decks.get(key) ?? { cards, tower, games: 0, wins: 0, vs: new Map() };
+    const d = m.decks.get(key) ?? { cards, tower, games: 0, wins: 0, draws: 0, crowns: [0, 0, 0, 0, 0, 0, 0], vs: new Map(), players: new Map() };
     d.games++;
     if (won) d.wins++;
+    if (diff === 0) d.draws++;
+    d.crowns[diff + 3]++;
+    const pl = d.players.get(side.tag) ?? { tag: side.tag.replace('#', ''), name: side.name, rating: null, games: 0, wins: 0 };
+    pl.games++;
+    if (won) pl.wins++;
+    // In ranked battles startingTrophies is the Path of Legends rating.
+    if (ranked && side.startingTrophies) pl.rating = Math.max(pl.rating ?? 0, side.startingTrophies);
+    d.players.set(side.tag, pl);
     const oppWc = winConOf(opp.cards.map(toDeckCard));
     if (oppWc) {
       const v = d.vs.get(oppWc.slug) ?? { name: oppWc.name, games: 0, wins: 0 };
@@ -154,8 +180,8 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
       if (seen.has(id)) continue;
       seen.add(id);
       battles++;
-      addSide(acc[mode], b.team[0], b.opponent[0]);
-      addSide(acc[mode], b.opponent[0], b.team[0]);
+      addSide(acc[mode], b.team[0], b.opponent[0], b.type === 'pathOfLegend');
+      addSide(acc[mode], b.opponent[0], b.team[0], b.type === 'pathOfLegend');
     }
   }
 
@@ -175,11 +201,14 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
           tower: d.tower,
           games: d.games,
           wins: d.wins,
+          draws: d.draws,
+          crowns: d.crowns,
           use: (d.games / Math.max(1, m.sides)) * 100,
           win: (d.wins / d.games) * 100,
           avgElixir: st.avgElixir,
           cycle: st.cycle,
           matchups: [...d.vs.entries()].map(([vsSlug, v]) => ({ vs: v.name, vsSlug, games: v.games, wins: v.wins })).sort((a, b) => b.games - a.games).slice(0, 8),
+          players: [...d.players.values()].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || b.games - a.games).slice(0, 12),
         };
       })
       .sort((a, b) => b.games - a.games || b.win - a.win)
@@ -213,4 +242,25 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
     battles,
     modes: { pol: build('pol'), ladder: build('ladder'), war: build('war') },
   };
+}
+
+/** A deck by key: in the requested mode first, then any mode. */
+export function findDeck(meta: MetaSnapshot, key: string, prefer: MetaMode = 'pol'): { deck: DeckStat; mode: MetaMode; rank: number } | null {
+  const order = [prefer, ...(Object.keys(meta.modes) as MetaMode[]).filter((m) => m !== prefer)];
+  for (const mode of order) {
+    const i = meta.modes[mode].decks.findIndex((d) => d.key === key);
+    if (i >= 0) return { deck: meta.modes[mode].decks[i], mode, rank: i + 1 };
+  }
+  return null;
+}
+
+/** Decks in the same mode that share at least `min` cards (evo / hero state ignored). */
+export function similarDecks(meta: MetaSnapshot, deck: DeckStat, mode: MetaMode, min = 6, limit = 6): (DeckStat & { shared: number })[] {
+  const ids = new Set(deck.cards.map((c) => c.id));
+  return meta.modes[mode].decks
+    .filter((d) => d.key !== deck.key)
+    .map((d) => ({ ...d, shared: d.cards.filter((c) => ids.has(c.id)).length }))
+    .filter((d) => d.shared >= min)
+    .sort((a, b) => b.shared - a.shared || b.games - a.games)
+    .slice(0, limit);
 }
