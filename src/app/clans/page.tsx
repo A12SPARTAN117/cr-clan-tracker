@@ -84,7 +84,7 @@ async function Results({ searchParams }: { searchParams: Promise<Record<string, 
   let title: string;
   let failed = false;
   if (q.length >= 3 || minM > 0) {
-    const r = await searchClans({ name: q.length >= 3 ? q : undefined, locationId: loc, minMembers: minM || undefined, limit: 60 });
+    const r = await searchClans({ name: q.length >= 3 ? q : undefined, locationId: loc, minMembers: minM || undefined, limit: 100 });
     failed = !r.ok;
     rows = r.ok ? r.data.items : [];
     title = q ? `Clans named "${q}"` : 'Search results';
