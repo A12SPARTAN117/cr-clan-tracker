@@ -145,6 +145,9 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
             >
               {syncing ? 'Syncing…' : '↻ Refresh'}
             </button>
+            <Link href={`/compare?type=player&tags=${p.tag}`} className="btn btn-scene">
+              Compare ⇄
+            </Link>
           </div>
         </div>
       </SceneHeader>
