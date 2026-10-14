@@ -220,6 +220,7 @@ export function MemberDrawer({
           </div>
           <span className="label-sm" style={{ lineHeight: 1.6 }}>
             Last seen {agoShort(m.hours)} ago · {m.warGames} war battles in the battle log
+            {m.trainingGames ? ` · ${m.trainingGames} training battles (not counted)` : ''}
           </span>
         </div>
       </aside>

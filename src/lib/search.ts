@@ -1,4 +1,5 @@
 import 'server-only';
+import { connection } from 'next/server';
 import { getClan, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
 import { findPlayersByName, indexPlayers, rankByName, type DirPlayer } from './directory';
 import { checkTag } from './tags';
@@ -27,6 +28,7 @@ export type SearchResults = {
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
 export async function search(raw: string, scope: SearchScope = 'all', limit = 20): Promise<SearchResults> {
+  await connection(); // per-request: results depend on the live directory
   const q = raw.trim();
   const out: SearchResults = { q, tagPlayer: null, tagClan: null, players: [], clans: [], clanError: false };
   if (!q) return out;

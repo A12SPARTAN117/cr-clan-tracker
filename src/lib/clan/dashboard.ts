@@ -4,7 +4,7 @@ import { getBattleLog, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog,
 import type { ApiRole, Battle, Clan, CurrentRiverRace, RiverRaceLogEntry } from '../cr/types';
 import type { ClanHistory, RosterEvent } from '../history';
 import { parseApiDate } from '../format';
-import { warDay, warWeekKey } from '../war';
+import { nextWarStart, riverBattleKind, warDay, warWeekKey } from '../war';
 import { factorScores, type FactorScores, type ScoreInputs } from './score';
 
 /** A war-day cell: decks used, null = not in clan, 'pending' = day not played yet, 'untracked' = no per-day snapshot. */
@@ -30,9 +30,13 @@ export type DashMember = {
   fame: number;
   decks: number;
   decksToday: number;
+  /** River race battles played today while it's a training day (practice, never counted as war). */
+  trainingToday: number;
   days: DayCell[];
   warWin: number | null;
   warGames: number;
+  /** Training-day river race battles in the battle log. */
+  trainingGames: number;
   fWin: number | null;
   fGames: number;
   friendlies: Friendly[];
@@ -85,6 +89,10 @@ export type Dashboard = {
     nextReset: string;
     decksToday: number;
     decksWeek: number;
+    /** Practice decks played today on a training day (0 on war days). */
+    trainingDecksToday: number;
+    /** When war day 1 starts (= now during war days). */
+    warStarts: string;
     clans: RaceClanRow[];
     raceLabel: string;
   } | null;
@@ -96,7 +104,6 @@ export type Dashboard = {
   logsRead: number;
 };
 
-const WAR_TYPES = new Set(['riverRacePvP', 'riverRaceDuel', 'riverRaceDuelColosseum']);
 
 async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Promise<R[]> {
   const out: R[] = new Array(items.length);
@@ -125,15 +132,20 @@ function battleStats(log: Battle[] | null, selfTag: string) {
   let warG = 0;
   let fW = 0;
   let fG = 0;
+  let trainG = 0;
   const fr = new Map<string, Friendly>();
   for (const b of log ?? []) {
     const me = b.team.find((t) => bare(t.tag) === selfTag) ?? b.team[0];
     const opp = b.opponent[0];
     if (!me || !opp) continue;
     const won = me.crowns > opp.crowns;
-    if (WAR_TYPES.has(b.type)) {
+    // Boat battles are attacks on boats, not head-to-head games, so they stay out of win %.
+    const river = b.type === 'boatBattle' ? null : riverBattleKind(b.type, parseApiDate(b.battleTime));
+    if (river === 'war') {
       warG++;
       if (won) warW++;
+    } else if (river === 'training') {
+      trainG++;
     } else if (b.type === 'clanMate') {
       fG++;
       if (won) fW++;
@@ -147,6 +159,7 @@ function battleStats(log: Battle[] | null, selfTag: string) {
   return {
     warWin: warG ? Math.round((warW / warG) * 100) : null,
     warGames: warG,
+    trainingGames: trainG,
     fWin: fG ? Math.round((fW / fG) * 100) : null,
     fGames: fG,
     friendlies: [...fr.values()].sort((a, b) => b.w + b.l - (a.w + a.l)),
@@ -165,18 +178,23 @@ function raceInfo(race: CurrentRiverRace | null, ourTag: string, now: Date) {
       name: c.name,
       badgeId: c.badgeId,
       fame: c.fame,
-      decksToday: c.participants.reduce((a, p) => a + p.decksUsedToday, 0),
+      decksToday: race.periodType === 'training' ? 0 : c.participants.reduce((a, p) => a + p.decksUsedToday, 0),
       us: bare(c.tag) === ourTag,
     }))
     .sort((a, b) => b.fame - a.fame);
   const ours = race.clans.find((c) => bare(c.tag) === ourTag) ?? race.clan;
+  const today = ours.participants.reduce((a, p) => a + p.decksUsedToday, 0);
+  const training = kind === 'training';
   return {
     kind,
     day,
-    label: kind === 'training' ? `Training day ${day}` : `${kind === 'colosseum' ? 'Colosseum' : 'War'} day ${day}`,
+    label: training ? `Training day ${day}` : `${kind === 'colosseum' ? 'Colosseum' : 'War'} day ${day}`,
     nextReset: cal.nextReset.toISOString(),
-    decksToday: ours.participants.reduce((a, p) => a + p.decksUsedToday, 0),
+    // decksUsedToday also counts training battles; those are practice, not war.
+    decksToday: training ? 0 : today,
     decksWeek: ours.participants.reduce((a, p) => a + p.decksUsed, 0),
+    trainingDecksToday: training ? today : 0,
+    warStarts: nextWarStart(now).toISOString(),
     clans,
     raceLabel: `Week ${race.sectionIndex + 1}`,
   };
@@ -216,8 +234,10 @@ async function build(tag: string): Promise<Dashboard | null> {
     const seen = parseApiDate(m.lastSeen);
     const hours = seen ? Math.max(0, (now.getTime() - seen.getTime()) / 3600_000) : 999;
     const cp = curParts.get(t);
+    const training = war?.kind === 'training';
     const decks = cp?.decksUsed ?? 0;
-    const decksToday = cp?.decksUsedToday ?? 0;
+    const decksToday = training ? 0 : (cp?.decksUsedToday ?? 0);
+    const trainingToday = training ? (cp?.decksUsedToday ?? 0) : 0;
 
     // Per-day cells for this week: today is exact; earlier days come from snapshots (applyHistory).
     const days: DayCell[] = [0, 1, 2, 3].map((d) => {
@@ -267,6 +287,7 @@ async function build(tag: string): Promise<Dashboard | null> {
       fame: cp?.fame ?? 0,
       decks,
       decksToday,
+      trainingToday,
       days,
       ...bs,
       tenureDays,
