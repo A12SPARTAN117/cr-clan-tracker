@@ -35,3 +35,7 @@ next-env.d.ts
 
 # Local embedded Postgres (DATABASE_URL=pglite:./.data/pg)
 .data/
+
+# test output
+/test-results/
+/playwright-report/

@@ -50,11 +50,11 @@ export function winConOf(cards: DeckCard[]): DeckCard | null {
   return best;
 }
 
-export /**
+/**
  * "Hog Rider · Boss Bandit": the win condition plus the most distinctive support card
  * (champion > legendary > … , heavier first). Without a win condition: two support cards.
  */
-function deckName(cards: DeckCard[], wc: DeckCard | null): string {
+export function deckName(cards: DeckCard[], wc: DeckCard | null): string {
   const order: Rarity[] = ['champion', 'legendary', 'epic', 'rare', 'common', 'tower'];
   const rest = cards
     .filter((c) => c !== wc)
