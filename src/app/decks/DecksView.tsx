@@ -3,12 +3,13 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { CardTile } from '@/components/CardTile';
+import Link from 'next/link';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
 import { Reveal } from '@/components/fx/Reveal';
 import { EmberField } from '@/components/fx/EmberField';
 import { Fog } from '@/components/fx/Fog';
 import { EmptyState } from '@/components/EmptyState';
-import { ModeFilter } from '@/components/ModeFilter';
+import { ModeFilter, ModeIcon } from '@/components/ModeFilter';
 import { deckHref } from '@/lib/decks';
 import { fmt } from '@/lib/format';
 import type { MetaMode, MetaSnapshot } from '@/lib/meta';
@@ -33,12 +34,14 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
   const [sort, setSort] = useState<'use' | 'win'>('use');
   const [inc, setInc] = useState('');
   const [exc, setExc] = useState('');
-  const [lit, setLit] = useState(false);
-
-  useEffect(() => {
-    const id = setTimeout(() => setLit(true), 300);
-    return () => clearTimeout(id);
-  }, []);
+  // Deck of the day: the best win rate in Ultimate Champion among decks with enough games
+  // (at least 8, or the top quarter by games when the sample is small).
+  const dotd = useMemo(() => {
+    const pool = (meta.modes.uc?.decks.length ? meta.modes.uc : meta.modes.pol).decks;
+    const games = pool.map((d) => d.games).sort((a, b) => b - a);
+    const min = Math.min(8, games[Math.floor(games.length / 4)] ?? 2);
+    return [...pool].filter((d) => d.games >= min).sort((a, b) => b.win - a.win || b.games - a.games)[0] ?? null;
+  }, [meta]);
 
   // Old links (/decks?deck=KEY) open the deck stats page.
   const legacy = params.get('deck');
@@ -62,12 +65,26 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
         <div className={s.scene} />
         <Fog density={0.8} />
         <EmberField count={200} gold={0.2} />
-        <div className={s.slots} aria-hidden>
-          {Array.from({ length: 8 }, (_, i) => {
-            const c = lit ? (i < 2 ? 'rgba(163,91,255,.8)' : 'rgba(58,160,255,.7)') : 'rgba(255,255,255,.08)';
-            return <span key={i} style={{ boxShadow: `inset 0 2px 6px rgba(0,0,0,.8),0 0 0 1px ${c},0 0 ${lit ? 16 : 0}px ${c}`, transitionDelay: `${i * 90}ms` }} />;
-          })}
-        </div>
+        {dotd && (
+          <Link href={deckHref(dotd.key, meta.modes.uc?.decks.length ? 'uc' : 'pol')} className={s.dotd} aria-label={`Deck of the day: ${dotd.name}`}>
+            <span className={s.dotdLabel}>
+              <ModeIcon kind="uc" size={18} /> Deck of the day · Ultimate Champion
+            </span>
+            <span className={s.dotdCards}>
+              {dotd.cards.map((c, i) => (
+                <span key={`${c.id}${c.evo}${c.hero}`} style={{ animationDelay: `${i * 70}ms` }}>
+                  <CardTile slug={c.slug} label={c.name} img={c.img} rarity={c.rarity} evo={c.evo} hero={c.hero} size="fluid" />
+                </span>
+              ))}
+            </span>
+            <span className={s.dotdMeta}>
+              <b>{dotd.name}</b>
+              <span>
+                <em>{dotd.win.toFixed(1)}%</em> win · {fmt(dotd.games)} games · avg {dotd.avgElixir.toFixed(1)} elixir
+              </span>
+            </span>
+          </Link>
+        )}
         <div className={s.scrim} />
         <div className={s.frame} />
         <div className={s.copy}>
