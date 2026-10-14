@@ -1,21 +1,23 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getBattleLog, getPolLeaderboard } from './cr/api';
-import type { Battle, BattleSide } from './cr/types';
+import { getBattleLog, getClan, getClanWarRankings, getPolLeaderboard } from './cr/api';
+import type { BattleSide } from './cr/types';
 import { cardById, slugify, type Rarity } from './cards';
 import { deckKey, deckName, deckStats, toDeckCard, winConOf, type DeckCard } from './decks';
 
 export type { DeckCard };
 import { parseApiDate } from './format';
+import { CORE_MODES, modesOfBattle, type ModeInfo, type ModeKind } from './modes';
 
 /**
  * Meta decks and card stats. The official API has no meta endpoint, so this samples the
- * battle logs of the global Path of Legends top players and aggregates every deck seen
- * (both sides of each battle) over the last 24 hours.
+ * battle logs of the global Path of Legends top players plus the members of the top war
+ * clans, and aggregates every deck seen (both sides of each battle) per game mode. Ranked
+ * modes use the last 24 hours; the thinner modes (ladder, war, events) the last 72.
  */
 
-export type MetaMode = 'pol' | 'ladder' | 'war';
-export const MODE_LABEL: Record<MetaMode, string> = { pol: 'Path of Legends', ladder: 'Trophy Road', war: 'Clan War' };
+/** A mode key: 'pol' (Ranked), 'uc', 'ladder', 'war', '2v2' or 'ev<gameModeId>' for live events. */
+export type MetaMode = string;
 
 export type Matchup = { vs: string; vsSlug: string; games: number; wins: number };
 
@@ -59,22 +61,22 @@ export type CardStat = {
   heroWins: number;
 };
 
-export type ModeMeta = { mode: MetaMode; sides: number; decks: DeckStat[]; cards: CardStat[] };
+export type ModeMeta = { mode: MetaMode; label: string; kind: ModeKind; windowHours: number; battles: number; sides: number; decks: DeckStat[]; cards: CardStat[] };
 
 export type MetaSnapshot = {
   generatedAt: string;
+  /** Window of the ranked modes; each mode carries its own windowHours. */
   windowHours: number;
   players: number;
   battles: number;
+  /** Mode keys in display order: core modes first, then live events by popularity. */
+  order: MetaMode[];
   modes: Record<MetaMode, ModeMeta>;
 };
 
-const MODE_OF = (b: Battle): MetaMode | null => {
-  if (b.type === 'pathOfLegend') return 'pol';
-  if (b.type === 'PvP' && /ladder/i.test(b.gameMode?.name ?? '')) return 'ladder';
-  if (b.type === 'riverRacePvP' || b.type === 'riverRaceDuel' || b.type === 'riverRaceDuelColosseum') return 'war';
-  return null;
-};
+const RANKED_HOURS = 24;
+const OTHER_HOURS = 72;
+const windowOf = (key: string) => (key === 'pol' || key === 'uc' ? RANKED_HOURS : OTHER_HOURS);
 
 async function pool<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Promise<R[]> {
   const out: R[] = new Array(items.length);
@@ -110,25 +112,32 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
   'use cache';
   cacheTag('meta');
 
-  const top = await getPolLeaderboard('global', sampleSize);
+  const [top, warTop] = await Promise.all([getPolLeaderboard('global', sampleSize), getClanWarRankings('global', 3)]);
   if (!top.ok || !top.data.items.length) {
     cacheLife('crError');
     return null;
   }
-  // A wide fan-out keeps a cold snapshot well under 10s (the dev server flags slower cache fills).
-  const logs = await pool(top.data.items, 25, (p) => getBattleLog(p.tag.replace('#', '')));
+  // Members of the top war clans play ladder, war and events far more than the ranked top 100.
+  const clans = warTop.ok ? await Promise.all(warTop.data.items.map((c) => getClan(c.tag.replace('#', '')))) : [];
+  const tags = [...new Set([...top.data.items.map((p) => p.tag), ...clans.flatMap((c) => (c.ok ? c.data.memberList.map((m) => m.tag) : []))])];
+  // A wide fan-out keeps a cold snapshot fast (the dev server flags slow cache fills).
+  const logs = await pool(tags, 30, (t) => getBattleLog(t.replace('#', '')));
 
-  const windowHours = 24;
   const now = Date.now();
-  const cutoff = now - windowHours * 3600_000;
   const seen = new Set<string>();
-  const acc: Record<MetaMode, ReturnType<typeof emptyMode>> = { pol: emptyMode(), ladder: emptyMode(), war: emptyMode() };
+  type Acc = ReturnType<typeof emptyMode> & { info: ModeInfo; battles: number };
+  const acc = new Map<string, Acc>();
+  const accFor = (info: ModeInfo): Acc => {
+    let m = acc.get(info.key);
+    if (!m) acc.set(info.key, (m = { ...emptyMode(), info, battles: 0 }));
+    return m;
+  };
   let battles = 0;
 
-  const addSide = (m: ReturnType<typeof emptyMode>, side: BattleSide, opp: BattleSide, ranked: boolean) => {
+  const addSide = (m: Acc, side: BattleSide, opp: BattleSide | undefined, ranked: boolean, crowns: [number, number]) => {
     if (!side?.cards || side.cards.length !== 8) return;
-    const won = side.crowns > opp.crowns;
-    const diff = Math.max(-3, Math.min(3, side.crowns - opp.crowns));
+    const won = crowns[0] > crowns[1];
+    const diff = Math.max(-3, Math.min(3, crowns[0] - crowns[1]));
     const cards = side.cards.map(toDeckCard);
     const key = deckKey(cards);
     const t = side.supportCards?.[0];
@@ -144,7 +153,7 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
     // In ranked battles startingTrophies is the Path of Legends rating.
     if (ranked && side.startingTrophies) pl.rating = Math.max(pl.rating ?? 0, side.startingTrophies);
     d.players.set(side.tag, pl);
-    const oppWc = winConOf(opp.cards.map(toDeckCard));
+    const oppWc = opp?.cards?.length ? winConOf(opp.cards.map(toDeckCard)) : null;
     if (oppWc) {
       const v = d.vs.get(oppWc.slug) ?? { name: oppWc.name, games: 0, wins: 0 };
       v.games++;
@@ -172,21 +181,30 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
   for (const log of logs) {
     if (!log.ok) continue;
     for (const b of log.data) {
-      const mode = MODE_OF(b);
+      const modes = modesOfBattle(b);
+      if (!modes.length) continue;
       const t = parseApiDate(b.battleTime)?.getTime() ?? 0;
-      if (!mode || t < cutoff || b.team.length !== 1 || b.opponent.length !== 1) continue;
-      // The same battle shows up in both players' logs when two top players meet.
-      const id = `${b.battleTime}|${[b.team[0].tag, b.opponent[0].tag].sort().join('|')}`;
+      // The same battle shows up in every participant's log when sampled players meet.
+      const id = `${b.battleTime}|${[...b.team, ...b.opponent].map((x) => x.tag).sort().join('|')}`;
       if (seen.has(id)) continue;
       seen.add(id);
-      battles++;
-      addSide(acc[mode], b.team[0], b.opponent[0], b.type === 'pathOfLegend');
-      addSide(acc[mode], b.opponent[0], b.team[0], b.type === 'pathOfLegend');
+      let counted = false;
+      for (const info of modes) {
+        if (t < now - windowOf(info.key) * 3600_000) continue;
+        const m = accFor(info);
+        m.battles++;
+        counted = true;
+        const ranked = b.type === 'pathOfLegend';
+        const crowns: [number, number] = [b.team[0].crowns, b.opponent[0].crowns];
+        for (const side of b.team) addSide(m, side, b.opponent[0], ranked, crowns);
+        for (const side of b.opponent) addSide(m, side, b.team[0], ranked, [crowns[1], crowns[0]]);
+      }
+      if (counted) battles++;
     }
   }
 
-  const build = (mode: MetaMode): ModeMeta => {
-    const m = acc[mode];
+  const build = (key: string): ModeMeta => {
+    const m = acc.get(key)!;
     const decks: DeckStat[] = [...m.decks.entries()]
       .filter(([, d]) => d.games >= 2)
       .map(([key, d]) => {
@@ -231,22 +249,36 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
         heroWins: heroW,
       }))
       .sort((a, b) => b.games - a.games);
-    return { mode, sides: m.sides, decks, cards };
+    return { mode: key, label: m.info.label, kind: m.info.kind, windowHours: windowOf(key), battles: m.battles, sides: m.sides, decks, cards };
   };
+
+  // Core modes always exist (possibly empty); events need enough decks to be worth a filter.
+  for (const info of CORE_MODES) accFor(info);
+  const isCore = (key: string) => CORE_MODES.some((c) => c.key === key);
+  const modes: Record<MetaMode, ModeMeta> = {};
+  for (const key of acc.keys()) {
+    const m = build(key);
+    if (isCore(key) || m.decks.length >= 3) modes[key] = m;
+  }
+  const events = Object.values(modes)
+    .filter((m) => !isCore(m.mode))
+    .sort((a, b) => b.battles - a.battles)
+    .map((m) => m.mode);
 
   cacheLife('hours');
   return {
     generatedAt: new Date(now).toISOString(),
-    windowHours,
-    players: top.data.items.length,
+    windowHours: RANKED_HOURS,
+    players: tags.length,
     battles,
-    modes: { pol: build('pol'), ladder: build('ladder'), war: build('war') },
+    order: [...CORE_MODES.map((c) => c.key), ...events],
+    modes,
   };
 }
 
 /** A deck by key: in the requested mode first, then any mode. */
 export function findDeck(meta: MetaSnapshot, key: string, prefer: MetaMode = 'pol'): { deck: DeckStat; mode: MetaMode; rank: number } | null {
-  const order = [prefer, ...(Object.keys(meta.modes) as MetaMode[]).filter((m) => m !== prefer)];
+  const order = [prefer, ...meta.order.filter((m) => m !== prefer)];
   for (const mode of order) {
     const i = meta.modes[mode].decks.findIndex((d) => d.key === key);
     if (i >= 0) return { deck: meta.modes[mode].decks[i], mode, rank: i + 1 };

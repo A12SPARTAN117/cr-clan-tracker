@@ -4,19 +4,17 @@ import { Suspense } from 'react';
 import { EmptyState } from '@/components/EmptyState';
 import { Portal } from '@/components/fx/Portal';
 import { LostScene } from '@/components/LostScene';
-import { findDeck, getMeta, MODE_LABEL, similarDecks, type MetaMode } from '@/lib/meta';
+import { findDeck, getMeta, similarDecks } from '@/lib/meta';
 import { DeckStatsView } from './DeckStatsView';
 
 export const metadata: Metadata = { title: 'Deck stats' };
-
-const isMode = (m: string | undefined, meta: { modes: Record<string, unknown> }): m is MetaMode => !!m && m in meta.modes;
 
 async function Content({ params, searchParams }: { params: Promise<{ key: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const [{ key: raw }, sp, meta] = await Promise.all([params, searchParams, getMeta()]);
   if (!meta) return <LostScene variant="error" />;
   const key = decodeURIComponent(raw);
   const want = typeof sp.mode === 'string' ? sp.mode : undefined;
-  const found = findDeck(meta, key, isMode(want, meta) ? want : 'pol');
+  const found = findDeck(meta, key, want && meta.modes[want] ? want : 'pol');
   if (!found)
     return (
       <main className="page" style={{ maxWidth: 900 }}>
@@ -31,9 +29,9 @@ async function Content({ params, searchParams }: { params: Promise<{ key: string
       deck={found.deck}
       rank={found.rank}
       mode={found.mode}
-      modeLabel={MODE_LABEL[found.mode]}
+      modeLabel={meta.modes[found.mode].label}
       sides={meta.modes[found.mode].sides}
-      windowHours={meta.windowHours}
+      windowHours={meta.modes[found.mode].windowHours}
       similar={similarDecks(meta, found.deck, found.mode)}
     />
   );

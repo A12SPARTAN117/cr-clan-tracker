@@ -7,17 +7,11 @@ import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
 import { Reveal } from '@/components/fx/Reveal';
 import { Fog } from '@/components/fx/Fog';
 import { EmptyState } from '@/components/EmptyState';
-import { Tabs } from '@/components/ui/Tabs';
+import { ModeFilter } from '@/components/ModeFilter';
 import { deckHref } from '@/lib/decks';
 import { fmt } from '@/lib/format';
 import type { MetaMode, MetaSnapshot } from '@/lib/meta';
 import s from './decks.module.css';
-
-const MODES: [MetaMode, string][] = [
-  ['pol', 'Path of Legends'],
-  ['ladder', 'Trophy Road'],
-  ['war', 'Clan War'],
-];
 
 const pct = (n: number) => n.toFixed(1);
 
@@ -33,7 +27,7 @@ function setUrl(patch: Record<string, string | null>) {
 export function DecksView({ meta }: { meta: MetaSnapshot }) {
   const params = useSearchParams();
   const router = useRouter();
-  const [mode, setMode] = useState<MetaMode>(() => (MODES.some(([m]) => m === params.get('mode')) ? (params.get('mode') as MetaMode) : 'pol'));
+  const [mode, setMode] = useState<MetaMode>(() => (meta.modes[params.get('mode') ?? ''] ? (params.get('mode') as MetaMode) : 'pol'));
   const [view, setView] = useState<'decks' | 'cards'>(params.get('view') === 'cards' ? 'cards' : 'decks');
   const [sort, setSort] = useState<'use' | 'win'>('use');
   const [inc, setInc] = useState('');
@@ -76,7 +70,7 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
         <div className={s.frame} />
         <div className={s.copy}>
           <span style={{ font: '500 10px/1.4 var(--mono)', letterSpacing: '.14em', color: '#A4A9B4', textTransform: 'uppercase' }}>
-            ● Live · {MODES.find(([k]) => k === mode)?.[1]} · last {meta.windowHours}h · {fmt(m.sides / 2)} battles sampled
+            ● Live · {m.label} · last {m.windowHours}h · {fmt(m.battles)} battles sampled
           </span>
           <Reveal as="h1" style={{ margin: 0, font: '800 clamp(46px,8vw,124px)/.86 var(--mono)', letterSpacing: '-.06em' }}>
             META
@@ -85,15 +79,16 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
       </section>
 
       <main style={{ maxWidth: 'var(--max)', margin: '0 auto', padding: '0 var(--gutter) 80px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <Tabs<MetaMode>
-          label="Game mode"
-          value={mode}
-          onChange={(k) => {
-            setMode(k);
-            setUrl({ mode: k === 'pol' ? null : k });
-          }}
-          tabs={MODES.map(([key, label]) => ({ key, label, count: meta.modes[key].decks.length || '' }))}
-        />
+        <div style={{ paddingTop: 18 }}>
+          <ModeFilter
+            value={mode}
+            onChange={(k) => {
+              setMode(k);
+              setUrl({ mode: k === 'pol' ? null : k });
+            }}
+            modes={meta.order.map((k) => ({ key: k, label: meta.modes[k].label, kind: meta.modes[k].kind, count: meta.modes[k].decks.length }))}
+          />
+        </div>
 
         {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -168,7 +163,7 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
               <CardStats m={m} />
             )}
             <span style={{ font: '500 10px/1.5 var(--mono)', letterSpacing: '.08em', color: 'var(--text-3)' }}>
-              Sampled from the battle logs of the global Path of Legends top {meta.players} over the last {meta.windowHours} hours. Decks need 2+ games to appear. Open Deck stats for win / loss, crowns, players and matchups.
+              Sampled from the battle logs of {meta.players} top players (global Path of Legends top 100 and the top war clans) over the last {m.windowHours} hours. Decks need 2+ games to appear. Open Deck stats for win / loss, crowns, players and matchups.
             </span>
           </div>
         }
