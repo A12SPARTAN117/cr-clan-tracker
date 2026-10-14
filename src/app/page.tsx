@@ -3,10 +3,10 @@ import { Suspense } from 'react';
 import { metaDeck } from '@/components/DeckBlock';
 import { Draw, Reveal } from '@/components/fx/Reveal';
 import { Fog } from '@/components/fx/Fog';
-import { LeagueIcon } from '@/components/ui/primitives';
+import { LeagueIcon, PolRating } from '@/components/ui/primitives';
 import { NEWS } from '@/content/news';
 import { getPolLeaderboard } from '@/lib/cr/api';
-import { dstr, fmt } from '@/lib/format';
+import { dstr } from '@/lib/format';
 import { getMeta } from '@/lib/meta';
 import { HomeDecks, type HomeMode } from './HomeDecks';
 import { HomeHero } from './HomeHero';
@@ -69,8 +69,8 @@ async function PolTop() {
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {/* The ranked leaderboard only lists the top league (league 7 in the live API). */}
-            <LeagueIcon league={7} size={26} />
-            <span style={{ font: '700 18px/1 var(--mono)', fontVariantNumeric: 'tabular-nums' }}>{fmt(p.eloRating)}</span>
+            <LeagueIcon league={7} size={28} />
+            <PolRating rating={p.eloRating} size={20} style={{ font: '700 18px/1 var(--mono)' }} />
           </span>
         </Link>
       ))}

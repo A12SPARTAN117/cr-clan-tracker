@@ -14,7 +14,7 @@ const ORDER = [1, 0, 2];
 const HEIGHT = ['clamp(150px,22vh,220px)', 'clamp(110px,16vh,160px)', 'clamp(90px,13vh,130px)'];
 
 /** Obsidian podium with I / II / III and a hanging particle crown. */
-export function PodiumScene({ rows, label, isClan }: { rows: BoardRow[]; label: string; isClan: boolean }) {
+export function PodiumScene({ rows, label, isClan, scoreIcon }: { rows: BoardRow[]; label: string; isClan: boolean; scoreIcon?: React.ReactNode }) {
   const root = useRef<HTMLElement>(null);
   return (
     <section ref={root} className={s.podium}>
@@ -36,7 +36,10 @@ export function PodiumScene({ rows, label, isClan }: { rows: BoardRow[]; label: 
               <span style={{ font: '600 clamp(13px,1.3vw,17px)/1.1 var(--sans)', textAlign: 'center', minHeight: '1.1em', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {r?.name ?? ''}
               </span>
-              <span style={{ font: '700 clamp(12px,1.2vw,15px)/1 var(--mono)', minHeight: '1em' }}>{r ? fmt(r.score) : ''}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '700 clamp(12px,1.2vw,15px)/1 var(--mono)', minHeight: '1em', whiteSpace: 'nowrap' }}>
+                {r && scoreIcon}
+                {r ? fmt(r.score) : ''}
+              </span>
               <div
                 className={s.block}
                 style={{ height: HEIGHT[i], boxShadow: `inset 0 1px 0 rgba(255,255,255,.18),0 -10px 40px ${i === 0 ? 'rgba(230,179,74,.15)' : 'rgba(58,160,255,.15)'}` }}

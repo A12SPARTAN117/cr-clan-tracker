@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { ClanBadge } from '@/components/ui/ClanBadge';
-import { LeagueIcon, ROLE_LABEL } from '@/components/ui/primitives';
+import { LeagueIcon, PolRating, ROLE_LABEL } from '@/components/ui/primitives';
+import { TrophyIcon } from '@/components/ui/icons';
 import { fmt } from '@/lib/format';
 import { setPin, usePins } from '@/lib/pins';
 import type { ClanSummary, PlayerSummary } from '@/lib/summary';
@@ -93,8 +94,15 @@ export function Pinned() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {player.data.league != null && <LeagueIcon league={player.data.league} />}
-                    <span style={{ font: '700 24px/1 var(--mono)' }}>{fmt(player.data.rating ?? player.data.trophies)}</span>
+                    {player.data.league != null && <LeagueIcon league={player.data.league} size={26} />}
+                    {player.data.rating != null ? (
+                      <PolRating rating={player.data.rating} size={20} style={{ font: '700 24px/1 var(--mono)' }} />
+                    ) : (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, font: '700 24px/1 var(--mono)' }}>
+                        <TrophyIcon size={20} />
+                        {fmt(player.data.trophies)}
+                      </span>
+                    )}
                   </span>
                   {player.data.streak !== 0 && (
                     <span style={{ font: '500 9px/1 var(--mono)', letterSpacing: '.14em', color: player.data.streak > 0 ? 'var(--blue)' : 'var(--ember)' }}>

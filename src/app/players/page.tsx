@@ -3,9 +3,8 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { Reveal } from '@/components/fx/Reveal';
 import { TagSearch } from '@/components/TagSearch';
-import { LeagueIcon } from '@/components/ui/primitives';
+import { LeagueIcon, PolRating } from '@/components/ui/primitives';
 import { getPolLeaderboard } from '@/lib/cr/api';
-import { fmt } from '@/lib/format';
 import { PinnedPlayer } from './PinnedPlayer';
 
 export const metadata: Metadata = { title: 'Players' };
@@ -31,8 +30,8 @@ async function TopPlayers() {
             </span>
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <LeagueIcon league={7} size={20} />
-            <span style={{ font: '700 14px/1 var(--mono)' }}>{fmt(p.eloRating)}</span>
+            <LeagueIcon league={7} size={22} />
+            <PolRating rating={p.eloRating} size={16} style={{ font: '700 14px/1 var(--mono)' }} />
           </span>
         </Link>
       ))}

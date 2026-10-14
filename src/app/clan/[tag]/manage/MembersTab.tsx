@@ -1,7 +1,7 @@
 'use client';
 
 import type { KeyboardEvent } from 'react';
-import { HeatCell, LastSeen, LeagueIcon, RoleChip, ROLE_LABEL, ScoreGauge, ActivityDot, activityOf } from '@/components/ui/primitives';
+import { HeatCell, LastSeen, LeagueIcon, PolRating, RoleChip, ROLE_LABEL, ScoreGauge, ActivityDot, activityOf } from '@/components/ui/primitives';
 import { FACTORS, FACTOR_INFO, weightSum, type Weights } from '@/lib/clan/score';
 import { agoShort, fmt } from '@/lib/format';
 import { tenureText, type Scored } from './shared';
@@ -298,9 +298,7 @@ export function MembersTab({
                 <td>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <LeagueIcon league={m.league} />
-                    <span className={s.muted} style={{ fontSize: 12 }}>
-                      {m.rating ? fmt(m.rating) : '—'}
-                    </span>
+                    {m.rating ? <PolRating rating={m.rating} size={14} style={{ fontSize: 12 }} /> : <span className={s.muted}>—</span>}
                   </span>
                 </td>
                 <td style={{ whiteSpace: 'nowrap' }}>
