@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ClanBadge } from '@/components/ui/ClanBadge';
 import { getClanRankings, getClanWarRankings, getEventLeaderboard, getEventLeaderboards, getLocations, getPolLeaderboard } from '@/lib/cr/api';
 import { fmt } from '@/lib/format';
+import { EventIcon, MedalIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { BoardControls } from './BoardControls';
 import { PodiumScene } from './PodiumScene';
 import s from './leaderboards.module.css';
@@ -13,6 +14,14 @@ export const metadata: Metadata = { title: 'Leaderboards', description: 'Path of
 
 type Tab = 'pol' | 'clans' | 'war' | 'events';
 export type BoardRow = { rank: number; move: number | null; tag: string; name: string; sub: string; cc: string | null; badgeId: number | null; score: number; href: string };
+
+/** The icon that goes with each board's score. */
+function ScoreIcon({ tab, size = 16 }: { tab: Tab; size?: number }) {
+  if (tab === 'pol') return <MedalIcon size={size} title="Ultimate Champion medals" />;
+  if (tab === 'clans') return <TrophyIcon size={size} title="Clan score" />;
+  if (tab === 'war') return <WarTrophyIcon size={size} title="Clan war trophies" />;
+  return <EventIcon size={size} title="Event points" />;
+}
 
 const SCORE_HEAD: Record<Tab, string> = { pol: 'RATING', clans: 'CLAN SCORE', war: 'WAR TROPHIES', events: 'POINTS' };
 
@@ -80,7 +89,7 @@ async function Board({ searchParams }: { searchParams: Promise<Record<string, st
 
   return (
     <>
-      <PodiumScene rows={rows.slice(0, 3)} label={tab === 'events' ? (events.find((e) => e.id === ev)?.name ?? 'Events') : locName} isClan={isClan} />
+      <PodiumScene rows={rows.slice(0, 3)} label={tab === 'events' ? (events.find((e) => e.id === ev)?.name ?? 'Events') : locName} isClan={isClan} scoreIcon={<ScoreIcon tab={tab} size={15} />} />
       <main className={s.main}>
         <BoardControls tab={tab} loc={loc} ev={ev} locations={locations} events={events} />
         {!ok ? (
@@ -110,7 +119,10 @@ async function Board({ searchParams }: { searchParams: Promise<Record<string, st
                 <span className={s.sub} style={{ font: '500 11px/1.2 var(--mono)', letterSpacing: '.06em', color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {r.sub}
                 </span>
-                <span style={{ textAlign: 'right', font: '700 15px/1 var(--mono)', fontVariantNumeric: 'tabular-nums' }}>{fmt(r.score)}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 7, font: '700 15px/1 var(--mono)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                  <ScoreIcon tab={tab} />
+                  {fmt(r.score)}
+                </span>
               </Link>
             ))}
           </div>

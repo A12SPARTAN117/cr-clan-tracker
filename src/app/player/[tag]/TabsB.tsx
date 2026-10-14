@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
+import { LeagueIcon, leagueName, PolRating } from '@/components/ui/primitives';
 import { DeckBlock, DeckGrid } from '@/components/DeckBlock';
 import { EmptyState } from '@/components/EmptyState';
 import { agoShort, dstr, fmt } from '@/lib/format';
@@ -13,7 +14,7 @@ import s from './player.module.css';
 /* ---------------- Stats ---------------- */
 export function StatsTab({ p }: { p: PlayerProfile }) {
   const t = p.totals;
-  const pol = (x: PlayerProfile['pol']['current']) => (x ? `League ${x.league} · ${fmt(x.rating)}` : '—');
+  const pol = (x: PlayerProfile['pol']['current']) => (x ? `${leagueName(x.league)} · ${fmt(x.rating)}` : '—');
   const rank = (x: PlayerProfile['pol']['current']) => (x?.rank ? `#${fmt(x.rank)}` : '—');
   const secs: { title: string; rows: [string, string][] }[] = [
     {
@@ -185,7 +186,7 @@ export function DecksTab({ p }: { p: PlayerProfile }) {
 /* ---------------- History ---------------- */
 const EmptyChest = EmptyState;
 
-function Table({ head, rows, empty }: { head: [string, 'left' | 'right'][]; rows: string[][]; empty?: string }) {
+function Table({ head, rows, empty }: { head: [string, 'left' | 'right'][]; rows: React.ReactNode[][]; empty?: string }) {
   return (
     <div style={{ border: '1px solid var(--hair)', borderRadius: 8, background: 'var(--charcoal)', overflowX: 'auto' }}>
       <div style={{ minWidth: 520, display: 'grid', gridTemplateColumns: head.map((_, i) => (i === 0 ? '1.4fr' : '1fr')).join(' ') }}>
@@ -319,7 +320,15 @@ export function HistoryTab({ p, h: hist }: { p: PlayerProfile; h: PlayerHistory 
             ['RATING', 'right'],
             ['RANK', 'right'],
           ]}
-          rows={seasons.map(([label, x]) => [label, `League ${x!.league}`, fmt(x!.rating), x!.rank ? `#${fmt(x!.rank)}` : '—'])}
+          rows={seasons.map(([label, x]) => [
+            label,
+            <span key="l" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <LeagueIcon league={x!.league} size={20} />
+              {leagueName(x!.league)}
+            </span>,
+            x!.league >= 7 ? <PolRating key="r" rating={x!.rating} size={14} /> : fmt(x!.rating),
+            x!.rank ? `#${fmt(x!.rank)}` : '—',
+          ])}
           empty={seasons.length ? undefined : 'No Path of Legends seasons on record.'}
         />
       )}
