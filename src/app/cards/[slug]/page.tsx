@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { DeckRow } from '@/components/DeckRow';
+import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
+import { deckHref } from '@/lib/decks';
 import { CARDS, TOWER_TROOPS, cardBySlug } from '@/lib/cards';
 import { getMeta, MODE_LABEL, type MetaMode } from '@/lib/meta';
 import { CardsHeader } from '../CardsHeader';
@@ -80,7 +81,11 @@ async function MetaPanel({ slug, isTower }: { slug: string; isTower: boolean }) 
           Top Path of Legends decks with this card
         </span>
         {decks.length ? (
-          decks.map((d, i) => <DeckRow key={d.key} deck={d} rank={i + 1} href={`/decks?deck=${encodeURIComponent(d.key)}`} />)
+          <DeckGrid min={300}>
+            {decks.map((d, i) => (
+              <DeckBlock key={d.key} {...metaDeck(d)} rank={i + 1} href={deckHref(d.key)} />
+            ))}
+          </DeckGrid>
         ) : (
           <p className="body" style={{ fontSize: 14 }}>
             Not in any top deck right now.

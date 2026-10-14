@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { DeckRow } from '@/components/DeckRow';
+import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
 import { Draw, Reveal } from '@/components/fx/Reveal';
 import { Fog } from '@/components/fx/Fog';
 import { LeagueIcon } from '@/components/ui/primitives';
 import { NEWS } from '@/content/news';
 import { getPolLeaderboard } from '@/lib/cr/api';
 import { dstr, fmt } from '@/lib/format';
+import { deckHref } from '@/lib/decks';
 import { getMeta } from '@/lib/meta';
 import { HomeHero } from './HomeHero';
 import { Pinned } from './Pinned';
@@ -22,7 +23,7 @@ async function Hero() {
 
 async function TopDecks() {
   const meta = await getMeta();
-  const decks = meta?.modes.pol.decks.slice(0, 4) ?? [];
+  const decks = meta?.modes.pol.decks.slice(0, 6) ?? [];
   if (!decks.length)
     return (
       <p className="body" style={{ padding: '24px 0' }}>
@@ -31,9 +32,11 @@ async function TopDecks() {
     );
   return (
     <div>
-      {decks.map((d, i) => (
-        <DeckRow key={d.key} deck={d} rank={i + 1} href={`/decks?deck=${encodeURIComponent(d.key)}`} />
-      ))}
+      <DeckGrid>
+        {decks.map((d, i) => (
+          <DeckBlock key={d.key} {...metaDeck(d)} rank={i + 1} href={deckHref(d.key)} />
+        ))}
+      </DeckGrid>
       <p className="label-sm" style={{ marginTop: 14, lineHeight: 1.6 }}>
         From {fmt(meta?.battles)} battles of the global top {meta?.players} in the last {meta?.windowHours}h
       </p>
@@ -77,9 +80,9 @@ async function PolTop() {
 
 function DecksFallback() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, padding: '20px 0' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))', gap: 16 }}>
       {[0, 1, 2].map((i) => (
-        <span key={i} className="skeleton" style={{ height: 100 }} />
+        <span key={i} className="skeleton" style={{ height: 260 }} />
       ))}
     </div>
   );
@@ -96,15 +99,13 @@ export default function Home() {
       <main className={s.main}>
         <Pinned />
 
-        <section className={s.section} style={{ gap: 24 }}>
+        <section className={s.section} style={{ gap: 16 }}>
           <div className={s.sectionHead}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <span className="label">02 · Path of Legends meta · last 24h</span>
-              <Reveal as="h2" className="display-l" style={{ fontSize: 'clamp(36px,5.4vw,80px)', lineHeight: 0.9, letterSpacing: '-.055em' }}>
-                TOP DECKS
-                <br />
-                RIGHT NOW
-              </Reveal>
+              <h2 className="display-m" style={{ fontSize: 'clamp(26px,3.2vw,44px)' }}>
+                Top decks right now
+              </h2>
             </div>
             <Link href="/decks" className="link-mono">
               All decks →

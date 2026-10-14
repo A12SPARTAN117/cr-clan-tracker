@@ -45,7 +45,7 @@ export type BattleRow = {
   theirs: LeveledCard[];
 };
 
-export type PlayerDeck = { key: string; name: string; cards: LeveledCard[]; games: number; wins: number; lastHours: number };
+export type PlayerDeck = { key: string; name: string; cards: LeveledCard[]; games: number; wins: number; lastHours: number; avgElixir: number; cycle: number };
 
 type Pol = { league: number; rating: number; rank: number | null } | null;
 
@@ -240,7 +240,7 @@ async function build(tag: string): Promise<PlayerProfile | null> {
   for (const b of battles) {
     if (b.mine.length !== 8 || b.mode === 'Boat battle') continue;
     const k = deckKey(b.mine);
-    const d = deckMap.get(k) ?? { key: k, name: deckName(b.mine, winConOf(b.mine)), cards: b.mine, games: 0, wins: 0, lastHours: b.hours };
+    const d = deckMap.get(k) ?? { key: k, name: deckName(b.mine, winConOf(b.mine)), cards: b.mine, games: 0, wins: 0, lastHours: b.hours, ...deckStats(b.mine) };
     d.games++;
     if (b.result === 'win') d.wins++;
     d.lastHours = Math.min(d.lastHours, b.hours);

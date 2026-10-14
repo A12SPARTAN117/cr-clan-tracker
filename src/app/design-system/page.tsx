@@ -120,21 +120,21 @@ export default function DesignSystemPage() {
         <div className="panel" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <span className="label">Card tile · rarity materials · evo / hero / both / not owned</span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '22px 18px', alignItems: 'flex-end' }}>
-            <CardTile slug="archers" size="L" level={14} elixir={3} showLabel />
-            <CardTile slug="battle-healer" size="L" level={14} elixir={4} showLabel />
-            <CardTile slug="baby-dragon" size="L" level={14} elixir={4} showLabel />
-            <CardTile slug="the-log" size="L" level={14} elixir={2} showLabel />
-            <CardTile slug="boss-bandit" size="L" level={14} elixir={6} showLabel />
-            <CardTile slug="bomber" evo size="L" level={14} elixir={2} showLabel />
-            <CardTile slug="knight" evo hero split img={knight?.icons.evolution} img2={knight?.icons.hero} size="L" level={14} elixir={3} showLabel />
-            <CardTile slug="rocket" owned={false} size="L" elixir={6} showLabel />
+            <CardTile slug="archers" size="L" level={14} showLabel />
+            <CardTile slug="battle-healer" size="L" level={14} showLabel />
+            <CardTile slug="baby-dragon" size="L" level={14} showLabel />
+            <CardTile slug="the-log" size="L" level={14} showLabel />
+            <CardTile slug="boss-bandit" size="L" level={14} showLabel />
+            <CardTile slug="bomber" evo size="L" level={14} showLabel />
+            <CardTile slug="knight" evo hero split img={knight?.icons.evolution} img2={knight?.icons.hero} size="L" level={14} showLabel />
+            <CardTile slug="rocket" owned={false} size="L" showLabel />
           </div>
           <div style={{ display: 'flex', gap: 18, alignItems: 'flex-end', flexWrap: 'wrap', paddingTop: 16, borderTop: '1px solid var(--hair)' }}>
             <span className="label">Sizes</span>
             <CardTile slug="bomber" size="S" />
-            <CardTile slug="bomber" size="M" level={14} elixir={2} />
-            <CardTile slug="bomber" size="L" level={14} elixir={2} />
-            <CardTile slug="bomber" size="XL" level={14} elixir={2} />
+            <CardTile slug="bomber" size="M" level={14} />
+            <CardTile slug="bomber" size="L" level={14} />
+            <CardTile slug="bomber" size="XL" level={14} />
           </div>
         </div>
 

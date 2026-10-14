@@ -27,7 +27,12 @@ function useInViewOnce<T extends Element>() {
 
 type Tag = 'h1' | 'h2' | 'h3' | 'div' | 'p' | 'span';
 
-/** Title mask reveal: rises 28px and unmasks over 900ms when it enters the viewport. */
+/**
+ * Title mask reveal: rises 28px and unmasks over 900ms when it enters the viewport.
+ * The observed element stays unclipped; only the inner span is masked. (Chrome's
+ * IntersectionObserver honours the target's own clip-path / transform, so a fully clipped
+ * target never reports as visible and would stay hidden forever.)
+ */
 export function Reveal({
   as = 'div',
   className,
@@ -40,13 +45,17 @@ export function Reveal({
   children: ReactNode;
 }) {
   const [ref, seen] = useInViewOnce<HTMLElement>();
-  return createElement(as, { ref, className: `${className ?? ''} ${seen ? 'oa-reveal-in' : 'oa-reveal-pre'}`, style }, children);
+  return createElement(as, { ref, className, style }, <span className={seen ? 'oa-reveal-in' : 'oa-reveal-pre'}>{children}</span>);
 }
 
 /** Hairline that draws in from the left (1100ms). */
 export function Draw({ style }: { style?: CSSProperties }) {
   const [ref, seen] = useInViewOnce<HTMLDivElement>();
-  return <div ref={ref} aria-hidden className={seen ? 'oa-draw-in' : 'oa-draw-pre'} style={{ height: 1, background: 'var(--hair)', ...style }} />;
+  return (
+    <div ref={ref} aria-hidden style={{ height: 1, ...style, background: 'none' }}>
+      <div className={seen ? 'oa-draw-in' : 'oa-draw-pre'} style={{ height: '100%', background: style?.background ?? 'var(--hair)' }} />
+    </div>
+  );
 }
 
 const DIGITS = '0123456789';
