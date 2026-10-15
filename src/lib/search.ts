@@ -2,6 +2,7 @@ import 'server-only';
 import { connection } from 'next/server';
 import { getClan, getLocations, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
 import { findPlayersByName, indexPlayers, rankByName, seedDirectory, type DirPlayer } from './directory';
+import { getDb } from './db';
 import { checkTag } from './tags';
 
 /**
@@ -29,7 +30,9 @@ const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
 export async function search(raw: string, scope: SearchScope = 'all', limit = 100): Promise<SearchResults> {
   await connection(); // per-request: results depend on the live directory
-  seedDirectory({
+  // With a database the cron job (/api/cron/directory) fills the directory; without one,
+  // seed it in this server's memory instead (only useful on a long-running server).
+  if (!(await getDb())) seedDirectory({
     locations: async () => {
       const r = await getLocations();
       return r.ok ? r.data.items : [];
