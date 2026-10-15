@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { AdditiveBlending, BufferAttribute, BufferGeometry, Points, ShaderMaterial } from 'three';
 import { mountThree } from './three';
 
@@ -42,68 +41,59 @@ const fragment = /* glsl */ `
   }
 `;
 
-/**
- * Glowing embers and rune dust drifting up through a header scene (three.js points, animated
- * entirely on the GPU). Embers part around the cursor. Fills its positioned parent.
- */
-export function EmberField({ count = 260, gold = 0.35, intensity = 1 }: { count?: number; gold?: number; intensity?: number }) {
-  const host = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = host.current;
-    if (!el) return;
-    const n = innerWidth < 760 ? Math.round(count * 0.5) : count;
-    let pointer = { x: 9, y: 9 };
-    const onMove = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      pointer = { x: ((e.clientX - r.left) / r.width - 0.5) * 2, y: -((e.clientY - r.top) / r.height - 0.5) * 2 };
-    };
-    addEventListener('pointermove', onMove, { passive: true });
-    const stop = mountThree(
-      el,
-      ({ scene, dpr }) => {
-        const seed = new Float32Array(n * 4);
-        const tint = new Float32Array(n);
-        for (let i = 0; i < n; i++) {
-          seed.set([(Math.random() - 0.5) * 9, (Math.random() - 0.5) * 3, Math.random(), 0.02 + Math.random() * 0.06], i * 4);
-          tint[i] = Math.random() < gold ? 1 : 0;
-        }
-        const geo = new BufferGeometry();
-        geo.setAttribute('position', new BufferAttribute(new Float32Array(n * 3), 3));
-        geo.setAttribute('aSeed', new BufferAttribute(seed, 4));
-        geo.setAttribute('aGold', new BufferAttribute(tint, 1));
-        const mat = new ShaderMaterial({
-          vertexShader: vertex,
-          fragmentShader: fragment,
-          uniforms: { uTime: { value: 0 }, uPixelRatio: { value: dpr }, uPointer: { value: [9, 9] }, uIntensity: { value: intensity } },
-          transparent: true,
-          depthWrite: false,
-          blending: AdditiveBlending,
-          premultipliedAlpha: true,
-        });
-        const pts = new Points(geo, mat);
-        pts.frustumCulled = false;
-        scene.add(pts);
-        let px = 9;
-        let py = 9;
-        return {
-          frame: (t, _dt, still) => {
-            mat.uniforms.uTime.value = still ? 12 : t;
-            px += (pointer.x - px) * 0.08;
-            py += (pointer.y - py) * 0.08;
-            mat.uniforms.uPointer.value = [px, py];
-          },
-          dispose: () => {
-            geo.dispose();
-            mat.dispose();
-          },
-        };
-      },
-      { fov: 50, z: 4 },
-    );
-    return () => {
-      removeEventListener('pointermove', onMove);
-      stop?.();
-    };
-  }, [count, gold, intensity]);
-  return <div ref={host} aria-hidden data-fx="embers" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />;
+/** Mounts the ember scene into `el` (see ../EmberField). Returns a cleanup function. */
+export function mountEmbers(el: HTMLElement, { count, gold, intensity }: { count: number; gold: number; intensity: number }) {
+  const n = innerWidth < 760 ? Math.round(count * 0.5) : count;
+  let pointer = { x: 9, y: 9 };
+  const onMove = (e: PointerEvent) => {
+    const r = el.getBoundingClientRect();
+    pointer = { x: ((e.clientX - r.left) / r.width - 0.5) * 2, y: -((e.clientY - r.top) / r.height - 0.5) * 2 };
+  };
+  addEventListener('pointermove', onMove, { passive: true });
+  const stop = mountThree(
+    el,
+    ({ scene, dpr }) => {
+      const seed = new Float32Array(n * 4);
+      const tint = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        seed.set([(Math.random() - 0.5) * 9, (Math.random() - 0.5) * 3, Math.random(), 0.02 + Math.random() * 0.06], i * 4);
+        tint[i] = Math.random() < gold ? 1 : 0;
+      }
+      const geo = new BufferGeometry();
+      geo.setAttribute('position', new BufferAttribute(new Float32Array(n * 3), 3));
+      geo.setAttribute('aSeed', new BufferAttribute(seed, 4));
+      geo.setAttribute('aGold', new BufferAttribute(tint, 1));
+      const mat = new ShaderMaterial({
+        vertexShader: vertex,
+        fragmentShader: fragment,
+        uniforms: { uTime: { value: 0 }, uPixelRatio: { value: dpr }, uPointer: { value: [9, 9] }, uIntensity: { value: intensity } },
+        transparent: true,
+        depthWrite: false,
+        blending: AdditiveBlending,
+        premultipliedAlpha: true,
+      });
+      const pts = new Points(geo, mat);
+      pts.frustumCulled = false;
+      scene.add(pts);
+      let px = 9;
+      let py = 9;
+      return {
+        frame: (t, _dt, still) => {
+          mat.uniforms.uTime.value = still ? 12 : t;
+          px += (pointer.x - px) * 0.08;
+          py += (pointer.y - py) * 0.08;
+          mat.uniforms.uPointer.value = [px, py];
+        },
+        dispose: () => {
+          geo.dispose();
+          mat.dispose();
+        },
+      };
+    },
+    { fov: 50, z: 4 },
+  );
+  return () => {
+    removeEventListener('pointermove', onMove);
+    stop?.();
+  };
 }

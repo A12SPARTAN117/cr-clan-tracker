@@ -70,6 +70,21 @@ Useful scripts: `npm run build`, `npm run lint`, `npm run typecheck`.
 
 Any Node host works (Vercel, Render, Fly, a VPS). Set `CR_API_KEY`, `CR_API_BASE`, `DATABASE_URL` (a hosted Postgres such as Neon or Supabase) and `CRON_SECRET`, then schedule the snapshot endpoint as above. The RoyaleAPI proxy means your host's IP doesn't need to be on the API key's allowlist.
 
+### Outages, error pages and donations
+
+- **Donate button.** Set `NEXT_PUBLIC_DONATE_URL` (an `https://` Ko-fi / Buy Me a Coffee / PayPal.me link) and redeploy. The button appears on the error pages and the site-down page, next to a note that the site runs on free hosting. Supercell's Fan Content Policy allows donations only if they unlock nothing, so keep them that way.
+- **Page errors** show `src/app/error.tsx` (a crash inside the layout) or `src/app/global-error.tsx` (the layout itself failed).
+- **Server unreachable.** `public/down.html` is a self-contained page generated from `scripts/down-page/` before every `dev` and `build`. A small service worker (`public/sw.js`, production only) shows it to returning visitors when the host is down or answers 502/503/504. It also works as a host's custom 5xx page (Cloudflare, nginx, Render...). It checks `/api/up` and tells the visitor when the site is back.
+- **Maintenance mode.** `SITE_DOWN=1` (then redeploy) serves the site-down page on every page; cron endpoints keep working.
+- **Service worker off switch.** If the worker ever misbehaves, see the two lines at the top of `scripts/down-page/sw.js`.
+
+### Security and speed
+
+- Security headers (CSP, HSTS, no framing, no sniffing, strict referrer, permissions policy) are set in `next.config.ts`. A new image host must be added to `img-src` there.
+- `/api/search`, `/api/summary/*`, `/api/art`, `/t/*` and the Refresh buttons are rate-limited per IP (`src/lib/ratelimit.ts`) so nobody can burn through the shared API key. For page-level limits, add a rate-limit rule at the host or CDN.
+- The three.js effects load in their own chunk once the browser is idle (`src/components/fx/gl/`), so pages don't wait for 135 KB of 3D code.
+- After adding art to `public/`, run `node scripts/optimize-images.mjs` (palette PNGs, mozjpeg; only replaces a file when it saves 10%+).
+
 ## Disclaimer
 
 This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it. For more information see [Supercell's Fan Content Policy](https://www.supercell.com/fan-content-policy).

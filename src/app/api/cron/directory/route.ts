@@ -1,5 +1,6 @@
 import { connection } from 'next/server';
 import { getLocations, getPolLeaderboard } from '@/lib/cr/api';
+import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb } from '@/lib/db';
 import { indexPlayers } from '@/lib/directory';
 
@@ -15,10 +16,7 @@ const SLICE = 25;
  */
 export async function GET(req: Request) {
   await connection();
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
-    return Response.json({ error: 'unauthorized' }, { status: 401 });
-  }
+  if (!cronAuthorized(req)) return Response.json({ error: 'unauthorized' }, { status: 401 });
   if (!(await getDb())) return Response.json({ error: 'DATABASE_URL is not set' }, { status: 503 });
 
   const locs = await getLocations();
