@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { CardTile } from '@/components/CardTile';
 import { Portal } from '@/components/fx/Portal';
 import { Reveal } from '@/components/fx/Reveal';
@@ -30,6 +31,8 @@ const SWATCHES = [
 const knight = cardBySlug('knight');
 
 export default function DesignSystemPage() {
+  // Internal reference page: only in development.
+  if (process.env.NODE_ENV === 'production') notFound();
   return (
     <main className="page" style={{ maxWidth: 1280, gap: 72 }}>
       <header style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
