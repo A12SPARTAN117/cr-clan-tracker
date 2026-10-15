@@ -1,5 +1,6 @@
 import { and, asc, gte, sql } from 'drizzle-orm';
 import { connection } from 'next/server';
+import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb, schema } from '@/lib/db';
 import { snapshotClan, type SnapshotResult } from '@/lib/history/snapshot';
 
@@ -13,10 +14,7 @@ export const maxDuration = 300;
  */
 export async function GET(req: Request) {
   await connection();
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get('authorization') !== `Bearer ${secret}`) {
-    return Response.json({ error: 'unauthorized' }, { status: 401 });
-  }
+  if (!cronAuthorized(req)) return Response.json({ error: 'unauthorized' }, { status: 401 });
   const db = await getDb();
   if (!db) return Response.json({ error: 'DATABASE_URL is not set' }, { status: 503 });
 

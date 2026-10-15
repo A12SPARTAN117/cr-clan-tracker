@@ -1,0 +1,58 @@
+// Service worker. Source: scripts/down-page/sw.js, copied to public/sw.js by
+// scripts/build-down-page.mjs (which fills in the cache version).
+//
+// It only touches page navigations, and only when they fail: if the server can't be reached or
+// the host answers with a gateway/outage error, the visitor sees the cached /down.html page
+// instead of the browser's error screen. Everything else goes straight to the network.
+//
+// Emergency off switch: replace this file's contents with
+//   self.addEventListener('install', () => self.skipWaiting());
+//   self.addEventListener('activate', () => self.registration.unregister());
+const CACHE = 'down-%VERSION%';
+const DOWN = '/down.html';
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches
+      .open(CACHE)
+      .then((c) => c.add(new Request(DOWN, { cache: 'reload' })))
+      .then(() => self.skipWaiting()),
+  );
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    (async () => {
+      for (const k of await caches.keys()) if (k !== CACHE) await caches.delete(k);
+      // Starts the page request while the worker boots, so it adds no delay to navigations.
+      if (self.registration.navigationPreload) await self.registration.navigationPreload.enable();
+      await self.clients.claim();
+    })(),
+  );
+});
+
+/** Outage answers from a host or CDN (not from our app, whose pages handle their own errors). */
+function isOutage(r) {
+  if (r.status === 502 || r.status === 503 || r.status === 504 || (r.status >= 520 && r.status <= 524)) return true;
+  // A 500 that didn't come from Next.js (its responses always vary on RSC) is the host's crash page.
+  return r.status === 500 && !/\brsc\b/i.test(r.headers.get('vary') || '');
+}
+
+async function downPage(status) {
+  const cached = await caches.match(DOWN, { cacheName: CACHE });
+  return cached ? new Response(cached.body, { status, statusText: 'Service Unavailable', headers: cached.headers }) : null;
+}
+
+self.addEventListener('fetch', (e) => {
+  if (e.request.mode !== 'navigate') return;
+  e.respondWith(
+    (async () => {
+      try {
+        const r = (await e.preloadResponse) || (await fetch(e.request));
+        return isOutage(r) ? (await downPage(r.status)) || r : r;
+      } catch {
+        return (await downPage(503)) || Response.error();
+      }
+    })(),
+  );
+});

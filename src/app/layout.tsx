@@ -4,12 +4,14 @@ import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import { AmbientEmbers } from '@/components/fx/AmbientEmbers';
 import { MotionLayer } from '@/components/fx/MotionLayer';
 import { Grain } from '@/components/fx/Grain';
+import { ServiceWorker } from '@/components/ServiceWorker';
 import { SiteNav } from '@/components/SiteNav';
 import { SiteFooter } from '@/components/SiteFooter';
 import './globals.css';
 
-const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500', '700', '800'], variable: '--font-mono' });
-const sans = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-sans' });
+// Variable fonts: one file per family covers every weight (8 font downloads became 2).
+const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
+const sans = Space_Grotesk({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: { default: 'CR Clan Tracker', template: '%s · CR Clan Tracker' },
@@ -39,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         <Suspense fallback={null}>
           <MotionLayer />
         </Suspense>
+        <ServiceWorker />
       </body>
     </html>
   );
