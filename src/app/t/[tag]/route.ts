@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getClan, getPlayer } from '@/lib/cr/api';
+import { limitRequest } from '@/lib/ratelimit';
 import { checkTag } from '@/lib/tags';
 
 /**
@@ -7,7 +8,9 @@ import { checkTag } from '@/lib/tags';
  * and send the visitor to whichever exists. Player and clan tags share one namespace, so a tag
  * can match both; then the visitor picks. Unknown tags land on the player-not-found state.
  */
-export async function GET(_req: Request, ctx: RouteContext<'/t/[tag]'>) {
+export async function GET(req: Request, ctx: RouteContext<'/t/[tag]'>) {
+  const limited = limitRequest(req, 'route');
+  if (limited) return limited;
   const { tag: raw } = await ctx.params;
   const c = checkTag(decodeURIComponent(raw));
   if (c.kind !== 'valid') redirect(`/player/${encodeURIComponent(raw)}`);

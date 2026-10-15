@@ -1,0 +1,173 @@
+<!doctype html>
+<!--
+  Site-down page. Source: scripts/down-page/down.html. `npm run dev` / `npm run build` copy it to
+  public/down.html with the donate link filled in (scripts/build-down-page.mjs).
+  Shown by the service worker when the server can't be reached, by SITE_DOWN=1, and it can be
+  uploaded as a host's custom 5xx page. Must stay self-contained: no external files at all.
+-->
+<html lang="en" data-down-page>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#07080A">
+<title>The arena is down · CR Clan Tracker</title>
+<style>
+  :root { color-scheme: dark; --bg: #07080A; --text: #F3F4F6; --text-2: #A4A9B4; --text-3: #6B7079; --blue: #3AA0FF; --ice: #8CCBFF; --ember: #FF5464;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; --sans: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
+  body { min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; font: 400 16px/1.55 var(--sans); }
+
+  /* Scene: marble veins, a blue arena glow, drifting fog and the carved frame. */
+  .scene { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    background:
+      radial-gradient(ellipse 70% 45% at 50% 38%, rgba(58,160,255,.16), transparent 70%),
+      radial-gradient(ellipse 90% 60% at 50% 110%, rgba(140,203,255,.10), transparent 70%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='900'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.0025 0.012' numOctaves='5' seed='11'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 -2.2 1.35'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.05'/></svg>"),
+      var(--bg); }
+  .fog { position: absolute; width: 140vmax; height: 60vmax; left: -20vmax; border-radius: 50%; filter: blur(60px); opacity: .5;
+    background: radial-gradient(ellipse at center, rgba(164,169,180,.22), transparent 65%); animation: drift 38s ease-in-out infinite alternate; }
+  .fog.b { top: 55%; animation-duration: 52s; animation-direction: alternate-reverse; opacity: .4; }
+  .fog.a { top: 20%; }
+  .frame { position: fixed; inset: 14px; border: 1px solid rgba(255,255,255,.5); border-radius: 4px; pointer-events: none; z-index: 1; }
+  .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(7,8,10,.85) 100%); }
+  @keyframes drift { from { transform: translateX(-8vmax); } to { transform: translateX(8vmax); } }
+
+  main { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 20px; padding: 64px 24px 40px; text-align: center; }
+  .crown { width: 72px; height: 72px; color: var(--ice); filter: drop-shadow(0 0 18px rgba(58,160,255,.55)); animation: pulse 3.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { filter: drop-shadow(0 0 30px rgba(58,160,255,.85)); transform: translateY(-3px); } }
+  .kicker { font: 500 10px/1.4 var(--mono); letter-spacing: .16em; color: var(--ember); text-transform: uppercase; }
+  .big { margin: 0; font: 800 clamp(96px, 18vw, 220px)/.8 var(--mono); letter-spacing: -.08em; color: transparent;
+    background: linear-gradient(180deg, #C9CCD2, #5A5E66); -webkit-background-clip: text; background-clip: text;
+    filter: drop-shadow(0 0 30px rgba(58,160,255,.25)); }
+  h2 { margin: 0; font: 700 clamp(22px, 3.2vw, 36px)/1.1 var(--mono); letter-spacing: -.03em; }
+  .lead { margin: 0; max-width: 460px; color: var(--text-2); text-wrap: pretty; }
+
+  .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 46px; padding: 0 20px; border-radius: 4px;
+    font: 700 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; text-decoration: none; cursor: pointer; border: 0;
+    transition: transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:focus-visible { outline: 2px solid var(--ice); outline-offset: 3px; }
+  .btn-light { background: var(--text); color: var(--bg); }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,.35); }
+  .btn-donate { background: linear-gradient(180deg, #5BB4FF, #2A6FD6); color: var(--bg); box-shadow: 0 0 24px rgba(58,160,255,.45), inset 0 1px 0 rgba(255,255,255,.35); }
+  .btn-donate:hover { box-shadow: 0 0 36px rgba(58,160,255,.7), inset 0 1px 0 rgba(255,255,255,.35); }
+  .btn svg { width: 16px; height: 16px; }
+
+  .card { width: 100%; max-width: 520px; margin-top: 6px; padding: 22px 22px 24px; border-radius: 6px; text-align: left;
+    border: 1px solid rgba(140,203,255,.28); background: linear-gradient(180deg, rgba(18,22,30,.9), rgba(7,8,10,.94));
+    box-shadow: 0 0 0 1px rgba(7,8,10,.6), 0 18px 60px rgba(0,0,0,.5), 0 0 40px rgba(58,160,255,.12); }
+  .card .kicker { color: var(--ice); }
+  .card h3 { margin: 10px 0 8px; font: 700 20px/1.2 var(--mono); letter-spacing: -.02em; }
+  .card p { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: #C9CCD2; }
+  .card .btn { margin-top: 8px; }
+
+  .status { font: 500 10px/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); min-height: 14px; }
+  .status.up { color: var(--ice); }
+  .dot { display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; background: currentColor; vertical-align: 1px; animation: blink 1.4s infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+
+  footer { position: relative; z-index: 2; padding: 20px 28px 32px; text-align: center; }
+  footer p { margin: 0 auto; max-width: 640px; font-size: 11px; line-height: 1.6; color: var(--text-3); }
+  footer a { color: var(--ice); }
+
+  /* No donate link configured: the card still explains, without the button. */
+  .no-donate .donate-only { display: none; }
+  .no-donate .no-donate-only { display: block; }
+  .no-donate-only { display: none; }
+  /* The visitor's own connection is down: different copy, no server explanation. */
+  .offline .online-only { display: none; }
+  .offline-only { display: none; }
+  .offline .offline-only { display: block; }
+
+  @media (prefers-reduced-motion: reduce) { .fog, .crown, .dot { animation: none; } .btn { transition: none; } }
+  @media (max-width: 520px) { main { padding-top: 48px; } .card { padding: 18px; } .row .btn { flex: 1 1 100%; } }
+</style>
+</head>
+<body class="%DONATE_STATE%">
+<div class="scene" aria-hidden="true"><div class="fog a"></div><div class="fog b"></div><div class="vignette"></div></div>
+<div class="frame" aria-hidden="true"></div>
+
+<main>
+  <svg class="crown" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
+    <path d="M10 46 6 18l14 12 12-18 12 18 14-12-4 28Z" fill="rgba(58,160,255,.12)"/>
+    <path d="M10 46h44v6H10Z" fill="rgba(140,203,255,.25)"/>
+    <circle cx="6" cy="17" r="2.6" fill="currentColor"/><circle cx="32" cy="10" r="2.6" fill="currentColor"/><circle cx="58" cy="17" r="2.6" fill="currentColor"/>
+  </svg>
+
+  <div class="online-only">
+    <span class="kicker">● Server offline</span>
+  </div>
+  <div class="offline-only">
+    <span class="kicker">● No connection</span>
+  </div>
+
+  <h1 class="big">503</h1>
+
+  <div class="online-only">
+    <h2>THE ARENA IS DOWN</h2>
+    <p class="lead" style="margin-top:14px">Our server can't answer right now. Nothing is lost: your clan, history and pins are all safe. The site will be back soon.</p>
+  </div>
+  <div class="offline-only">
+    <h2>YOU'RE OFFLINE</h2>
+    <p class="lead" style="margin-top:14px">Your device has no internet connection. This page will reload by itself as soon as you're back online.</p>
+  </div>
+
+  <div class="row">
+    <button class="btn btn-light" type="button" id="retry">Try again</button>
+  </div>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+
+  <section class="card online-only" aria-labelledby="why">
+    <span class="kicker">● Keep the arena open</span>
+    <h3 id="why">We don't have proper servers yet</h3>
+    <p>CR Clan Tracker is free and fan-made. Right now it runs on free hosting because we can't afford real servers yet, so when lots of people visit at once or the free limits run out, the site goes down.</p>
+    <p class="donate-only">Donations pay for hosting so this stops happening. They are purely donations and do not unlock anything.</p>
+    <p class="no-donate-only">Thanks for your patience. Please check back in a few minutes.</p>
+    <a class="btn btn-donate donate-only" href="%DONATE_URL%" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4h2c.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21Z"/></svg>
+      Donate to keep the site running
+    </a>
+  </section>
+</main>
+
+<footer>
+  <p>This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it. For more information see <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noreferrer">Supercell's Fan Content Policy</a>.</p>
+</footer>
+
+<script>
+(function () {
+  var body = document.body, status = document.getElementById('status');
+  function setOffline() { body.classList.toggle('offline', navigator.onLine === false); }
+  setOffline();
+  addEventListener('offline', setOffline);
+  addEventListener('online', function () { location.reload(); });
+  document.getElementById('retry').addEventListener('click', function () { location.reload(); });
+
+  // Quietly ask the server if it's back (/api/up answers 204 only when the real site runs).
+  // It doesn't reload by itself, so a page that keeps failing can't loop.
+  var wait = 20, left = wait, timer;
+  function tick() {
+    if (navigator.onLine === false) { status.textContent = ''; return schedule(); }
+    left--;
+    if (left > 0) { status.innerHTML = '<span class="dot"></span>Checking again in ' + left + 's'; return schedule(); }
+    status.innerHTML = '<span class="dot"></span>Checking…';
+    fetch('/api/up', { cache: 'no-store' }).then(function (r) {
+      if (r.status === 204) {
+        status.className = 'status up';
+        status.textContent = 'The site is back. Press Try again.';
+        document.getElementById('retry').className = 'btn btn-donate';
+        return;
+      }
+      throw 0;
+    }).catch(function () { wait = Math.min(120, Math.round(wait * 1.5)); left = wait; schedule(); });
+  }
+  function schedule() { clearTimeout(timer); timer = setTimeout(tick, 1000); }
+  schedule();
+})();
+</script>
+</body>
+</html>

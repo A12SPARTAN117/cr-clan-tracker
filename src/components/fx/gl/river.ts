@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import {
   AmbientLight,
   BoxGeometry,
@@ -82,115 +81,94 @@ function makeBoat(us: boolean, mats: Material[]) {
   return g;
 }
 
-/**
- * The current river race as a scene: one lane per clan on flowing water, each clan's boat as
- * far along as its fame (finish line at `finish` fame). Your clan's boat is blue. During
- * training days every boat waits at the start.
- */
-export function RiverRace3D({ clans, finish = 10000, training = false, height = 220 }: { clans: RaceBoat[]; finish?: number; training?: boolean; height?: number }) {
-  const host = useRef<HTMLDivElement>(null);
-  const key = clans.map((c) => `${c.tag}:${c.fame}:${c.us ? 1 : 0}`).join('|') + `|${finish}|${training}`;
+/** Mounts the river race scene into `el` (see ../RiverRace3D). Returns a cleanup function. */
+export function mountRiver(el: HTMLElement, { clans, finish, training }: { clans: RaceBoat[]; finish: number; training: boolean }) {
+  if (!clans.length) return null;
+  const lanes = clans.length;
+  const W = 10;
+  const D = lanes * 1.25;
+  const stop = mountThree(
+    el,
+    ({ scene, camera }) => {
+      const mats: Material[] = [];
+      const geos: BufferGeometry[] = [];
+      scene.add(new AmbientLight(0xffffff, 1.6));
+      const sun = new DirectionalLight(0xdfefff, 1.4);
+      sun.position.set(-3, 6, 4);
+      scene.add(sun);
 
-  useEffect(() => {
-    const el = host.current;
-    if (!el || !clans.length) return;
-    const lanes = clans.length;
-    const W = 10;
-    const D = lanes * 1.25;
-    const stop = mountThree(
-      el,
-      ({ scene, camera }) => {
-        const mats: Material[] = [];
-        const geos: BufferGeometry[] = [];
-        scene.add(new AmbientLight(0xffffff, 1.6));
-        const sun = new DirectionalLight(0xdfefff, 1.4);
-        sun.position.set(-3, 6, 4);
-        scene.add(sun);
+      const waterMat = new ShaderMaterial({
+        vertexShader: water.vertex,
+        fragmentShader: water.fragment,
+        uniforms: { uTime: { value: 0 }, uLanes: { value: lanes } },
+        transparent: true,
+        depthWrite: false,
+      });
+      const waterGeo = new PlaneGeometry(W + 2, D + 0.6);
+      const plane = new Mesh(waterGeo, waterMat);
+      plane.rotation.x = -Math.PI / 2;
+      scene.add(plane);
+      mats.push(waterMat);
+      geos.push(waterGeo);
 
-        const waterMat = new ShaderMaterial({
-          vertexShader: water.vertex,
-          fragmentShader: water.fragment,
-          uniforms: { uTime: { value: 0 }, uLanes: { value: lanes } },
-          transparent: true,
-          depthWrite: false,
-        });
-        const waterGeo = new PlaneGeometry(W + 2, D + 0.6);
-        const plane = new Mesh(waterGeo, waterMat);
-        plane.rotation.x = -Math.PI / 2;
-        scene.add(plane);
-        mats.push(waterMat);
-        geos.push(waterGeo);
+      // Finish line: a gold bar across the river with posts.
+      const goldMat = new MeshBasicMaterial({ color: 0xe6b34a });
+      mats.push(goldMat);
+      const lineGeo = new BoxGeometry(0.06, 0.02, D);
+      const postGeo = new BoxGeometry(0.08, 0.9, 0.08);
+      geos.push(lineGeo, postGeo);
+      const fx = W / 2 - 0.4;
+      const line = new Mesh(lineGeo, goldMat);
+      line.position.set(fx, 0.02, 0);
+      const p1 = new Mesh(postGeo, goldMat);
+      p1.position.set(fx, 0.45, -D / 2 - 0.1);
+      const p2 = new Mesh(postGeo, goldMat);
+      p2.position.set(fx, 0.45, D / 2 + 0.1);
+      scene.add(line, p1, p2);
 
-        // Finish line: a gold bar across the river with posts.
-        const goldMat = new MeshBasicMaterial({ color: 0xe6b34a });
-        mats.push(goldMat);
-        const lineGeo = new BoxGeometry(0.06, 0.02, D);
-        const postGeo = new BoxGeometry(0.08, 0.9, 0.08);
-        geos.push(lineGeo, postGeo);
-        const fx = W / 2 - 0.4;
-        const line = new Mesh(lineGeo, goldMat);
-        line.position.set(fx, 0.02, 0);
-        const p1 = new Mesh(postGeo, goldMat);
-        p1.position.set(fx, 0.45, -D / 2 - 0.1);
-        const p2 = new Mesh(postGeo, goldMat);
-        p2.position.set(fx, 0.45, D / 2 + 0.1);
-        scene.add(line, p1, p2);
+      const startX = -W / 2 + 0.6;
+      const boats = clans.map((c, i) => {
+        const b = makeBoat(c.us, mats);
+        const z = -D / 2 + (i + 0.5) * (D / lanes);
+        const progress = training ? 0 : Math.min(1, c.fame / Math.max(1, finish));
+        const tx = startX + progress * (fx - startX - 0.5);
+        b.position.set(startX, 0.08, z);
+        b.scale.setScalar(c.us ? 1.15 : 1);
+        scene.add(b);
+        return { b, tx, phase: i * 1.7 };
+      });
 
-        const startX = -W / 2 + 0.6;
-        const boats = clans.map((c, i) => {
-          const b = makeBoat(c.us, mats);
-          const z = -D / 2 + (i + 0.5) * (D / lanes);
-          const progress = training ? 0 : Math.min(1, c.fame / Math.max(1, finish));
-          const tx = startX + progress * (fx - startX - 0.5);
-          b.position.set(startX, 0.08, z);
-          b.scale.setScalar(c.us ? 1.15 : 1);
-          scene.add(b);
-          return { b, tx, phase: i * 1.7 };
-        });
-
-        camera.position.set(0, 6.6, 3.6);
-        camera.lookAt(0, 0, 0.2);
-        return {
-          frame: (t, _dt, still) => {
-            waterMat.uniforms.uTime.value = still ? 0 : t;
-            const k = still ? 1 : Math.min(1, t / 2.2);
-            const ease = 1 - Math.pow(1 - k, 3);
-            boats.forEach(({ b, tx, phase }) => {
-              b.position.x = startX + (tx - startX) * ease;
-              b.position.y = 0.08 + (still ? 0 : Math.sin(t * 2 + phase) * 0.04);
-              b.rotation.x = still ? 0 : Math.sin(t * 1.6 + phase) * 0.06;
-              b.rotation.z = still ? 0 : Math.sin(t * 1.3 + phase) * 0.03;
-            });
-          },
-          resize: (w, h) => {
-            // Fit the river's width on narrow screens.
-            const aspect = w / h;
-            const f = Math.max(1, 2.4 / aspect);
-            camera.position.set(0, 6.6 * f, 3.6 * f);
-            camera.lookAt(0, 0, 0.2);
-          },
-          dispose: () => {
-            mats.forEach((m) => m.dispose());
-            geos.forEach((g) => g.dispose());
-            scene.traverse((o) => {
-              if (o instanceof Mesh) o.geometry.dispose();
-            });
-          },
-        };
-      },
-      { fov: 40, antialias: true },
-    );
-    return () => stop?.();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` captures every input
-  }, [key]);
-
-  return (
-    <div
-      ref={host}
-      role="img"
-      aria-label={`River race: ${clans.map((c) => `${c.name} ${c.fame} fame`).join(', ')}${training ? ' (training days, the race has not started)' : ''}`}
-      data-fx="river"
-      style={{ position: 'relative', width: '100%', height, borderRadius: 8, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 60%, rgba(10,72,201,.18), transparent 70%)' }}
-    />
+      camera.position.set(0, 6.6, 3.6);
+      camera.lookAt(0, 0, 0.2);
+      return {
+        frame: (t, _dt, still) => {
+          waterMat.uniforms.uTime.value = still ? 0 : t;
+          const k = still ? 1 : Math.min(1, t / 2.2);
+          const ease = 1 - Math.pow(1 - k, 3);
+          boats.forEach(({ b, tx, phase }) => {
+            b.position.x = startX + (tx - startX) * ease;
+            b.position.y = 0.08 + (still ? 0 : Math.sin(t * 2 + phase) * 0.04);
+            b.rotation.x = still ? 0 : Math.sin(t * 1.6 + phase) * 0.06;
+            b.rotation.z = still ? 0 : Math.sin(t * 1.3 + phase) * 0.03;
+          });
+        },
+        resize: (w, h) => {
+          // Fit the river's width on narrow screens.
+          const aspect = w / h;
+          const f = Math.max(1, 2.4 / aspect);
+          camera.position.set(0, 6.6 * f, 3.6 * f);
+          camera.lookAt(0, 0, 0.2);
+        },
+        dispose: () => {
+          mats.forEach((m) => m.dispose());
+          geos.forEach((g) => g.dispose());
+          scene.traverse((o) => {
+            if (o instanceof Mesh) o.geometry.dispose();
+          });
+        },
+      };
+    },
+    { fov: 40, antialias: true },
   );
+  return () => stop?.();
 }

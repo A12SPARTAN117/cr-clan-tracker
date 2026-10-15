@@ -1,7 +1,7 @@
 'use client';
 
 import { PerspectiveCamera, Scene, WebGLRenderer } from 'three';
-import { reducedMotion } from './motion';
+import { reducedMotion } from '../motion';
 
 export type ThreeCtx = { renderer: WebGLRenderer; scene: Scene; camera: PerspectiveCamera; el: HTMLElement; dpr: number };
 export type ThreeScene = {

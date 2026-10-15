@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import {
   AdditiveBlending,
   BufferAttribute,
@@ -11,7 +10,7 @@ import {
   ShaderMaterial,
   WebGLRenderer,
 } from 'three';
-import { reducedMotion } from './motion';
+import { reducedMotion } from '../motion';
 
 const TAU = Math.PI * 2;
 
@@ -81,128 +80,116 @@ const fragment = /* glsl */ `
   }
 `;
 
-/**
- * The Home hero's particle crown. Rotates 0.0035 rad/frame, tilts toward the cursor and
- * scatters into a sphere as `scrollRoot` scrolls out of view (8% lerp). Static under
- * prefers-reduced-motion.
- */
-export function ParticleCrown({ count, scrollRoot }: { count?: number; scrollRoot?: React.RefObject<HTMLElement | null> }) {
-  const host = useRef<HTMLDivElement>(null);
+/** Mounts the particle crown into `el` (see ../ParticleCrown). Returns a cleanup function. */
+export function mountCrown(el: HTMLElement, { count, scrollRoot }: { count?: number; scrollRoot?: React.RefObject<HTMLElement | null> }) {
+  let renderer: WebGLRenderer;
+  try {
+    renderer = new WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'low-power' });
+  } catch {
+    return null; // No WebGL: the scene still works without the crown.
+  }
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  renderer.setPixelRatio(dpr);
+  renderer.setClearColor(0x000000, 0);
+  renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
+  el.appendChild(renderer.domElement);
 
-  useEffect(() => {
-    const el = host.current;
-    if (!el) return;
-    let renderer: WebGLRenderer;
-    try {
-      renderer = new WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'low-power' });
-    } catch {
-      return; // No WebGL: the scene still works without the crown.
-    }
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    renderer.setPixelRatio(dpr);
-    renderer.setClearColor(0x000000, 0);
-    renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
-    el.appendChild(renderer.domElement);
+  const scene = new Scene();
+  const camera = new PerspectiveCamera(52, 1, 0.1, 50);
+  camera.position.set(0, 0, CAM_DIST);
 
-    const scene = new Scene();
-    const camera = new PerspectiveCamera(52, 1, 0.1, 50);
-    camera.position.set(0, 0, CAM_DIST);
+  // 2.8k dots on desktop, 1.5k on phones.
+  const n = count ?? (innerWidth < 760 ? 1500 : 2800);
+  const base = crownPoints(n);
+  const pos = new Float32Array(n * 3);
+  const scat = new Float32Array(n * 3);
+  const hi = new Float32Array(n);
+  base.forEach(([x, y, z], i) => {
+    // Prototype y grows downward (screen space); three.js y grows upward.
+    pos.set([x, -y, z], i * 3);
+    const th = Math.random() * TAU;
+    const ph = Math.acos(2 * Math.random() - 1);
+    const r = 1.5 + Math.random() * 2.5;
+    scat.set([r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th)], i * 3);
+    hi[i] = i % 9 === 0 ? 1 : 0;
+  });
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new BufferAttribute(pos, 3));
+  geo.setAttribute('aScatter', new BufferAttribute(scat, 3));
+  geo.setAttribute('aHi', new BufferAttribute(hi, 1));
+  const mat = new ShaderMaterial({
+    vertexShader: vertex,
+    fragmentShader: fragment,
+    uniforms: { uBurst: { value: 0 }, uPixelRatio: { value: dpr } },
+    transparent: true,
+    depthWrite: false,
+    blending: AdditiveBlending,
+    premultipliedAlpha: true,
+  });
+  const points = new Points(geo, mat);
+  scene.add(points);
 
-    // 2.8k dots on desktop, 1.5k on phones.
-    const n = count ?? (innerWidth < 760 ? 1500 : 2800);
-    const base = crownPoints(n);
-    const pos = new Float32Array(n * 3);
-    const scat = new Float32Array(n * 3);
-    const hi = new Float32Array(n);
-    base.forEach(([x, y, z], i) => {
-      // Prototype y grows downward (screen space); three.js y grows upward.
-      pos.set([x, -y, z], i * 3);
-      const th = Math.random() * TAU;
-      const ph = Math.acos(2 * Math.random() - 1);
-      const r = 1.5 + Math.random() * 2.5;
-      scat.set([r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th)], i * 3);
-      hi[i] = i % 9 === 0 ? 1 : 0;
-    });
-    const geo = new BufferGeometry();
-    geo.setAttribute('position', new BufferAttribute(pos, 3));
-    geo.setAttribute('aScatter', new BufferAttribute(scat, 3));
-    geo.setAttribute('aHi', new BufferAttribute(hi, 1));
-    const mat = new ShaderMaterial({
-      vertexShader: vertex,
-      fragmentShader: fragment,
-      uniforms: { uBurst: { value: 0 }, uPixelRatio: { value: dpr } },
-      transparent: true,
-      depthWrite: false,
-      blending: AdditiveBlending,
-      premultipliedAlpha: true,
-    });
-    const points = new Points(geo, mat);
-    scene.add(points);
+  const size = () => {
+    const w = el.clientWidth || 1;
+    const h = el.clientHeight || 1;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    // Match the prototype: 1 unit at the crown's centre = 0.32 × the shorter side.
+    const visibleH = h / (0.32 * Math.min(w, h));
+    camera.fov = (2 * Math.atan(visibleH / (2 * CAM_DIST)) * 180) / Math.PI;
+    camera.updateProjectionMatrix();
+  };
+  size();
+  const ro = new ResizeObserver(size);
+  ro.observe(el);
 
-    const size = () => {
-      const w = el.clientWidth || 1;
-      const h = el.clientHeight || 1;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      // Match the prototype: 1 unit at the crown's centre = 0.32 × the shorter side.
-      const visibleH = h / (0.32 * Math.min(w, h));
-      camera.fov = (2 * Math.atan(visibleH / (2 * CAM_DIST)) * 180) / Math.PI;
-      camera.updateProjectionMatrix();
-    };
-    size();
-    const ro = new ResizeObserver(size);
-    ro.observe(el);
+  let mx = 0;
+  let my = 0;
+  let tmx = 0;
+  let tmy = 0;
+  let rot = 0;
+  let burst = 0;
+  const onMove = (e: PointerEvent) => {
+    const r = el.getBoundingClientRect();
+    tmx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+    tmy = ((e.clientY - r.top) / r.height - 0.5) * 2;
+  };
+  addEventListener('pointermove', onMove, { passive: true });
 
-    let mx = 0;
-    let my = 0;
-    let tmx = 0;
-    let tmy = 0;
-    let rot = 0;
-    let burst = 0;
-    const onMove = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      tmx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-      tmy = ((e.clientY - r.top) / r.height - 0.5) * 2;
-    };
-    addEventListener('pointermove', onMove, { passive: true });
+  let visible = true;
+  const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+  io.observe(el);
 
-    let visible = true;
-    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
-    io.observe(el);
-
-    let raf = 0;
-    const frame = () => {
-      raf = requestAnimationFrame(frame);
-      if (!visible || document.hidden) return;
-      const still = reducedMotion();
-      const root = scrollRoot?.current ?? el;
-      const r = root.getBoundingClientRect();
-      const sp = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height * 0.9)));
-      burst += ((still ? 0 : sp) - burst) * 0.08;
-      if (!still) {
-        mx += (tmx - mx) * 0.05;
-        my += (tmy - my) * 0.05;
-        rot += 0.0035;
-      }
-      points.rotation.order = 'XYZ';
-      points.rotation.y = -(rot + mx * 0.5);
-      points.rotation.x = -0.32 + my * 0.25;
-      mat.uniforms.uBurst.value = burst;
-      renderer.render(scene, camera);
-    };
+  let raf = 0;
+  const frame = () => {
     raf = requestAnimationFrame(frame);
+    if (!visible || document.hidden) return;
+    const still = reducedMotion();
+    const root = scrollRoot?.current ?? el;
+    const r = root.getBoundingClientRect();
+    const sp = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height * 0.9)));
+    burst += ((still ? 0 : sp) - burst) * 0.08;
+    if (!still) {
+      mx += (tmx - mx) * 0.05;
+      my += (tmy - my) * 0.05;
+      rot += 0.0035;
+    }
+    points.rotation.order = 'XYZ';
+    points.rotation.y = -(rot + mx * 0.5);
+    points.rotation.x = -0.32 + my * 0.25;
+    mat.uniforms.uBurst.value = burst;
+    renderer.render(scene, camera);
+  };
+  raf = requestAnimationFrame(frame);
 
-    return () => {
-      cancelAnimationFrame(raf);
-      removeEventListener('pointermove', onMove);
-      ro.disconnect();
-      io.disconnect();
-      geo.dispose();
-      mat.dispose();
-      renderer.dispose();
-      renderer.domElement.remove();
-    };
-  }, [count, scrollRoot]);
-
-  return <div ref={host} aria-hidden style={{ position: 'absolute', inset: 0 }} />;
+  return () => {
+    cancelAnimationFrame(raf);
+    removeEventListener('pointermove', onMove);
+    ro.disconnect();
+    io.disconnect();
+    geo.dispose();
+    mat.dispose();
+    renderer.dispose();
+    renderer.domElement.remove();
+  };
 }
