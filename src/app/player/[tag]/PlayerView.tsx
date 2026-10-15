@@ -52,12 +52,14 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
   return (
     <>
       <SceneHeader
-        scene="/scenes/castle.jpg"
+        // Black-and-white Knight on the battlements (Gemini); keep its blue rim light.
+        scene="/scenes/player-knight.jpg"
+        sceneFilter="contrast(1.05) brightness(0.8)"
+        scenePosition="right top"
         height="clamp(440px, 55vh, 600px)"
         fog={1.2}
         extra={
           <>
-            {p.favourite?.render && <div className={s.char} style={{ backgroundImage: `url(${p.favourite.render})` }} title={`Favourite card: ${p.favourite.name}`} />}
             <div className={s.shade} />
           </>
         }
