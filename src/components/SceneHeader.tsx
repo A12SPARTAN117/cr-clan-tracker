@@ -14,6 +14,8 @@ export function SceneHeader({
   character,
   extra,
   fog = 1.1,
+  sceneFilter,
+  scenePosition,
   children,
   style,
 }: {
@@ -23,12 +25,15 @@ export function SceneHeader({
   character?: string | null;
   extra?: ReactNode;
   fog?: number;
+  /** Override the default greyscale treatment, e.g. for art that is already black and white. */
+  sceneFilter?: string;
+  scenePosition?: string;
   children: ReactNode;
   style?: CSSProperties;
 }) {
   return (
     <section className={s.scene} style={{ minHeight: height, ...style }}>
-      <div className={s.still} style={{ backgroundImage: `url(${scene})` }} />
+      <div className={s.still} style={{ backgroundImage: `url(${scene})`, filter: sceneFilter, backgroundPosition: scenePosition }} />
       <Fog density={fog} />
       <EmberField />
       {character && <div className={s.char} style={{ backgroundImage: `url(${character})` }} aria-hidden />}
