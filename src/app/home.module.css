@@ -257,8 +257,10 @@
 .ctaScene {
   position: absolute;
   inset: 0;
-  background: url('/scenes/war-room.jpg') center / cover no-repeat;
-  filter: grayscale(1) brightness(0.55);
+  /* Leaders' orders: glowing scrolls beside the war table. The embers keep their colour. */
+  background: url('/scenes/scrolls.jpg') right center / cover no-repeat;
+  filter: grayscale(0.55) saturate(1.2) brightness(0.7) contrast(1.05);
+  animation: oaPush 26s ease-in-out infinite alternate;
 }
 .ctaShade {
   position: absolute;
