@@ -24,8 +24,20 @@ function remember(rows: DirPlayer[]) {
   if (m.size > MEM_MAX) for (const k of [...m.keys()].slice(0, m.size - MEM_MAX)) m.delete(k);
 }
 
-/** Records players (deduped by tag). Never throws: search is best-effort. */
-export async function indexPlayers(input: { tag: string; name: string; clanTag?: string | null; clanName?: string | null; trophies?: number | null }[]) {
+/**
+ * Database writes go through one queue: the embedded Postgres (PGlite) is single-threaded and
+ * crashed under many concurrent upserts, which corrupted its data folder.
+ */
+let queue: Promise<unknown> = Promise.resolve();
+
+/**
+ * Records players (deduped by tag). Never throws: search is best-effort. `persist: false`
+ * keeps them in memory only (used for the bulk leaderboard seed, which is rebuilt daily).
+ */
+export async function indexPlayers(
+  input: { tag: string; name: string; clanTag?: string | null; clanName?: string | null; trophies?: number | null }[],
+  { persist = true }: { persist?: boolean } = {},
+) {
   const rows: DirPlayer[] = [
     ...new Map(
       input
@@ -35,6 +47,13 @@ export async function indexPlayers(input: { tag: string; name: string; clanTag?:
   ];
   if (!rows.length) return;
   remember(rows);
+  if (!persist) return;
+  const job = queue.then(() => persistRows(rows));
+  queue = job.catch(() => {});
+  return job;
+}
+
+async function persistRows(rows: DirPlayer[]) {
   const db = await getDb();
   if (!db) return;
   try {
@@ -124,7 +143,10 @@ export function seedDirectory(fetchers: {
           while (i < locs.length) {
             const loc = locs[i++];
             const items = await fetchers.board(loc.id).catch(() => []);
-            await indexPlayers(items.map((p) => ({ tag: p.tag, name: p.name, clanTag: p.clan?.tag, clanName: p.clan?.name })));
+            await indexPlayers(
+              items.map((p) => ({ tag: p.tag, name: p.name, clanTag: p.clan?.tag, clanName: p.clan?.name })),
+              { persist: false },
+            );
           }
         }),
       );
