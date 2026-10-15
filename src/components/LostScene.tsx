@@ -1,8 +1,9 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { Fog } from './fx/Fog';
 import { Reveal } from './fx/Reveal';
 
-type Variant = 'route' | 'player' | 'clan' | 'error';
+type Variant = 'route' | 'player' | 'clan' | 'error' | 'crash';
 
 const COPY: Record<Variant, { kicker: (t?: string) => string; big: string; headline: string; body: (t?: string) => string; bad: boolean }> = {
   route: {
@@ -34,17 +35,27 @@ const COPY: Record<Variant, { kicker: (t?: string) => string; big: string; headl
     body: () => 'The Clash Royale API did not answer. It may be in maintenance. Try again in a minute.',
     bad: true,
   },
+  crash: {
+    kicker: () => '● SERVER OVERLOADED',
+    big: '500',
+    headline: 'THE ARENA IS DOWN',
+    body: () => 'Something went wrong on our side while loading this page. Nothing is lost: give it a minute and try again.',
+    bad: true,
+  },
 };
 
-/** Full-height "Route Lost" scene: ruined arena, a lone Skeleton in the fog, carved 404. */
-export function LostScene({ variant = 'route', tag }: { variant?: Variant; tag?: string }) {
+/**
+ * Full-height "Route Lost" scene: ruined arena, a lone Skeleton in the fog, carved 404.
+ * `retry` swaps the primary button for "Try again"; `children` go under the buttons.
+ */
+export function LostScene({ variant = 'route', tag, retry, children }: { variant?: Variant; tag?: string; retry?: () => void; children?: ReactNode }) {
   const c = COPY[variant];
   return (
     <section
       style={{
         position: 'relative',
-        height: 'calc(100vh - 64px)',
-        minHeight: 560,
+        display: 'flex',
+        minHeight: 'max(560px, calc(100vh - 64px))',
         overflow: 'hidden',
         background: '#07080A',
         color: '#F3F4F6',
@@ -77,13 +88,13 @@ export function LostScene({ variant = 'route', tag }: { variant?: Variant; tag?:
       <div
         style={{
           position: 'relative',
-          height: '100%',
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           gap: 22,
-          padding: '0 24px 18vh',
+          padding: children ? '64px 24px 72px' : '0 24px 18vh',
           textAlign: 'center',
         }}
       >
@@ -92,7 +103,7 @@ export function LostScene({ variant = 'route', tag }: { variant?: Variant; tag?:
           as="h1"
           style={{
             margin: 0,
-            font: '800 clamp(110px,24vw,340px)/.8 var(--mono)',
+            font: children ? '800 clamp(96px,16vw,220px)/.8 var(--mono)' : '800 clamp(110px,24vw,340px)/.8 var(--mono)',
             letterSpacing: '-.08em',
             color: 'transparent',
             background: 'linear-gradient(180deg,#C9CCD2,#5A5E66)',
@@ -106,13 +117,26 @@ export function LostScene({ variant = 'route', tag }: { variant?: Variant; tag?:
         <h2 style={{ margin: 0, font: '700 clamp(22px,3vw,36px)/1.1 var(--mono)', letterSpacing: '-.03em' }}>{c.headline}</h2>
         <p style={{ margin: 0, maxWidth: 440, font: '400 16px/1.55 var(--sans)', color: '#A4A9B4', textWrap: 'pretty' }}>{c.body(tag)}</p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Link href="/" data-magnet="" className="btn" style={{ height: 46, background: '#F3F4F6', color: '#07080A' }}>
-            Back to the arena
-          </Link>
-          <Link href="/clans" className="btn btn-scene" style={{ height: 46 }}>
-            Search clans →
-          </Link>
+          {retry ? (
+            <button type="button" onClick={retry} data-magnet="" className="btn" style={{ height: 46, background: '#F3F4F6', color: '#07080A', border: 0, cursor: 'pointer' }}>
+              Try again
+            </button>
+          ) : (
+            <Link href="/" data-magnet="" className="btn" style={{ height: 46, background: '#F3F4F6', color: '#07080A' }}>
+              Back to the arena
+            </Link>
+          )}
+          {retry ? (
+            <Link href="/" className="btn btn-scene" style={{ height: 46 }}>
+              Back to the arena
+            </Link>
+          ) : (
+            <Link href="/clans" className="btn btn-scene" style={{ height: 46 }}>
+              Search clans →
+            </Link>
+          )}
         </div>
+        {children}
       </div>
     </section>
   );

@@ -36,6 +36,10 @@ next-env.d.ts
 # Local embedded Postgres (DATABASE_URL=pglite:./.data/pg)
 .data/
 
+# Generated from scripts/down-page/ by scripts/build-down-page.mjs
+/public/down.html
+/public/sw.js
+
 # test output
 /test-results/
 /playwright-report/
