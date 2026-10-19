@@ -91,5 +91,7 @@ export const players = pgTable(
     trophies: integer('trophies'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
+  // Name search ("contains") uses the trigram index players_name_trgm, created by hand in
+  // drizzle/0002_players_name_trigram.sql because drizzle can't declare gin_trgm_ops.
   (t) => [index('players_name_lower').on(t.nameLower)],
 );
