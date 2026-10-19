@@ -16,7 +16,7 @@ async function TopPlayers() {
   const r = await getPolLeaderboard('global', 10);
   if (!r.ok) return null;
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))', gap: 1, background: 'var(--hair)', border: '1px solid var(--hair)', borderRadius: 8, overflow: 'hidden' }}>
+    <div className="cells" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))' }}>
       {r.data.items.map((p) => (
         <Link
           key={p.tag}
@@ -56,7 +56,7 @@ async function PlayerResults({ searchParams }: { searchParams: Promise<Record<st
         <span className="label">{rows.length} results</span>
       </div>
       {rows.length ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))', gap: 1, background: 'var(--hair)', border: '1px solid var(--hair)', borderRadius: 8, overflow: 'hidden' }}>
+        <div className="cells" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))' }}>
           {rows.map((p) => (
             <Link key={p.tag} href={`/player/${p.tag}`} data-spot="" className="spot" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center', padding: '14px 16px', color: 'var(--text-1)' }}>
               <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>

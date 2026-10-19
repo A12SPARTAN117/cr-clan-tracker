@@ -82,7 +82,7 @@ export function MemberDrawer({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
               <h2 style={{ margin: 0, font: '800 clamp(30px,6vw,44px)/.95 var(--mono)', letterSpacing: '-.05em', wordBreak: 'break-word' }}>{m.name}</h2>
               <span style={{ font: '500 11px/1.5 var(--mono)', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--text-2)' }}>
-                #{m.tag} · {ROLE_LABEL[m.role]} · {m.joined ? `Joined ${dstr(new Date(m.joined))}` : m.isNew ? 'Joined this week' : `In clan ${tenureText(m)}`}
+                #{m.tag} · {ROLE_LABEL[m.role]} · {m.joined ? `Joined ${dstr(new Date(m.joined))}` : m.isNew ? 'Joined this week' : `Loyalty ${tenureText(m)}`}
               </span>
               <span
                 style={{

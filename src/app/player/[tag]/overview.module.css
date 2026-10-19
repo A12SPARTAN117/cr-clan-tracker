@@ -1,16 +1,29 @@
-/* Wrapping flex, not grid: 11 tiles never divide evenly, so the last row stretches to fill
-   instead of leaving empty cells. */
+/* Twelve tiles: even rows of 2, 3, 4 or 6, so there's never a part-filled row. */
 .tiles {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   background: var(--hair);
   border: 1px solid var(--hair);
   border-radius: 8px;
   overflow: hidden;
 }
+@media (min-width: 600px) {
+  .tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 900px) {
+  .tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1200px) {
+  .tiles {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
 .tile {
-  flex: 1 1 168px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -162,17 +175,18 @@
 .form {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(15, minmax(0, 1fr));
-  gap: 4px;
+  /* Ten across (three rows of the last 30), big enough to read the mode icon at a glance. */
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
 }
 .formCell {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 6px 0 5px;
-  border-radius: 5px;
-  font: 700 9px/1 var(--mono);
+  gap: 6px;
+  padding: 10px 0 8px;
+  border-radius: 6px;
+  font: 800 12px/1 var(--mono);
   background: var(--well);
   border: 1px solid var(--hair);
   color: var(--text-3);
@@ -188,7 +202,7 @@
 }
 @media (max-width: 600px) {
   .form {
-    grid-template-columns: repeat(10, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
 

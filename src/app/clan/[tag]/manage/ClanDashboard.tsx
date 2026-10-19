@@ -309,7 +309,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
                         ['Donations', fmt(m.donations)],
                         ['Last seen', m.hours < 24 ? `${Math.floor(m.hours)}h` : `${Math.floor(m.hours / 24)}d`],
                         ['War W%', m.warWin == null ? '—' : `${m.warWin}%`],
-                        ['In clan', tenureText(m)],
+                        ['Loyalty', tenureText(m)],
                       ] as const
                     ).map(([k, v]) => (
                       <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderTop: '1px solid var(--hair)', font: '500 12px/1 var(--mono)' }}>

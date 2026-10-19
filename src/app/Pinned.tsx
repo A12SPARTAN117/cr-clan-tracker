@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { ClanBadge } from '@/components/ui/ClanBadge';
 import { LeagueIcon, PolRating, ROLE_LABEL } from '@/components/ui/primitives';
-import { FameIcon, MembersIcon, TrophyIcon } from '@/components/ui/icons';
+import { FameIcon, MembersIcon, StreakIcon, TrophyIcon } from '@/components/ui/icons';
 import { fmt } from '@/lib/format';
 import { setPin, usePins } from '@/lib/pins';
 import type { ClanSummary, PlayerSummary } from '@/lib/summary';
@@ -105,8 +105,10 @@ export function Pinned() {
                     )}
                   </span>
                   {player.data.streak !== 0 && (
-                    <span style={{ font: '500 9px/1 var(--mono)', letterSpacing: '.14em', color: player.data.streak > 0 ? 'var(--blue)' : 'var(--ember)' }}>
-                      {player.data.streak > 0 ? `▲ W${player.data.streak} STREAK` : `▼ L${-player.data.streak} STREAK`}
+                    <span className={s.streakPill} data-kind={player.data.streak > 0 ? 'win' : 'loss'}>
+                      <StreakIcon size={14} />
+                      {player.data.streak > 0 ? `W${player.data.streak}` : `L${-player.data.streak}`}
+                      <small>{player.data.streak > 0 ? 'win' : 'loss'} streak</small>
                     </span>
                   )}
                 </div>

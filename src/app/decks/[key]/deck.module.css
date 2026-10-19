@@ -27,10 +27,13 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
   gap: 1px;
-  background: var(--hair);
-  border: 1px solid var(--hair);
+  padding: 1px;
   border-radius: 8px;
   overflow: hidden;
+}
+/* Lines drawn by the cells, so a part-filled row leaves no grey block (see .cells). */
+.facts > * {
+  box-shadow: 0 0 0 1px var(--hair);
 }
 .fact {
   display: flex;
