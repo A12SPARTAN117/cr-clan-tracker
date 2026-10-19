@@ -1,0 +1,98 @@
+.main {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: clamp(32px, 5vw, 64px) var(--gutter) 120px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(44px, 6vw, 72px);
+}
+.lead {
+  margin: 0;
+  font: 400 clamp(18px, 2vw, 21px) / 1.5 var(--sans);
+  color: var(--text-1);
+  text-wrap: pretty;
+}
+.donate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #5bb4ff, #2a6fd6);
+  box-shadow:
+    0 0 28px rgba(58, 160, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #07080a;
+  font: 800 12px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    transform 0.2s var(--ease-out),
+    box-shadow 0.2s;
+}
+.donate:hover {
+  color: #07080a;
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 40px rgba(58, 160, 255, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.donate[data-off] {
+  background: var(--slate);
+  box-shadow: none;
+  color: var(--text-2);
+  cursor: not-allowed;
+  transform: none;
+}
+.costs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+.cost {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background: var(--charcoal);
+}
+.cost b {
+  font: 800 15px/1 var(--mono);
+  letter-spacing: 0.02em;
+  color: var(--blue-hi);
+}
+.cost p {
+  margin: 0;
+  font: 400 14px/1.55 var(--sans);
+  color: var(--text-2);
+}
+.give {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid rgba(var(--glow-rgb), 0.5);
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(var(--glow-rgb), 0.22), transparent 60%),
+    radial-gradient(ellipse at 0% 100%, rgba(var(--gold-rgb), 0.1), transparent 60%),
+    var(--charcoal);
+  box-shadow: 0 0 40px rgba(var(--glow-rgb), 0.12);
+}
+.giveTitle {
+  font: 800 clamp(20px, 2.4vw, 26px) / 1.15 var(--mono);
+  letter-spacing: -0.03em;
+}
+@media (max-width: 599px) {
+  .donate {
+    width: 100%;
+  }
+}

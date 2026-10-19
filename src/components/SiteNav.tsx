@@ -23,6 +23,8 @@ const MENU = [
   ...LINKS.slice(0, 6),
   { href: '/cards', label: 'Cards', match: ['/cards'] },
   ...LINKS.slice(6),
+  { href: '/help', label: 'Help', match: ['/help'] },
+  { href: '/support', label: 'Support us', match: ['/support'] },
 ];
 
 const TABS = [

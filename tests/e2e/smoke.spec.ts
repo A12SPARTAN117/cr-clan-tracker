@@ -13,6 +13,8 @@ const ROUTES = [
   '/cards',
   '/cards/hog-rider',
   '/news',
+  '/help',
+  '/support',
   '/search?q=rosa',
   `/clan/${CLAN}`,
   `/clan/${CLAN}/manage`,
