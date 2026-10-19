@@ -3,36 +3,28 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #07080a;
-  color: #f3f4f6;
-  /* Header scenes are images, so they stay dark in both themes */
-  --text-1: #f3f4f6;
-  --text-2: #a4a9b4;
-  --text-3: #80868f;
-  --hair: rgba(255, 255, 255, 0.1);
-  --frame: rgba(255, 255, 255, 0.55);
-  --blue: #3aa0ff;
-  --blue-hi: #8ccbff;
+  background: var(--void);
+  color: var(--text-1);
 }
 .still {
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
-  filter: grayscale(1) contrast(1.1) brightness(0.65);
+  filter: var(--scene-fx);
 }
 .scrim {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(to bottom, rgba(7, 8, 10, 0.55) 0%, rgba(7, 8, 10, 0) 30%, rgba(7, 8, 10, 0.4) 60%, #07080a 100%),
-    radial-gradient(ellipse at center, rgba(7, 8, 10, 0) 40%, rgba(7, 8, 10, 0.75) 100%);
+    linear-gradient(to bottom, rgba(var(--void-rgb), 0.55) 0%, rgba(var(--void-rgb), 0) 30%, rgba(var(--void-rgb), 0.4) 60%, var(--void) 100%),
+    radial-gradient(ellipse at center, rgba(var(--void-rgb), 0) 40%, rgba(var(--void-rgb), 0.75) 100%);
 }
 .frame {
   position: absolute;
   inset: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(var(--ink-rgb), 0.55);
   border-radius: 4px;
   pointer-events: none;
 }
@@ -56,7 +48,7 @@
   font: 500 10px/1.4 var(--mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #a4a9b4;
+  color: var(--text-2);
 }
 .char {
   position: absolute;
@@ -67,12 +59,21 @@
   background-repeat: no-repeat;
   background-position: bottom center;
   background-size: contain;
-  filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(140, 203, 255, 0.75)) drop-shadow(0 0 30px rgba(58, 160, 255, 0.45));
+  filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.75)) drop-shadow(0 0 30px rgba(var(--glow-rgb), 0.45));
   transition: filter 0.6s ease-out;
   opacity: 0.85;
 }
 .char:hover {
-  filter: grayscale(0) brightness(1) drop-shadow(-2px 0 0 rgba(140, 203, 255, 0.75)) drop-shadow(0 0 30px rgba(58, 160, 255, 0.45));
+  filter: grayscale(0) brightness(1) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.75)) drop-shadow(0 0 30px rgba(var(--glow-rgb), 0.45));
+}
+:global([data-theme='light']) .scrim {
+  background:
+    linear-gradient(to bottom, rgba(var(--shade-rgb), 0.3) 0%, rgba(var(--shade-rgb), 0) 30%, rgba(var(--void-rgb), 0.35) 62%, var(--void) 100%),
+    radial-gradient(ellipse at center, rgba(var(--shade-rgb), 0) 42%, rgba(var(--shade-rgb), 0.45) 100%);
+}
+:global([data-theme='light']) .char {
+  filter: grayscale(1) brightness(1.08) contrast(0.95) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.7)) drop-shadow(0 0 24px rgba(var(--glow-rgb), 0.35));
+  opacity: 0.9;
 }
 @media (max-width: 760px) {
   .char {
@@ -83,7 +84,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .char:hover {
-    filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(140, 203, 255, 0.75));
+    filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.75));
   }
 }
 .inner {

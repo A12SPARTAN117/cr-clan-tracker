@@ -46,7 +46,7 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
       league: p.pol.current?.league ?? null,
       icon: (p.pol.current?.league ?? 0) >= 7 ? <MedalIcon size={18} title="Ultimate Champion medals" /> : undefined,
     },
-    { k: 'STREAK', v: streak, fg: run.kind === 'win' ? '#FFB35C' : run.kind === 'loss' ? '#FF5464' : '#F3F4F6', icon: run.kind === 'win' ? <StreakIcon size={18} /> : undefined },
+    { k: 'STREAK', v: streak, fg: run.kind === 'win' ? 'var(--streak)' : run.kind === 'loss' ? 'var(--ember)' : 'var(--text-1)', icon: run.kind === 'win' ? <StreakIcon size={18} /> : undefined },
   ];
 
   return (
@@ -66,7 +66,7 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
         status={
           <>
             {p.lastSeenHours != null && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#F3F4F6' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-1)' }}>
                 <span className="live-dot" />
                 Seen {p.lastSeenHours < 1 ? 'just now' : `${agoShort(p.lastSeenHours)} ago`}
               </span>
@@ -86,13 +86,13 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
                 flash('Tag copied');
               }}
             >
-              #{p.tag} <span style={{ color: '#80868F' }}>COPY</span>
+              #{p.tag} <span style={{ color: 'var(--text-3)' }}>COPY</span>
             </button>
             {p.clan && (
               <Link href={`/clan/${p.clan.tag}`} className={s.chip}>
                 {p.clan.name}
                 {p.role && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: p.role === 'leader' ? '#E6B34A' : '#F3F4F6' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: p.role === 'leader' ? 'var(--gold)' : 'var(--text-1)' }}>
                     <RoleIcon role={p.role} />
                     {ROLE_LABEL[p.role]}
                   </span>
@@ -107,11 +107,11 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
             {facts.map((f) => (
               <div key={f.k} className={s.fact}>
                 <span className={s.factK}>{f.k}</span>
-                <span className={s.factV} style={{ color: f.fg ?? '#F3F4F6' }}>
+                <span className={s.factV} style={{ color: f.fg ?? 'var(--text-1)' }}>
                   {f.league != null && <LeagueIcon league={f.league} size={22} />}
                   {f.icon}
                   <Decode>{f.v}</Decode>
-                  {f.sub && <span style={{ font: '500 11px/1 var(--mono)', color: '#80868F' }}>{f.sub}</span>}
+                  {f.sub && <span style={{ font: '500 11px/1 var(--mono)', color: 'var(--text-3)' }}>{f.sub}</span>}
                 </span>
               </div>
             ))}
@@ -123,8 +123,8 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
               className="btn"
               style={
                 pinned
-                  ? { background: 'transparent', color: '#8CCBFF', boxShadow: 'inset 0 0 0 1px rgba(58,160,255,.7),0 0 18px rgba(58,160,255,.3)' }
-                  : { background: '#F3F4F6', color: '#07080A' }
+                  ? { background: 'transparent', color: 'var(--blue-hi)', boxShadow: 'inset 0 0 0 1px rgba(var(--glow-rgb), .7),0 0 18px rgba(var(--glow-rgb), .3)' }
+                  : { background: 'var(--text-1)', color: 'var(--void)' }
               }
               onClick={() => {
                 setPin('player', pinned ? null : p.tag);
@@ -190,9 +190,9 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
             zIndex: 100,
             padding: '12px 18px',
             background: 'var(--obsidian)',
-            border: '1px solid rgba(58,160,255,.6)',
+            border: '1px solid rgba(var(--glow-rgb), .6)',
             borderRadius: 6,
-            boxShadow: '0 0 18px rgba(58,160,255,.35)',
+            boxShadow: '0 0 18px rgba(var(--glow-rgb), .35)',
             font: '500 11px/1 var(--mono)',
             letterSpacing: '.12em',
             textTransform: 'uppercase',

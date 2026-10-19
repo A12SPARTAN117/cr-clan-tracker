@@ -124,7 +124,7 @@ export function MemberDrawer({
                         height: '100%',
                         width: `${m.factors[k]}%`,
                         background: k === 'war' ? 'var(--blue)' : 'var(--text-2)',
-                        boxShadow: k === 'war' ? '0 0 8px rgba(58,160,255,.7)' : 'none',
+                        boxShadow: k === 'war' ? '0 0 8px rgba(var(--glow-rgb), .7)' : 'none',
                       }}
                     />
                   </span>

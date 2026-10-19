@@ -121,19 +121,19 @@ export function TagSearch({
   };
 
   let hint: string = defaultHint ?? HINTS[scope];
-  let hintFg = onScene ? '#A4A9B4' : 'var(--text-3)';
+  let hintFg = onScene ? 'var(--text-2)' : 'var(--text-3)';
   if (typo && c.kind === 'invalid') {
     hint = `"${c.bad}" can't appear in a tag. Tags only use 0 2 8 9 P Y L Q G R J C U V.`;
-    hintFg = onScene ? '#FF5464' : 'var(--ember)';
+    hintFg = 'var(--ember)';
   } else if (surelyTag(trimmed)) {
     hint = `Looks like a tag · Enter to open #${c.kind === 'valid' ? c.tag : ''}`;
-    hintFg = onScene ? '#8CCBFF' : 'var(--blue-hi)';
+    hintFg = 'var(--blue-hi)';
   } else if (trimmed.length >= 2) {
     hint = `Enter to see every ${scope === 'player' ? 'player' : scope === 'clan' ? 'clan' : 'player and clan'} matching "${trimmed}"`;
   }
 
-  const fg = onScene ? '#F3F4F6' : 'var(--text-1)';
-  const panelBg = onScene ? 'rgba(18,19,22,.96)' : 'var(--obsidian)';
+  const fg = 'var(--text-1)';
+  const panelBg = onScene ? 'var(--charcoal)' : 'var(--obsidian)';
   return (
     <div ref={box} style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <label
@@ -144,16 +144,16 @@ export function TagSearch({
           gap: 12,
           height: hero ? 68 : 56,
           padding: hero ? '0 10px 0 12px' : '0 8px 0 10px',
-          background: onScene ? 'rgba(18,19,22,.82)' : 'var(--obsidian)',
+          background: onScene ? 'var(--glass)' : 'var(--obsidian)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          border: `1px solid ${focus || surelyTag(trimmed) ? 'rgba(58,160,255,.7)' : typo ? 'rgba(255,84,100,.6)' : onScene ? 'rgba(255,255,255,.18)' : 'var(--hair)'}`,
+          border: `1px solid ${focus || surelyTag(trimmed) ? 'rgba(var(--glow-rgb), .7)' : typo ? 'rgba(var(--ember-rgb), .6)' : onScene ? 'rgba(var(--ink-rgb), .18)' : 'var(--hair)'}`,
           borderRadius: 8,
-          boxShadow: focus ? 'var(--glow)' : onScene ? '0 20px 60px rgba(0,0,0,.5)' : 'none',
+          boxShadow: focus ? 'var(--glow)' : onScene ? '0 20px 60px rgba(var(--shade-rgb), .35)' : 'none',
           transition: 'box-shadow .3s, border-color .3s',
         }}
       >
-        <span style={{ position: 'absolute', inset: 5, border: `1px solid ${onScene ? 'rgba(255,255,255,.14)' : 'var(--hair)'}`, borderRadius: 5, pointerEvents: 'none' }} />
+        <span style={{ position: 'absolute', inset: 5, border: `1px solid ${onScene ? 'rgba(var(--ink-rgb), .14)' : 'var(--hair)'}`, borderRadius: 5, pointerEvents: 'none' }} />
         <span
           aria-hidden
           style={{
@@ -164,10 +164,10 @@ export function TagSearch({
             width: hero ? 40 : 34,
             height: hero ? 40 : 34,
             borderRadius: 5,
-            background: onScene ? '#262930' : 'var(--slate)',
+            background: 'var(--slate)',
             font: `800 ${hero ? 18 : 15}px/1 var(--mono)`,
-            color: onScene ? '#8CCBFF' : 'var(--blue-hi)',
-            textShadow: '0 0 10px rgba(58,160,255,.8)',
+            color: 'var(--blue-hi)',
+            textShadow: '0 0 10px rgba(var(--glow-rgb), .8)',
           }}
         >
           {busy ? '…' : '#'}
@@ -211,7 +211,7 @@ export function TagSearch({
               outline: 'none',
               boxShadow: 'none',
               color: fg,
-              caretColor: '#3AA0FF',
+              caretColor: 'var(--blue)',
               font: `700 ${hero ? 'clamp(16px,2vw,22px)' : '16px'}/1 var(--mono)`,
               letterSpacing: '.06em',
             }}
@@ -224,8 +224,8 @@ export function TagSearch({
                 left: 0,
                 width: hero ? 12 : 10,
                 height: hero ? 24 : 20,
-                background: '#8CCBFF',
-                boxShadow: '0 0 10px rgba(58,160,255,.8)',
+                background: 'var(--blue-hi)',
+                boxShadow: '0 0 10px rgba(var(--glow-rgb), .8)',
                 animation: 'oaBlink 1.05s steps(1) infinite',
                 pointerEvents: 'none',
               }}
@@ -258,13 +258,13 @@ export function TagSearch({
             overflowY: 'auto',
             padding: 6,
             background: panelBg,
-            border: `1px solid ${onScene ? 'rgba(255,255,255,.18)' : 'var(--hair)'}`,
+            border: `1px solid ${onScene ? 'rgba(var(--ink-rgb), .18)' : 'var(--hair)'}`,
             borderRadius: 8,
-            boxShadow: '0 24px 60px rgba(0,0,0,.55)',
+            boxShadow: '0 24px 60px rgba(var(--shade-rgb), .4)',
             color: fg,
           }}
         >
-          {items.length === 0 && <div style={{ padding: '12px 10px', font: '500 11px/1 var(--mono)', letterSpacing: '.1em', color: '#80868F' }}>SEARCHING…</div>}
+          {items.length === 0 && <div style={{ padding: '12px 10px', font: '500 11px/1 var(--mono)', letterSpacing: '.1em', color: 'var(--text-3)' }}>SEARCHING…</div>}
           {items.map((it, i) => (
             <div
               key={`${it.kind}${it.tag}`}
@@ -284,23 +284,23 @@ export function TagSearch({
                 padding: '9px 10px',
                 borderRadius: 5,
                 cursor: 'pointer',
-                background: i === sel ? (onScene ? '#262930' : 'var(--slate)') : 'transparent',
+                background: i === sel ? 'var(--slate)' : 'transparent',
               }}
             >
               {it.kind === 'clan' && it.badgeId != null ? (
                 <ClanBadge badgeId={it.badgeId} size={26} />
               ) : (
-                <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#262930', font: '700 11px/1 var(--mono)', color: '#8CCBFF' }}>
+                <span style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--slate)', font: '700 11px/1 var(--mono)', color: 'var(--blue-hi)' }}>
                   {it.name.slice(0, 1).toUpperCase()}
                 </span>
               )}
               <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
                 <span style={{ font: '600 14px/1.15 var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.name}</span>
-                <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.08em', color: '#80868F', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.08em', color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {it.kind === 'player' ? 'PLAYER' : 'CLAN'} · {it.sub}
                 </span>
               </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '600 12px/1 var(--mono)', color: '#A4A9B4', whiteSpace: 'nowrap' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '600 12px/1 var(--mono)', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>
                 {it.kind === 'player' && it.trophies != null && (
                   <>
                     <TrophyIcon size={14} />
@@ -324,7 +324,7 @@ export function TagSearch({
                 e.preventDefault();
                 go();
               }}
-              style={{ padding: '10px', font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: '#8CCBFF', cursor: 'pointer' }}
+              style={{ padding: '10px', font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: 'var(--blue-hi)', cursor: 'pointer' }}
             >
               SEE ALL RESULTS FOR &quot;{trimmed.toUpperCase()}&quot; →
             </div>

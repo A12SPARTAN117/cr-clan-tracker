@@ -23,9 +23,38 @@
   --btn-bg: #f3f4f6;
   --btn-fg: #07080a;
 
-  --glow: 0 0 0 1px rgba(58, 160, 255, 0.6), 0 0 18px rgba(58, 160, 255, 0.45), 0 0 48px rgba(58, 160, 255, 0.18);
-  --tube: inset 0 -2px 0 #8ccbff, 0 8px 16px -10px rgba(58, 160, 255, 0.9);
-  --raised: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 20px rgba(0, 0, 0, 0.4);
+  /* Colour channels, so glows, lines and scrims can mix alpha and still follow the theme. */
+  --void-rgb: 7, 8, 10;
+  --ink-rgb: 255, 255, 255;
+  --glow-rgb: 58, 160, 255;
+  --glow-hi-rgb: 140, 203, 255;
+  --gold-rgb: 230, 179, 74;
+  --evo-rgb: 163, 91, 255;
+  --ember-rgb: 255, 84, 100;
+  --shade-rgb: 0, 0, 0;
+  --btn-shine: #fff;
+  --metal-hi: #c9ccd2;
+  --silver: #ddebff;
+  --streak: #ffb35c;
+  --metal-lo: #5a5e66;
+
+  --glow: 0 0 0 1px rgba(var(--glow-rgb), 0.6), 0 0 18px rgba(var(--glow-rgb), 0.45), 0 0 48px rgba(var(--glow-rgb), 0.18);
+  --tube: inset 0 -2px 0 var(--blue-hi), 0 8px 16px -10px rgba(var(--glow-rgb), 0.9);
+  --raised: inset 0 1px 0 rgba(var(--ink-rgb), 0.08), 0 8px 20px rgba(var(--shade-rgb), 0.4);
+  /* Header scene art filter: the dark art is pushed down so copy reads on top of it. */
+  --scene-fx: grayscale(1) contrast(1.1) brightness(0.65);
+
+  /* Scene art. Marble Day swaps in daylight versions (public/scenes/light). */
+  --art-arena: url('/scenes/arena.jpg');
+  --art-leaders-war-room: url('/scenes/leaders-war-room.jpg');
+  --art-player-knight: url('/scenes/player-knight.jpg');
+  --art-war-room: url('/scenes/war-room.jpg');
+  --art-deck-slot: url('/scenes/deck-slot.jpg');
+  --art-podium: url('/scenes/podium.jpg');
+  --art-scrolls: url('/scenes/scrolls.jpg');
+  --art-shields: url('/scenes/shields.jpg');
+  --art-obelisk: url('/scenes/obelisk.jpg');
+  --art-chest: url('/scenes/chest.jpg');
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
   --gutter: clamp(16px, 3vw, 40px);
@@ -39,25 +68,59 @@
 }
 
 [data-theme='light'] {
-  --void: #e7e7e4;
-  --charcoal: #f4f4f2;
-  --obsidian: #ffffff;
-  --slate: #ecece9;
-  --well: #dcdcd8;
-  --hair: rgba(12, 13, 15, 0.12);
-  --frame: rgba(12, 13, 15, 0.35);
-  --text-1: #0c0d0f;
-  --text-2: #3e4249;
-  --text-3: #5f646c;
-  --blue: #0a6bdb;
-  --blue-hi: #0a6bdb;
-  --ember: #c8283a;
-  --gold: #946508;
+  /* Marble Day: the same cold monochrome world under an overcast sky. Weathered stone greys
+     with real shadow, ink text, and the same electric blue glow. */
+  --void: #bfc5ce;
+  --charcoal: #cdd2d9;
+  --obsidian: #dce0e6;
+  --slate: #b3bac4;
+  --well: #a6aeb9;
+  --hair: rgba(14, 20, 30, 0.17);
+  --frame: rgba(14, 20, 30, 0.55);
+  --text-1: #080b10;
+  --text-2: #29303a;
+  --text-3: #454d59;
+  --blue: #0a63d6;
+  --blue-hi: #0656be;
+  --blue-deep: #0a48c9;
   --evo: #7a2fe0;
   --evo-hi: #7a2fe0;
-  --glass: rgba(244, 244, 242, 0.8);
-  --btn-bg: #0c0d0f;
-  --btn-fg: #f4f4f2;
+  --gold: #946508;
+  --gold-hi: #b07a0c;
+  --ember: #c8283a;
+  --glass: rgba(196, 202, 211, 0.8);
+  --btn-bg: #0b0d11;
+  --btn-fg: #e6e9ee;
+  --btn-shine: #3a4150;
+  --metal-hi: #7d848f;
+  --silver: #1f3d66;
+  --streak: #c2590a;
+  --metal-lo: #14171c;
+
+  --void-rgb: 191, 197, 206;
+  --ink-rgb: 12, 14, 18;
+  --glow-rgb: 0, 112, 255;
+  --glow-hi-rgb: 30, 110, 220;
+  --gold-rgb: 196, 136, 20;
+  --evo-rgb: 122, 47, 224;
+  --ember-rgb: 208, 40, 58;
+  --shade-rgb: 20, 28, 42;
+
+  --glow: 0 0 0 1px rgba(var(--glow-rgb), 0.65), 0 0 18px rgba(var(--glow-rgb), 0.45), 0 0 48px rgba(var(--glow-rgb), 0.2);
+  --tube: inset 0 -2px 0 var(--blue-hi), 0 8px 16px -10px rgba(var(--glow-rgb), 0.7);
+  --raised: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 10px 24px rgba(var(--shade-rgb), 0.22);
+  --scene-fx: grayscale(1) contrast(1.12) brightness(0.92);
+
+  --art-arena: url('/scenes/light/arena.jpg');
+  --art-leaders-war-room: url('/scenes/light/leaders-war-room.jpg');
+  --art-player-knight: url('/scenes/light/player-knight.jpg');
+  --art-war-room: url('/scenes/light/war-room.jpg');
+  --art-deck-slot: url('/scenes/light/deck-slot.jpg');
+  --art-podium: url('/scenes/light/podium.jpg');
+  --art-scrolls: url('/scenes/light/scrolls.jpg');
+  --art-shields: url('/scenes/light/shields.jpg');
+  --art-obelisk: url('/scenes/light/obelisk.jpg');
+  --art-chest: url('/scenes/light/chest.jpg');
   --vein: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='900'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.0025 0.012' numOctaves='5' seed='11'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.35'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.07'/></svg>");
   color-scheme: light;
 }
@@ -73,6 +136,14 @@ body {
   margin: 0;
   background: var(--void);
   color: var(--text-1);
+}
+
+[data-theme='light'] body {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(236, 240, 245, 0.75), transparent 70%),
+    radial-gradient(ellipse 120% 80% at 50% 120%, rgba(var(--shade-rgb), 0.18), transparent 70%),
+    var(--void);
+  background-attachment: fixed;
 }
 
 body {
@@ -116,6 +187,19 @@ img {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Scene stills set their own darkening inline for the night art; the daylight art is already
+   graded, so Marble Day shows it as is. */
+[data-theme='light'] [data-art] {
+  filter: grayscale(1) contrast(1.12) brightness(0.92) !important;
+}
+[data-theme='light'] [data-art='colour'] {
+  filter: none !important;
+}
+/* Character renders: lit figures with the blue rim instead of dim silhouettes. */
+[data-theme='light'] [data-figure] {
+  filter: grayscale(1) brightness(1.06) contrast(0.95) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.6)) drop-shadow(0 0 22px rgba(var(--glow-rgb), 0.3)) !important;
 }
 
 /* ---------- type helpers ---------- */
@@ -212,7 +296,7 @@ img {
 }
 .spot {
   background:
-    radial-gradient(220px circle at var(--mx, -400px) var(--my, -400px), rgba(58, 160, 255, 0.1), transparent 70%),
+    radial-gradient(220px circle at var(--mx, -400px) var(--my, -400px), rgba(var(--glow-rgb), 0.1), transparent 70%),
     var(--charcoal);
 }
 
@@ -233,14 +317,11 @@ img {
   white-space: nowrap;
 }
 .btn-primary {
-  background: linear-gradient(110deg, var(--btn-bg) 40%, #fff 50%, var(--btn-bg) 60%) 120% 0 / 250% 100%;
+  background: linear-gradient(110deg, var(--btn-bg) 40%, var(--btn-shine) 50%, var(--btn-bg) 60%) 120% 0 / 250% 100%;
   color: var(--btn-fg);
   transition:
     background-position 0.7s,
     box-shadow 0.3s;
-}
-[data-theme='light'] .btn-primary {
-  background: linear-gradient(110deg, var(--btn-bg) 40%, #2a2d33 50%, var(--btn-bg) 60%) 120% 0 / 250% 100%;
 }
 .btn-primary:hover {
   background-position: -20% 0;
@@ -261,16 +342,16 @@ img {
   border-color: var(--blue-hi);
   color: var(--text-1);
 }
-/* Buttons that sit on always-dark header scenes */
+/* Buttons that sit on header scenes */
 .btn-scene {
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: #f3f4f6;
+  border: 1px solid rgba(var(--ink-rgb), 0.28);
+  color: var(--text-1);
   font-weight: 500;
 }
 .btn-scene:hover {
-  border-color: #8ccbff;
-  color: #fff;
+  border-color: var(--blue-hi);
+  color: var(--text-1);
 }
 .btn-sm {
   height: 30px;
@@ -296,13 +377,13 @@ img {
 }
 .chip:hover {
   color: var(--text-1);
-  border-color: rgba(58, 160, 255, 0.5);
+  border-color: rgba(var(--glow-rgb), 0.5);
 }
 .chip[aria-pressed='true'] {
-  border-color: rgba(58, 160, 255, 0.7);
-  background: rgba(58, 160, 255, 0.12);
+  border-color: rgba(var(--glow-rgb), 0.7);
+  background: rgba(var(--glow-rgb), 0.12);
   color: var(--text-1);
-  box-shadow: 0 0 12px rgba(58, 160, 255, 0.3);
+  box-shadow: 0 0 12px rgba(var(--glow-rgb), 0.3);
 }
 
 /* ---------- live dot ---------- */
@@ -337,7 +418,7 @@ img {
   font: 500 13px/1 var(--sans);
 }
 .field:focus-within {
-  border-color: rgba(58, 160, 255, 0.7);
+  border-color: rgba(var(--glow-rgb), 0.7);
   box-shadow: var(--glow);
 }
 
@@ -359,7 +440,7 @@ img {
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--obsidian);
-  border: 1px solid rgba(58, 160, 255, 0.6);
+  border: 1px solid rgba(var(--glow-rgb), 0.6);
   font: 500 10px/1 var(--mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -447,7 +528,7 @@ a.news-card:hover {
   gap: 10px;
   align-items: center;
   padding: 10px 14px;
-  border: 1px dashed rgba(58, 160, 255, 0.45);
+  border: 1px dashed rgba(var(--glow-rgb), 0.45);
   border-radius: 6px;
   font: 500 10px/1.5 var(--mono);
   letter-spacing: 0.1em;
@@ -474,11 +555,11 @@ a.news-card:hover {
   0%,
   100% {
     opacity: 1;
-    box-shadow: 0 0 0 0 rgba(58, 160, 255, 0.7);
+    box-shadow: 0 0 0 0 rgba(var(--glow-rgb), 0.7);
   }
   50% {
     opacity: 0.55;
-    box-shadow: 0 0 0 6px rgba(58, 160, 255, 0);
+    box-shadow: 0 0 0 6px rgba(var(--glow-rgb), 0);
   }
 }
 @keyframes oaBlink {

@@ -57,13 +57,14 @@ export function LostScene({ variant = 'route', tag, retry, children }: { variant
         display: 'flex',
         minHeight: 'max(560px, calc(100vh - 64px))',
         overflow: 'hidden',
-        background: '#07080A',
-        color: '#F3F4F6',
+        background: 'var(--void)',
+        color: 'var(--text-1)',
       }}
     >
-      <div style={{ position: 'absolute', inset: 0, background: 'url(/scenes/arena.jpg) center/cover', filter: 'grayscale(1) brightness(.5)' }} />
+      <div data-art="" style={{ position: 'absolute', inset: 0, background: 'var(--art-arena) center/cover', filter: 'grayscale(1) brightness(.5)' }} />
       <div
         aria-hidden
+        data-figure=""
         style={{
           position: 'absolute',
           left: '50%',
@@ -72,7 +73,7 @@ export function LostScene({ variant = 'route', tag, retry, children }: { variant
           height: '38%',
           transform: 'translateX(-50%)',
           background: 'url(/characters/skeletons.png) bottom center/contain no-repeat',
-          filter: 'grayscale(1) brightness(.8) drop-shadow(-2px 0 0 rgba(140,203,255,.75)) drop-shadow(0 0 26px rgba(58,160,255,.45))',
+          filter: 'grayscale(1) brightness(.8) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), .75)) drop-shadow(0 0 26px rgba(var(--glow-rgb), .45))',
         }}
       />
       <Fog density={1.4} />
@@ -81,10 +82,10 @@ export function LostScene({ variant = 'route', tag, retry, children }: { variant
           position: 'absolute',
           inset: 0,
           pointerEvents: 'none',
-          background: 'linear-gradient(to bottom,rgba(7,8,10,.4),rgba(7,8,10,0) 30%,rgba(7,8,10,.3) 70%,#07080A),radial-gradient(ellipse at center,rgba(7,8,10,0) 40%,rgba(7,8,10,.8) 100%)',
+          background: 'linear-gradient(to bottom,rgba(var(--void-rgb), .4),rgba(var(--void-rgb), 0) 30%,rgba(var(--void-rgb), .3) 70%,var(--void)),radial-gradient(ellipse at center,rgba(var(--void-rgb), 0) 40%,rgba(var(--void-rgb), .8) 100%)',
         }}
       />
-      <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(255,255,255,.55)', borderRadius: 4, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(var(--ink-rgb), .55)', borderRadius: 4, pointerEvents: 'none' }} />
       <div
         style={{
           position: 'relative',
@@ -98,7 +99,7 @@ export function LostScene({ variant = 'route', tag, retry, children }: { variant
           textAlign: 'center',
         }}
       >
-        <span style={{ font: '500 10px/1.4 var(--mono)', letterSpacing: '.16em', color: c.bad ? '#FF5464' : '#A4A9B4' }}>{c.kicker(tag)}</span>
+        <span style={{ font: '500 10px/1.4 var(--mono)', letterSpacing: '.16em', color: c.bad ? 'var(--ember)' : 'var(--text-2)' }}>{c.kicker(tag)}</span>
         <Reveal
           as="h1"
           style={{
@@ -106,23 +107,23 @@ export function LostScene({ variant = 'route', tag, retry, children }: { variant
             font: children ? '800 clamp(96px,16vw,220px)/.8 var(--mono)' : '800 clamp(110px,24vw,340px)/.8 var(--mono)',
             letterSpacing: '-.08em',
             color: 'transparent',
-            background: 'linear-gradient(180deg,#C9CCD2,#5A5E66)',
+            background: 'linear-gradient(180deg,var(--metal-hi),var(--metal-lo))',
             WebkitBackgroundClip: 'text',
             backgroundClip: 'text',
-            filter: 'drop-shadow(0 0 30px rgba(58,160,255,.25))',
+            filter: 'drop-shadow(0 0 30px rgba(var(--glow-rgb), .25))',
           }}
         >
           {c.big}
         </Reveal>
         <h2 style={{ margin: 0, font: '700 clamp(22px,3vw,36px)/1.1 var(--mono)', letterSpacing: '-.03em' }}>{c.headline}</h2>
-        <p style={{ margin: 0, maxWidth: 440, font: '400 16px/1.55 var(--sans)', color: '#A4A9B4', textWrap: 'pretty' }}>{c.body(tag)}</p>
+        <p style={{ margin: 0, maxWidth: 440, font: '400 16px/1.55 var(--sans)', color: 'var(--text-2)', textWrap: 'pretty' }}>{c.body(tag)}</p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
           {retry ? (
-            <button type="button" onClick={retry} data-magnet="" className="btn" style={{ height: 46, background: '#F3F4F6', color: '#07080A', border: 0, cursor: 'pointer' }}>
+            <button type="button" onClick={retry} data-magnet="" className="btn" style={{ height: 46, background: 'var(--text-1)', color: 'var(--void)', border: 0, cursor: 'pointer' }}>
               Try again
             </button>
           ) : (
-            <Link href="/" data-magnet="" className="btn" style={{ height: 46, background: '#F3F4F6', color: '#07080A' }}>
+            <Link href="/" data-magnet="" className="btn" style={{ height: 46, background: 'var(--text-1)', color: 'var(--void)' }}>
               Back to the arena
             </Link>
           )}

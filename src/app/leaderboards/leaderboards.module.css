@@ -2,13 +2,13 @@
   position: relative;
   height: clamp(500px, 58vh, 640px);
   overflow: hidden;
-  background: #07080a;
-  color: #f3f4f6;
+  background: var(--void);
+  color: var(--text-1);
 }
 .scene {
   position: absolute;
   inset: 0;
-  background: url('/scenes/podium.jpg') center / cover no-repeat;
+  background: var(--art-podium) center / cover no-repeat;
   filter: grayscale(1) brightness(0.45);
 }
 .crown {
@@ -20,6 +20,9 @@
   transform: translateX(-50%);
   pointer-events: none;
   animation: oaSway 9s ease-in-out infinite;
+}
+:global([data-theme='light']) .scene {
+  filter: var(--scene-fx);
 }
 @keyframes oaSway {
   0%,
@@ -34,12 +37,12 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(to bottom, rgba(7, 8, 10, 0.4), rgba(7, 8, 10, 0) 30%, rgba(7, 8, 10, 0.2) 70%, #07080a);
+  background: linear-gradient(to bottom, rgba(var(--void-rgb), 0.4), rgba(var(--void-rgb), 0) 30%, rgba(var(--void-rgb), 0.2) 70%, var(--void));
 }
 .frame {
   position: absolute;
   inset: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(var(--ink-rgb), 0.55);
   border-radius: 4px;
   pointer-events: none;
 }
@@ -60,16 +63,16 @@
   align-items: center;
   gap: 12px;
   width: clamp(104px, 18vw, 240px);
-  color: #f3f4f6;
+  color: var(--text-1);
 }
 .step:hover {
-  color: #fff;
+  color: var(--text-1);
 }
 .block {
   width: 100%;
   border-radius: 6px 6px 0 0;
-  background: linear-gradient(#1a1c20, #0b0c0e);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(var(--obsidian), var(--well));
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
   border-bottom: 0;
   display: flex;
   justify-content: center;

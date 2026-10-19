@@ -14,12 +14,12 @@
   border: 1px solid var(--hair);
   border-radius: 10px;
   background:
-    radial-gradient(320px circle at var(--mx, -500px) var(--my, -500px), rgba(58, 160, 255, 0.09), transparent 70%),
+    radial-gradient(320px circle at var(--mx, -500px) var(--my, -500px), rgba(var(--glow-rgb), 0.09), transparent 70%),
     var(--charcoal);
   transition: border-color 0.2s;
 }
 .block:hover {
-  border-color: rgba(58, 160, 255, 0.4);
+  border-color: rgba(var(--glow-rgb), 0.4);
 }
 .head {
   display: flex;
@@ -121,7 +121,7 @@ a.name:hover {
 }
 .win[data-tone='strong'] b {
   color: var(--blue-hi);
-  text-shadow: 0 0 12px rgba(58, 160, 255, 0.55);
+  text-shadow: 0 0 12px rgba(var(--glow-rgb), 0.55);
 }
 .win[data-tone='weak'] b {
   color: var(--ember);

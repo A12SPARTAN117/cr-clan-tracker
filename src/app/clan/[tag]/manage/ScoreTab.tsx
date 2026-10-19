@@ -62,7 +62,7 @@ export function ScoreTab({ clanName, members, weights, onChange }: { clanName: s
                 <span style={{ font: '700 12px/1 var(--mono)', color: 'var(--text-3)' }}>{String(m.rank).padStart(2, '0')}</span>
                 <span style={{ font: '600 14px/1.1 var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
                 <span className={s.previewBar}>
-                  <span style={{ display: 'block', height: '100%', width: `${m.score}%`, background: 'var(--blue)', boxShadow: '0 0 8px rgba(58,160,255,.7)', transition: 'width .4s' }} />
+                  <span style={{ display: 'block', height: '100%', width: `${m.score}%`, background: 'var(--blue)', boxShadow: '0 0 8px rgba(var(--glow-rgb), .7)', transition: 'width .4s' }} />
                 </span>
                 <span style={{ textAlign: 'right', font: '700 13px/1 var(--mono)' }}>{m.score}</span>
                 <span style={{ textAlign: 'right', font: '600 11px/1 var(--mono)', color: mv > 0 ? 'var(--blue)' : mv < 0 ? 'var(--ember)' : 'var(--text-3)' }}>
