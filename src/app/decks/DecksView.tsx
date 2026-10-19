@@ -50,12 +50,16 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
   }, [legacy, params, router]);
 
   const m = meta.modes[mode];
+  // A 2-game deck at 100% isn't a real win rate, so "highest win %" only ranks decks with enough
+  // games behind them (10, or 5 in thin modes).
+  const minWinGames = m.decks.some((d) => d.games >= 10) ? 10 : 5;
   const decks = useMemo(
     () =>
       m.decks
         .filter((d) => (!inc || d.cards.some((c) => c.slug === inc)) && (!exc || !d.cards.some((c) => c.slug === exc)))
+        .filter((d) => sort === 'use' || d.games >= minWinGames)
         .sort((a, b) => (sort === 'use' ? b.games - a.games : b.win - a.win || b.games - a.games)),
-    [m, inc, exc, sort],
+    [m, inc, exc, sort, minWinGames],
   );
   const cardOpts = useMemo(() => [...new Map(m.decks.flatMap((d) => d.cards).map((c) => [c.slug, c.name])).entries()].sort((a, b) => a[1].localeCompare(b[1])), [m]);
 
@@ -141,9 +145,10 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
                     <button type="button" className="chip" aria-pressed={sort === 'use'} onClick={() => setSort('use')}>
                       Most used
                     </button>
-                    <button type="button" className="chip" aria-pressed={sort === 'win'} onClick={() => setSort('win')}>
+                    <button type="button" className="chip" aria-pressed={sort === 'win'} onClick={() => setSort('win')} title={`Decks with ${minWinGames}+ games`}>
                       Highest win %
                     </button>
+                    {sort === 'win' && <span className="label-sm">{minWinGames}+ games</span>}
                   </div>
                   {[
                     ['INCLUDES', inc, setInc],

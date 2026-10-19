@@ -4,7 +4,8 @@ import { Suspense } from 'react';
 import { Reveal } from '@/components/fx/Reveal';
 import { EmptyState } from '@/components/EmptyState';
 import { ClanBadge } from '@/components/ui/ClanBadge';
-import { getClanWarRankings, getLocations, searchClans } from '@/lib/cr/api';
+import { getClan, getClanWarRankings, getLocations, searchClans } from '@/lib/cr/api';
+import { pool } from '@/lib/pool';
 import type { Clan } from '@/lib/cr/types';
 import { fmt } from '@/lib/format';
 import { MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
@@ -91,11 +92,27 @@ async function Results({ searchParams }: { searchParams: Promise<Record<string, 
   } else {
     const r = await getClanWarRankings(loc ?? 'global', 60);
     failed = !r.ok;
-    // In the clan-war ranking, clanScore holds the war trophies.
-    rows = r.ok ? r.data.items.map((c) => ({ ...c, clanWarTrophies: c.clanScore ?? c.clanWarTrophies, rank: c.rank })) : [];
+    // The ranking has no clan type or required trophies, so each clan's own record fills them
+    // in (cached per clan); otherwise the type filter would have nothing to filter on.
+    const details = r.ok ? await pool(r.data.items, 12, (c) => getClan(c.tag.replace('#', ''))) : [];
+    rows = r.ok
+      ? r.data.items.map((c, i) => {
+          const d = details[i]?.ok ? details[i].data : null;
+          // In the clan-war ranking, clanScore holds the war trophies.
+          return {
+            ...c,
+            clanWarTrophies: c.clanScore ?? c.clanWarTrophies,
+            rank: c.rank,
+            members: d?.members ?? c.members,
+            type: d?.type,
+            requiredTrophies: d?.requiredTrophies,
+            location: d?.location ?? c.location,
+          };
+        })
+      : [];
     title = 'Top war clans';
   }
-  const list = rows.filter((c) => (c.clanWarTrophies ?? 0) >= minW && (!type || type === 'all' || !c.type || c.type === type) && c.members >= minM);
+  const list = rows.filter((c) => (c.clanWarTrophies ?? 0) >= minW && (!type || type === 'all' || c.type === type) && c.members >= minM);
 
   return (
     <section data-results="" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

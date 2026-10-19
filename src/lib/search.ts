@@ -1,8 +1,7 @@
 import 'server-only';
 import { connection } from 'next/server';
-import { getClan, getLocations, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
+import { getClan, getClanRankings, getClanWarRankings, getLocations, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
 import { findPlayersByName, indexPlayers, rankByName, seedDirectory, type DirPlayer } from './directory';
-import { getDb } from './db';
 import { checkTag } from './tags';
 
 /**
@@ -30,9 +29,10 @@ const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
 export async function search(raw: string, scope: SearchScope = 'all', limit = 100): Promise<SearchResults> {
   await connection(); // per-request: results depend on the live directory
-  // With a database the cron job (/api/cron/directory) fills the directory; without one,
-  // seed it in this server's memory instead (only useful on a long-running server).
-  if (!(await getDb())) seedDirectory({
+  // Seed this server's directory (Path of Legends boards, then top clans' rosters) once a day in
+  // the background. With a database the rosters are saved too, and the cron job
+  // (/api/cron/directory) keeps it fresh on hosts where memory doesn't last.
+  seedDirectory({
     locations: async () => {
       const r = await getLocations();
       return r.ok ? r.data.items : [];
@@ -40,6 +40,14 @@ export async function search(raw: string, scope: SearchScope = 'all', limit = 10
     board: async (loc) => {
       const r = await getPolLeaderboard(loc, 1000);
       return r.ok ? r.data.items : [];
+    },
+    clans: async (loc, limit) => {
+      const [war, trophy] = await Promise.all([getClanWarRankings(loc, limit), loc === 'global' ? getClanRankings(loc, limit) : null]);
+      return [...(war.ok ? war.data.items : []), ...(trophy?.ok ? trophy.data.items : [])].map((c) => bare(c.tag));
+    },
+    roster: async (tag) => {
+      const r = await getClan(tag);
+      return r.ok ? r.data : null;
     },
   });
   const q = raw.trim();
