@@ -155,13 +155,54 @@ export function MembersIcon(p: P) {
   );
 }
 
-/** King level: blue experience star. */
-export function ExpIcon(p: P) {
+/**
+ * Real game art (public/ui, from RoyaleAPI/cr-api-assets) where it exists, sized like the drawn
+ * icons: `size` is the height.
+ */
+function Art({ src, size = 16, title, style }: P & { src: string }) {
   return (
-    <Svg {...p}>
-      <path d="M12 1.5L15 8.2L22.2 8.9L16.8 13.8L18.3 21L12 17.3L5.7 21L7.2 13.8L1.8 8.9L9 8.2Z" fill="#3AA0FF" stroke="#0A48C9" strokeWidth="1.2" strokeLinejoin="round" />
-      <path d="M12 5.5L13.3 9.6" stroke="#fff" strokeOpacity=".6" strokeWidth="1.4" strokeLinecap="round" />
-    </Svg>
+    // eslint-disable-next-line @next/next/no-img-element -- tiny static game art
+    <img
+      src={src}
+      alt={title ?? ''}
+      title={title}
+      height={size}
+      width={size}
+      aria-hidden={title ? undefined : true}
+      style={{ flex: 'none', display: 'inline-block', verticalAlign: 'middle', objectFit: 'contain', ...style }}
+    />
+  );
+}
+
+/** King level: the game's blue experience star. */
+export function ExpIcon(p: P) {
+  return <Art src="/ui/experience.png" {...p} />;
+}
+
+/** The king level as the game shows it: the number on the experience star. */
+export function KingLevel({ level, size = 28, title }: { level: number | null | undefined; size?: number; title?: string }) {
+  return (
+    <span
+      role="img"
+      aria-label={title ?? `King level ${level ?? '—'}`}
+      style={{ position: 'relative', display: 'inline-grid', placeItems: 'center', width: size, height: size, flex: 'none', verticalAlign: 'middle' }}
+    >
+      <Art src="/ui/experience.png" size={size} style={{ position: 'absolute', inset: 0 }} />
+      <span
+        aria-hidden
+        style={{
+          position: 'relative',
+          font: `800 ${Math.round(size * (String(level ?? '').length > 2 ? 0.34 : 0.42))}px/1 var(--sans)`,
+          color: '#fff',
+          // The game's look: white digits with a thick navy outline drawn under the fill.
+          WebkitTextStroke: `${Math.max(2, Math.round(size / 9))}px #062a66`,
+          paintOrder: 'stroke fill',
+          letterSpacing: '-.02em',
+        }}
+      >
+        {level ?? '—'}
+      </span>
+    </span>
   );
 }
 
@@ -229,15 +270,9 @@ export function WinRateIcon(p: P) {
   );
 }
 
-/** Chest: challenge / tournament cards won. */
+/** Chest: challenge / tournament cards won. The game's magical chest. */
 export function ChestIcon(p: P) {
-  return (
-    <Svg {...p}>
-      <path d="M3 10C3 5.5 6.5 4 12 4S21 5.5 21 10Z" fill="#B8742A" stroke="#5C3510" strokeWidth="1" />
-      <rect x="3" y="10" width="18" height="10" rx="1.5" fill="#9A5B1E" stroke="#5C3510" strokeWidth="1" />
-      <rect x="10" y="8.5" width="4" height="5" rx="1" fill="#F2B83A" stroke="#7A4A08" strokeWidth=".8" />
-    </Svg>
-  );
+  return <Art src="/ui/chest-magical.png" {...p} />;
 }
 
 /** Badge / achievement star. */
