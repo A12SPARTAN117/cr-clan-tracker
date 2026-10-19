@@ -63,7 +63,7 @@ async function MetaPanel({ slug, isTower }: { slug: string; isTower: boolean }) 
       </div>
       {pol && special >= 10 && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div style={{ padding: 16, border: '1px solid rgba(163,91,255,.5)', borderRadius: 6, boxShadow: '0 0 18px rgba(163,91,255,.15)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ padding: 16, border: '1px solid rgba(var(--evo-rgb), .5)', borderRadius: 6, boxShadow: '0 0 18px rgba(var(--evo-rgb), .15)', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span style={{ font: '500 9px/1 var(--mono)', letterSpacing: '.14em', color: pol.evoGames >= pol.heroGames ? 'var(--evo-hi)' : 'var(--gold)' }}>
               ◆ {pol.evoGames >= pol.heroGames ? 'EVOLVED' : 'HERO'}
             </span>

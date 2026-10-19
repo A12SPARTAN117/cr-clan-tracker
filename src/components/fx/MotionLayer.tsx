@@ -126,7 +126,7 @@ export function MotionLayer() {
         pointerEvents: 'none',
         opacity: 0,
         transition: 'opacity .5s cubic-bezier(.65,0,.35,1)',
-        background: 'radial-gradient(ellipse at 50% 60%,rgba(58,160,255,.10),rgba(7,8,10,0) 60%),#07080A',
+        background: 'radial-gradient(ellipse at 50% 60%,rgba(var(--glow-rgb), .10),rgba(var(--void-rgb), 0) 60%),var(--void)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

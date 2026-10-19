@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { reducedMotion } from './motion';
+import { getTheme, reducedMotion } from './motion';
 
 /** Drifting fog puffs and rising dust motes, drawn on a canvas that fills its parent. */
 export function Fog({ density = 1 }: { density?: number }) {
@@ -46,8 +46,10 @@ export function Fog({ density = 1 }: { density?: number }) {
       raf = requestAnimationFrame(frame);
       if (!visible || document.hidden) return;
       const still = reducedMotion();
+      // Obsidian adds light; Marble Day lays white mist over pale art, so it paints normally.
+      const light = getTheme() === 'light';
       x.clearRect(0, 0, W, H);
-      x.globalCompositeOperation = 'lighter';
+      x.globalCompositeOperation = light ? 'source-over' : 'lighter';
       for (const p of puffs) {
         if (!still) {
           p.x += p.v * 16;
@@ -56,8 +58,13 @@ export function Fog({ density = 1 }: { density?: number }) {
         }
         const R = p.r * Math.max(W, H);
         const g = x.createRadialGradient(p.x * W, p.y * H, 0, p.x * W, p.y * H, R);
-        g.addColorStop(0, p.b ? 'rgba(58,160,255,0.07)' : 'rgba(200,210,225,0.05)');
-        g.addColorStop(1, 'rgba(0,0,0,0)');
+        if (light) {
+          g.addColorStop(0, p.b ? 'rgba(20,122,240,0.06)' : 'rgba(255,255,255,0.32)');
+          g.addColorStop(1, 'rgba(255,255,255,0)');
+        } else {
+          g.addColorStop(0, p.b ? 'rgba(58,160,255,0.07)' : 'rgba(200,210,225,0.05)');
+          g.addColorStop(1, 'rgba(0,0,0,0)');
+        }
         x.fillStyle = g;
         x.fillRect(p.x * W - R, p.y * H - R, R * 2, R * 2);
       }
@@ -71,7 +78,7 @@ export function Fog({ density = 1 }: { density?: number }) {
           }
         }
         const a = 0.25 + 0.35 * Math.sin(m.p + t * 0.001);
-        x.fillStyle = `rgba(160,205,255,${a.toFixed(3)})`;
+        x.fillStyle = light ? `rgba(20,110,225,${(a * 0.7).toFixed(3)})` : `rgba(160,205,255,${a.toFixed(3)})`;
         x.beginPath();
         x.arc(m.x * W + Math.sin(m.p) * 6, m.y * H, m.s, 0, 6.283);
         x.fill();

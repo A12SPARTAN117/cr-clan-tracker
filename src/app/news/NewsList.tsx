@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import type { NewsPost, NewsTag } from '@/content/news';
+import { art } from '@/lib/art';
 import { dstr } from '@/lib/format';
 import { TAG_FG } from './tags';
 
@@ -29,11 +30,11 @@ export function NewsList({ posts }: { posts: NewsPost[] }) {
                 aspectRatio: '16/10',
                 borderRadius: 6,
                 overflow: 'hidden',
-                background: `var(--obsidian) url(${p.scene}) center/cover`,
+                background: `var(--obsidian) ${art(p.scene)} center/cover`,
                 filter: 'grayscale(1) brightness(.85)',
               }}
             >
-              <span style={{ position: 'absolute', inset: 10, border: '1px solid rgba(255,255,255,.45)', borderRadius: 3 }} />
+              <span style={{ position: 'absolute', inset: 10, border: '1px solid rgba(var(--ink-rgb), .45)', borderRadius: 3 }} />
             </div>
             <span style={{ display: 'flex', gap: 12, font: '500 9px/1 var(--mono)', letterSpacing: '.14em' }}>
               <span style={{ color: TAG_FG[p.tag] }}>{p.tag}</span>

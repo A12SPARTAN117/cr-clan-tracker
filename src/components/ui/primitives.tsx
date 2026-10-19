@@ -39,7 +39,7 @@ export function RoleIcon({ role }: { role: ApiRole }) {
 export function RoleChip({ role }: { role: ApiRole }) {
   const sty: CSSProperties =
     role === 'leader'
-      ? { borderColor: 'rgba(230,179,74,.6)', color: 'var(--gold)' }
+      ? { borderColor: 'rgba(var(--gold-rgb), .6)', color: 'var(--gold)' }
       : role === 'coLeader'
         ? { borderColor: 'var(--frame)', color: 'var(--text-1)' }
         : role === 'elder'
@@ -86,7 +86,7 @@ export function ActivityDot({ hours }: { hours: number }) {
         borderRadius: '50%',
         background: a === 'active' ? c : 'transparent',
         border: `1.5px solid ${c}`,
-        boxShadow: a === 'active' ? '0 0 6px rgba(58,160,255,.8)' : 'none',
+        boxShadow: a === 'active' ? '0 0 6px rgba(var(--glow-rgb), .8)' : 'none',
       }}
     />
   );
@@ -119,7 +119,7 @@ export function ScoreGauge({ score, size = 32, big = false, label }: { score: nu
   if (big) {
     return (
       <div style={{ position: 'relative', flex: 'none', width: size, height: size }}>
-        <svg width={size} height={size} viewBox="0 0 120 120" style={{ filter: `drop-shadow(0 0 ${Math.round(score / 8)}px rgba(58,160,255,.7))` }} aria-hidden>
+        <svg width={size} height={size} viewBox="0 0 120 120" style={{ filter: `drop-shadow(0 0 ${Math.round(score / 8)}px rgba(var(--glow-rgb), .7))` }} aria-hidden>
           <circle cx="60" cy="60" r="50" fill="none" stroke="var(--hair)" strokeWidth="2" />
           <circle cx="60" cy="60" r="44" fill="none" stroke="var(--hair)" strokeWidth="1" />
           <circle
@@ -149,7 +149,7 @@ export function ScoreGauge({ score, size = 32, big = false, label }: { score: nu
         width={size}
         height={size}
         viewBox="0 0 36 36"
-        style={{ filter: score >= 70 ? `drop-shadow(0 0 ${Math.round(score / 20)}px rgba(58,160,255,.8))` : 'none' }}
+        style={{ filter: score >= 70 ? `drop-shadow(0 0 ${Math.round(score / 20)}px rgba(var(--glow-rgb), .8))` : 'none' }}
         aria-hidden
       >
         <circle cx="18" cy="18" r="15" fill="none" stroke="var(--hair)" strokeWidth="3" />
@@ -189,10 +189,10 @@ export function heatStyle(n: HeatValue): { style: CSSProperties; text: string; t
   const a = [0, 0.22, 0.42, 0.66, 1][Math.max(0, Math.min(4, n))];
   return {
     style: {
-      background: n ? `rgba(58,160,255,${a})` : 'var(--well)',
-      boxShadow: n >= 4 ? '0 0 10px rgba(58,160,255,.6),inset 0 0 0 1px rgba(140,203,255,.7)' : n ? 'none' : 'inset 0 1px 2px rgba(0,0,0,.6)',
+      background: n ? `rgba(var(--glow-rgb), ${a})` : 'var(--well)',
+      boxShadow: n >= 4 ? '0 0 10px rgba(var(--glow-rgb), .6),inset 0 0 0 1px rgba(var(--glow-hi-rgb), .7)' : n ? 'none' : 'inset 0 1px 2px rgba(var(--shade-rgb), .6)',
       border: n ? 0 : '1px solid var(--hair)',
-      color: n >= 3 ? '#07080A' : n ? 'var(--text-1)' : 'var(--text-3)',
+      color: n >= 3 ? 'var(--void)' : n ? 'var(--text-1)' : 'var(--text-3)',
     },
     text: String(n),
     title: `${n} deck${n === 1 ? '' : 's'}`,

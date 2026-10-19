@@ -250,11 +250,11 @@ function TrophyChart({ points }: { points: { day: string; trophies: number }[] }
           <line key={y} x1="0" x2="1000" y1={y} y2={y} stroke="var(--hair)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
         ))}
         <polyline points={line} fill="none" stroke="var(--text-1)" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
-        <polyline points={bestLine} fill="none" stroke="#3AA0FF" strokeWidth="1.2" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
+        <polyline points={bestLine} fill="none" stroke="var(--blue)" strokeWidth="1.2" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
         {hover != null && (
           <>
-            <line x1={X(hover)} x2={X(hover)} y1="0" y2="240" stroke="rgba(140,203,255,.5)" vectorEffect="non-scaling-stroke" />
-            <circle cx={X(hover)} cy={Y(vals[hover])} r="5" fill="#8CCBFF" style={{ filter: 'drop-shadow(0 0 6px #3AA0FF)' }} />
+            <line x1={X(hover)} x2={X(hover)} y1="0" y2="240" stroke="rgba(var(--glow-hi-rgb), .5)" vectorEffect="non-scaling-stroke" />
+            <circle cx={X(hover)} cy={Y(vals[hover])} r="5" fill="var(--blue-hi)" style={{ filter: 'drop-shadow(0 0 6px var(--blue))' }} />
           </>
         )}
       </svg>
@@ -268,7 +268,7 @@ function TrophyChart({ points }: { points: { day: string; trophies: number }[] }
           TROPHIES
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ width: 16, borderTop: '1.5px dashed #3AA0FF' }} />
+          <span style={{ width: 16, borderTop: '1.5px dashed var(--blue)' }} />
           BEST SO FAR
         </span>
       </div>

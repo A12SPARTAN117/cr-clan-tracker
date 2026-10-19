@@ -60,14 +60,14 @@ export function CardTile(p: CardTileProps) {
   const glow = !owned
     ? 'grayscale(1)'
     : evo && hero
-      ? 'drop-shadow(0 0 6px rgba(163,91,255,.55)) drop-shadow(0 0 6px rgba(230,179,74,.4))'
+      ? 'drop-shadow(0 0 6px rgba(var(--evo-rgb), .55)) drop-shadow(0 0 6px rgba(var(--gold-rgb), .4))'
       : evo
         ? 'drop-shadow(0 0 7px rgba(199,155,255,.6))'
         : hero
           ? 'drop-shadow(0 0 7px rgba(245,213,138,.5))'
           : p.active
-            ? 'drop-shadow(0 0 8px rgba(58,160,255,.8))'
-            : 'drop-shadow(0 6px 10px rgba(0,0,0,.45))';
+            ? 'drop-shadow(0 0 8px rgba(var(--glow-rgb), .8))'
+            : 'drop-shadow(0 6px 10px rgba(var(--shade-rgb), .45))';
 
   const tag = [rarity === 'tower' ? 'Tower' : rarity, evo ? 'Evo' : '', hero ? 'Hero' : '', owned ? '' : 'Not owned']
     .filter(Boolean)
@@ -112,9 +112,9 @@ export function CardTile(p: CardTileProps) {
               padding: 4,
               borderRadius: 6,
               textAlign: 'center',
-              background: 'repeating-linear-gradient(135deg,#121316 0 6px,#1A1C20 6px 12px)',
+              background: 'repeating-linear-gradient(135deg,var(--charcoal) 0 6px,var(--obsidian) 6px 12px)',
               font: `600 ${size === 'S' ? 6 : 8}px/1.2 var(--mono)`,
-              color: '#80868F',
+              color: 'var(--text-3)',
               textTransform: 'uppercase',
               letterSpacing: '.06em',
             }}
@@ -166,9 +166,9 @@ export function CardTile(p: CardTileProps) {
               bottom: '5%',
               padding: big ? '12px 0 5px' : '9px 0 3px',
               borderRadius: '0 0 6px 6px',
-              background: 'linear-gradient(to top,rgba(7,8,10,.9),rgba(7,8,10,0))',
+              background: 'linear-gradient(to top,rgba(var(--void-rgb), .9),rgba(var(--void-rgb), 0))',
               font: `700 ${big ? 11 : 9}px/1 var(--mono)`,
-              color: '#F3F4F6',
+              color: 'var(--text-1)',
               textAlign: 'center',
               letterSpacing: '.04em',
               fontVariantNumeric: 'tabular-nums',

@@ -1,6 +1,7 @@
 'use client';
 
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Points, ShaderMaterial } from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, NormalBlending, Points, ShaderMaterial } from 'three';
+import { getTheme } from '../motion';
 import { mountThree } from './three';
 
 const vertex = /* glsl */ `
@@ -30,13 +31,16 @@ const vertex = /* glsl */ `
 
 const fragment = /* glsl */ `
   uniform float uIntensity;
+  uniform float uLight;
   varying float vAlpha;
   varying float vGold;
   void main() {
     float r = length(gl_PointCoord - 0.5);
     float a = smoothstep(0.5, 0.0, r) * vAlpha * uIntensity;
-    vec3 blue = vec3(0.55, 0.8, 1.0);
-    vec3 gold = vec3(1.0, 0.76, 0.42);
+    // Marble Day: deeper blue and amber sparks, blended normally so they show on pale art.
+    vec3 blue = mix(vec3(0.55, 0.8, 1.0), vec3(0.06, 0.42, 0.92), uLight);
+    vec3 gold = mix(vec3(1.0, 0.76, 0.42), vec3(0.78, 0.5, 0.06), uLight);
+    a *= mix(1.0, 0.75, uLight);
     gl_FragColor = vec4(mix(blue, gold, vGold) * a, a);
   }
 `;
@@ -66,7 +70,7 @@ export function mountEmbers(el: HTMLElement, { count, gold, intensity }: { count
       const mat = new ShaderMaterial({
         vertexShader: vertex,
         fragmentShader: fragment,
-        uniforms: { uTime: { value: 0 }, uPixelRatio: { value: dpr }, uPointer: { value: [9, 9] }, uIntensity: { value: intensity } },
+        uniforms: { uTime: { value: 0 }, uPixelRatio: { value: dpr }, uPointer: { value: [9, 9] }, uIntensity: { value: intensity }, uLight: { value: 0 } },
         transparent: true,
         depthWrite: false,
         blending: AdditiveBlending,
@@ -79,6 +83,12 @@ export function mountEmbers(el: HTMLElement, { count, gold, intensity }: { count
       let py = 9;
       return {
         frame: (t, _dt, still) => {
+          const light = getTheme() === 'light';
+          if (light !== mat.uniforms.uLight.value > 0.5) {
+            mat.uniforms.uLight.value = light ? 1 : 0;
+            mat.blending = light ? NormalBlending : AdditiveBlending;
+            mat.needsUpdate = true;
+          }
           mat.uniforms.uTime.value = still ? 12 : t;
           px += (pointer.x - px) * 0.08;
           py += (pointer.y - py) * 0.08;

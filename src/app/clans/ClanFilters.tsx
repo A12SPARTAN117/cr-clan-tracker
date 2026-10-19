@@ -73,7 +73,7 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
           maxWidth: 760,
           padding: '0 12px',
           background: 'var(--obsidian)',
-          border: `1px solid ${focus ? 'rgba(58,160,255,.7)' : 'var(--hair)'}`,
+          border: `1px solid ${focus ? 'rgba(var(--glow-rgb), .7)' : 'var(--hair)'}`,
           borderRadius: 8,
           boxShadow: focus ? 'var(--glow)' : 'none',
         }}

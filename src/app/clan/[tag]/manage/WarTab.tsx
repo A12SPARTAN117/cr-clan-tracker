@@ -58,7 +58,7 @@ export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Sc
                 <span className="label" style={{ letterSpacing: '.14em' }}>
                   {training ? 'War starts in' : 'Day ends in'}
                 </span>
-                <span style={{ font: '700 28px/1 var(--mono)', fontVariantNumeric: 'tabular-nums', color: 'var(--blue-hi)', textShadow: '0 0 18px rgba(58,160,255,.5)' }}>{countdown}</span>
+                <span style={{ font: '700 28px/1 var(--mono)', fontVariantNumeric: 'tabular-nums', color: 'var(--blue-hi)', textShadow: '0 0 18px rgba(var(--glow-rgb), .5)' }}>{countdown}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <span className="label" style={{ letterSpacing: '.14em' }}>
@@ -90,7 +90,7 @@ export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Sc
                       height: 2,
                       borderRadius: 2,
                       background: now ? 'var(--blue-hi)' : done ? 'var(--text-2)' : 'var(--hair)',
-                      boxShadow: now ? '0 0 10px rgba(58,160,255,.8)' : 'none',
+                      boxShadow: now ? '0 0 10px rgba(var(--glow-rgb), .8)' : 'none',
                     }}
                   />
                   <span style={{ font: '500 9px/1 var(--mono)', letterSpacing: '.14em', color: now ? 'var(--blue-hi)' : 'var(--text-3)' }}>
@@ -124,7 +124,7 @@ export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Sc
                     height: 2,
                     width: `${(c.fame / maxFame) * 100}%`,
                     background: c.us ? 'var(--blue-hi)' : 'var(--text-3)',
-                    boxShadow: c.us ? '0 0 10px rgba(58,160,255,.8)' : 'none',
+                    boxShadow: c.us ? '0 0 10px rgba(var(--glow-rgb), .8)' : 'none',
                   }}
                 />
                 <div

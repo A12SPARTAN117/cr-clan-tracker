@@ -4,13 +4,14 @@ import {
   AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
+  NormalBlending,
   PerspectiveCamera,
   Points,
   Scene,
   ShaderMaterial,
   WebGLRenderer,
 } from 'three';
-import { reducedMotion } from '../motion';
+import { getTheme, reducedMotion } from '../motion';
 
 const TAU = Math.PI * 2;
 
@@ -70,11 +71,15 @@ const vertex = /* glsl */ `
 `;
 
 const fragment = /* glsl */ `
+  uniform float uLight;
   varying float vAlpha;
   varying float vD;
   varying float vHi;
   void main() {
     vec3 c = vHi > 0.5 ? vec3(140.0, 203.0, 255.0) / 255.0 : vec3(200.0 + vD * 40.0, 215.0 + vD * 30.0, 255.0) / 255.0;
+    // Marble Day: the crown is drawn in ink, slate dots with glowing blue highlights.
+    vec3 ink = vHi > 0.5 ? vec3(0.04, 0.4, 0.94) : vec3(0.16 - vD * 0.08, 0.24 - vD * 0.06, 0.38);
+    c = mix(c, ink, uLight);
     float a = vHi > 0.5 ? vAlpha : vAlpha * 0.8;
     gl_FragColor = vec4(c * a, a);
   }
@@ -120,7 +125,7 @@ export function mountCrown(el: HTMLElement, { count, scrollRoot }: { count?: num
   const mat = new ShaderMaterial({
     vertexShader: vertex,
     fragmentShader: fragment,
-    uniforms: { uBurst: { value: 0 }, uPixelRatio: { value: dpr } },
+    uniforms: { uBurst: { value: 0 }, uPixelRatio: { value: dpr }, uLight: { value: 0 } },
     transparent: true,
     depthWrite: false,
     blending: AdditiveBlending,
@@ -178,6 +183,12 @@ export function mountCrown(el: HTMLElement, { count, scrollRoot }: { count?: num
     points.rotation.y = -(rot + mx * 0.5);
     points.rotation.x = -0.32 + my * 0.25;
     mat.uniforms.uBurst.value = burst;
+    const light = getTheme() === 'light';
+    if (light !== mat.uniforms.uLight.value > 0.5) {
+      mat.uniforms.uLight.value = light ? 1 : 0;
+      mat.blending = light ? NormalBlending : AdditiveBlending;
+      mat.needsUpdate = true;
+    }
     renderer.render(scene, camera);
   };
   raf = requestAnimationFrame(frame);

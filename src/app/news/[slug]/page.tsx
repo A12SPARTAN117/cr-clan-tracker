@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { CardTile } from '@/components/CardTile';
 import { NEWS, newsBySlug } from '@/content/news';
 import { cardBySlug } from '@/lib/cards';
+import { art } from '@/lib/art';
 import { dstr } from '@/lib/format';
 import { TAG_FG } from '../tags';
 
@@ -39,8 +40,8 @@ export default async function NewsArticle({ params }: PageProps<'/news/[slug]'>)
       </span>
       <h1 style={{ margin: 0, font: '800 clamp(34px,5vw,60px)/.98 var(--mono)', letterSpacing: '-.045em', textWrap: 'balance' }}>{n.title}</h1>
       <p style={{ margin: 0, font: '400 20px/1.5 var(--sans)', color: 'var(--text-2)', textWrap: 'pretty' }}>{n.summary}</p>
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 6, overflow: 'hidden', background: `var(--obsidian) url(${n.scene}) center/cover`, filter: 'grayscale(1)' }}>
-        <span style={{ position: 'absolute', inset: 12, border: '1px solid rgba(255,255,255,.45)', borderRadius: 3 }} />
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 6, overflow: 'hidden', background: `var(--obsidian) ${art(n.scene)} center/cover`, filter: 'grayscale(1)' }}>
+        <span style={{ position: 'absolute', inset: 12, border: '1px solid rgba(var(--ink-rgb), .45)', borderRadius: 3 }} />
       </div>
       {n.changes && (
         <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid var(--hair)' }}>

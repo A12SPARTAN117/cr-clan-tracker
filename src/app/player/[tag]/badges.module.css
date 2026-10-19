@@ -32,14 +32,14 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55));
+  filter: drop-shadow(0 6px 10px rgba(var(--shade-rgb), 0.55));
   transition: transform 0.25s var(--ease-out);
 }
 .badge:hover .art img {
   transform: translateY(-3px) scale(1.04);
 }
 .badge[data-maxed='true'] .art img {
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 10px rgba(242, 184, 58, 0.35));
+  filter: drop-shadow(0 6px 10px rgba(var(--shade-rgb), 0.55)) drop-shadow(0 0 10px rgba(242, 184, 58, 0.35));
 }
 .pill {
   position: absolute;
@@ -51,12 +51,12 @@
   border-radius: 6px;
   background: linear-gradient(#5b2fb8, #3a1a86);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 3px 6px rgba(var(--shade-rgb), 0.5);
   font: 800 11px/1 var(--mono);
   color: #fff;
   text-align: center;
   white-space: nowrap;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 1px rgba(var(--shade-rgb), 0.6);
 }
 .placeholder {
   width: 72px;
@@ -87,7 +87,7 @@
 }
 .levels i[data-on='true'] {
   background: var(--gold);
-  box-shadow: 0 0 4px rgba(230, 179, 74, 0.6);
+  box-shadow: 0 0 4px rgba(var(--gold-rgb), 0.6);
 }
 .progress {
   width: 100%;
@@ -108,7 +108,7 @@
 .bar span {
   display: block;
   height: 100%;
-  background: #8ccbff;
+  background: var(--blue-hi);
 }
 .achievements {
   display: grid;

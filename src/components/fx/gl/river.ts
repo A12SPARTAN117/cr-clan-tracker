@@ -15,6 +15,7 @@ import {
   ShaderMaterial,
   type Material,
 } from 'three';
+import { getTheme } from '../motion';
 import { mountThree } from './three';
 
 export type RaceBoat = { tag: string; name: string; fame: number; us: boolean };
@@ -30,6 +31,7 @@ const water = {
   fragment: /* glsl */ `
     uniform float uTime;
     uniform float uLanes;
+    uniform float uLight;
     varying vec2 vUv;
     float hash(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
     void main() {
@@ -44,10 +46,13 @@ const water = {
       // Dotted rope dividers between lanes.
       float lane = abs(fract(uv.y * uLanes) - 0.5);
       float divider = smoothstep(0.485, 0.5, lane) * step(0.45, fract(uv.x * 40.0)) * 0.45;
-      vec3 deep = vec3(0.02, 0.07, 0.15);
-      vec3 shallow = vec3(0.04, 0.2, 0.36);
+      // Marble Day: pale glacier water with ink-blue current lines.
+      vec3 deep = mix(vec3(0.02, 0.07, 0.15), vec3(0.66, 0.77, 0.89), uLight);
+      vec3 shallow = mix(vec3(0.04, 0.2, 0.36), vec3(0.82, 0.89, 0.96), uLight);
       vec3 col = mix(deep, shallow, 0.55 + 0.45 * cos(lane * 6.2831));
-      col += vec3(0.55, 0.8, 1.0) * streak + vec3(0.9, 0.8, 0.55) * divider;
+      vec3 streakC = mix(vec3(0.55, 0.8, 1.0), vec3(-0.5, -0.25, 0.05), uLight);
+      vec3 ropeC = mix(vec3(0.9, 0.8, 0.55), vec3(-0.25, -0.35, -0.6), uLight);
+      col += streakC * streak + ropeC * divider;
       // Fade the edges into the page.
       float edge = smoothstep(0.0, 0.05, uv.x) * smoothstep(1.0, 0.95, uv.x) * smoothstep(0.0, 0.05, uv.y) * smoothstep(1.0, 0.95, uv.y);
       gl_FragColor = vec4(col, 0.95 * edge);
@@ -100,7 +105,7 @@ export function mountRiver(el: HTMLElement, { clans, finish, training }: { clans
       const waterMat = new ShaderMaterial({
         vertexShader: water.vertex,
         fragmentShader: water.fragment,
-        uniforms: { uTime: { value: 0 }, uLanes: { value: lanes } },
+        uniforms: { uTime: { value: 0 }, uLanes: { value: lanes }, uLight: { value: 0 } },
         transparent: true,
         depthWrite: false,
       });
@@ -143,6 +148,7 @@ export function mountRiver(el: HTMLElement, { clans, finish, training }: { clans
       return {
         frame: (t, _dt, still) => {
           waterMat.uniforms.uTime.value = still ? 0 : t;
+          waterMat.uniforms.uLight.value = getTheme() === 'light' ? 1 : 0;
           const k = still ? 1 : Math.min(1, t / 2.2);
           const ease = 1 - Math.pow(1 - k, 3);
           boats.forEach(({ b, tx, phase }) => {

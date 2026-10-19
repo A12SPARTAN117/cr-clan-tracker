@@ -8,6 +8,7 @@ import { LeagueIcon, PolRating } from '@/components/ui/primitives';
 import { NEWS } from '@/content/news';
 import { getPolLeaderboard } from '@/lib/cr/api';
 import { dstr } from '@/lib/format';
+import { art } from '@/lib/art';
 import { getMeta } from '@/lib/meta';
 import { HomeDecks, type HomeMode } from './HomeDecks';
 import { HomeHero } from './HomeHero';
@@ -57,7 +58,7 @@ async function PolTop() {
               font: '800 26px/1 var(--mono)',
               letterSpacing: '-.04em',
               color: i === 0 ? 'var(--gold)' : i < 3 ? 'var(--text-1)' : 'var(--text-3)',
-              textShadow: i === 0 ? '0 0 16px rgba(230,179,74,.45)' : 'none',
+              textShadow: i === 0 ? '0 0 16px rgba(var(--gold-rgb), .45)' : 'none',
             }}
           >
             {ROMAN[i] ?? String(i + 1).padStart(2, '0')}
@@ -134,7 +135,7 @@ export default function Home() {
             </div>
             {news.map((n) => (
               <Link key={n.slug} href={`/news/${n.slug}`} className={s.newsRow}>
-                <div className={s.newsThumb} style={{ backgroundImage: `url(${n.scene})` }} />
+                <div className={s.newsThumb} style={{ backgroundImage: art(n.scene) }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <span style={{ display: 'flex', gap: 10, font: '500 9px/1 var(--mono)', letterSpacing: '.14em' }}>
                     <span style={{ color: n.tag === 'GUIDE' ? 'var(--blue-hi)' : 'var(--text-2)' }}>{n.tag}</span>
@@ -152,9 +153,9 @@ export default function Home() {
           <Fog density={0.7} />
           <EmberField count={220} gold={0.55} />
           <div className={s.ctaShade} />
-          <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(255,255,255,.5)', borderRadius: 4, pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(var(--ink-rgb), .5)', borderRadius: 4, pointerEvents: 'none' }} />
           <div className={s.ctaCopy}>
-            <span className="label" style={{ color: '#8CCBFF' }}>
+            <span className="label" style={{ color: 'var(--blue-hi)' }}>
               05 · For leaders and co-leaders
             </span>
             <Reveal as="h2" className="display-l" style={{ fontSize: 'clamp(38px,6vw,96px)' }}>
@@ -162,11 +163,11 @@ export default function Home() {
               <br />
               YOUR CLAN
             </Reveal>
-            <p className="body" style={{ maxWidth: 480, color: '#A4A9B4' }}>
+            <p className="body" style={{ maxWidth: 480, color: 'var(--text-2)' }}>
               Activity, war decks, donations and an Asset Score for every member. Spot promotion candidates and who has gone quiet.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Link href="/my-clan" data-magnet="" className="btn btn-primary" style={{ height: 48, padding: '0 22px', background: '#F3F4F6', color: '#07080A' }}>
+              <Link href="/my-clan" data-magnet="" className="btn btn-primary" style={{ height: 48, padding: '0 22px', background: 'var(--text-1)', color: 'var(--void)' }}>
                 Open dashboard
               </Link>
               <Link href="/clans" className="btn btn-scene" style={{ height: 48, padding: '0 18px' }}>

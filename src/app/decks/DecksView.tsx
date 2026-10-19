@@ -88,7 +88,7 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
         <div className={s.scrim} />
         <div className={s.frame} />
         <div className={s.copy}>
-          <span style={{ font: '500 10px/1.4 var(--mono)', letterSpacing: '.14em', color: '#A4A9B4', textTransform: 'uppercase' }}>
+          <span style={{ font: '500 10px/1.4 var(--mono)', letterSpacing: '.14em', color: 'var(--text-2)', textTransform: 'uppercase' }}>
             ● Live · {m.label} · last {m.windowHours}h · {fmt(m.battles)} battles sampled
           </span>
           <Reveal as="h1" style={{ margin: 0, font: '800 clamp(46px,8vw,124px)/.86 var(--mono)', letterSpacing: '-.06em' }}>

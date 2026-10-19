@@ -5,8 +5,8 @@
   height: 100svh;
   min-height: 640px;
   overflow: hidden;
-  background: #07080a;
-  color: #f3f4f6;
+  background: var(--void);
+  color: var(--text-1);
 }
 .sceneWrap {
   position: absolute;
@@ -16,7 +16,7 @@
 .scene {
   position: absolute;
   inset: 0;
-  background: url('/scenes/arena.jpg') center / cover no-repeat;
+  background: var(--art-arena) center / cover no-repeat;
   filter: grayscale(1) contrast(1.15) brightness(0.62);
   animation: oaPush 22s ease-in-out infinite alternate;
 }
@@ -44,11 +44,11 @@
   position: absolute;
   inset: 0;
   background: url('/characters/champion_hires_golden_knight.png') bottom center / contain no-repeat;
-  filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(140, 203, 255, 0.75)) drop-shadow(0 0 30px rgba(58, 160, 255, 0.45));
+  filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.75)) drop-shadow(0 0 30px rgba(var(--glow-rgb), 0.45));
   transition: filter 0.6s ease-out;
 }
 .champImg:hover {
-  filter: grayscale(0) brightness(1) drop-shadow(-2px 0 0 rgba(140, 203, 255, 0.75)) drop-shadow(0 0 30px rgba(58, 160, 255, 0.45));
+  filter: grayscale(0) brightness(1) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.75)) drop-shadow(0 0 30px rgba(var(--glow-rgb), 0.45));
 }
 .crown {
   position: absolute;
@@ -64,13 +64,13 @@
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(to bottom, rgba(7, 8, 10, 0.6) 0%, rgba(7, 8, 10, 0) 22%, rgba(7, 8, 10, 0) 50%, rgba(7, 8, 10, 0.85) 82%, #07080a 100%),
-    radial-gradient(ellipse at 50% 45%, rgba(7, 8, 10, 0) 35%, rgba(7, 8, 10, 0.8) 100%);
+    linear-gradient(to bottom, rgba(var(--void-rgb), 0.6) 0%, rgba(var(--void-rgb), 0) 22%, rgba(var(--void-rgb), 0) 50%, rgba(var(--void-rgb), 0.85) 82%, var(--void) 100%),
+    radial-gradient(ellipse at 50% 45%, rgba(var(--void-rgb), 0) 35%, rgba(var(--void-rgb), 0.8) 100%);
 }
 .frame {
   position: absolute;
   inset: 78px 14px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(var(--ink-rgb), 0.55);
   border-radius: 4px;
   pointer-events: none;
 }
@@ -85,12 +85,6 @@
   padding: 0 clamp(18px, 4vw, 64px) clamp(28px, 6vh, 64px);
   text-align: center;
   pointer-events: none;
-  /* header scenes stay dark in both themes */
-  --text-1: #f3f4f6;
-  --text-2: #a4a9b4;
-  --text-3: #80868f;
-  --blue-hi: #8ccbff;
-  --ember: #ff5464;
 }
 .status {
   display: flex;
@@ -100,11 +94,11 @@
   font: 500 10px/1.4 var(--mono);
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #a4a9b4;
+  color: var(--text-2);
 }
 .status b {
   font-weight: 500;
-  color: #f3f4f6;
+  color: var(--text-1);
 }
 .title {
   margin: 0;
@@ -158,12 +152,12 @@
   border-radius: 8px;
   color: var(--text-1);
   background:
-    radial-gradient(300px circle at var(--mx, -500px) var(--my, -500px), rgba(58, 160, 255, 0.12), transparent 70%),
+    radial-gradient(300px circle at var(--mx, -500px) var(--my, -500px), rgba(var(--glow-rgb), 0.12), transparent 70%),
     var(--charcoal);
   transition: border-color 0.2s;
 }
 .pinCard:hover {
-  border-color: rgba(58, 160, 255, 0.5);
+  border-color: rgba(var(--glow-rgb), 0.5);
   color: var(--text-1);
 }
 .pinName {
@@ -239,7 +233,7 @@
   content: '';
   position: absolute;
   inset: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(var(--ink-rgb), 0.4);
   border-radius: 2px;
 }
 
@@ -249,23 +243,21 @@
   min-height: 420px;
   border-radius: 10px;
   overflow: hidden;
-  background: #07080a;
-  color: #f3f4f6;
-  --text-1: #f3f4f6;
-  --text-2: #a4a9b4;
+  background: var(--void);
+  color: var(--text-1);
 }
 .ctaScene {
   position: absolute;
   inset: 0;
   /* Black-and-white war room (Gemini); only the crown on the table glows blue. */
-  background: url('/scenes/leaders-war-room.jpg') right center / cover no-repeat;
+  background: var(--art-leaders-war-room) right center / cover no-repeat;
   filter: contrast(1.05) brightness(0.75);
   animation: oaPush 26s ease-in-out infinite alternate;
 }
 .ctaShade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #07080a 10%, rgba(7, 8, 10, 0.4) 70%);
+  background: linear-gradient(90deg, var(--void) 10%, rgba(var(--void-rgb), 0.4) 70%);
   pointer-events: none;
 }
 .ctaCopy {
@@ -277,8 +269,34 @@
   max-width: 780px;
 }
 
+/* Marble Day: daylight art is shown as graded; the champion is lit, not silhouetted. */
+:global([data-theme='light']) .scene {
+  filter: var(--scene-fx);
+}
+:global([data-theme='light']) .scrim {
+  /* Edges fall into shadow, as in Obsidian, instead of washing out to grey. */
+  background:
+    linear-gradient(to bottom, rgba(var(--shade-rgb), 0.28) 0%, rgba(var(--shade-rgb), 0) 24%, rgba(var(--void-rgb), 0) 50%, rgba(var(--void-rgb), 0.85) 84%, var(--void) 100%),
+    radial-gradient(ellipse at 50% 45%, rgba(var(--shade-rgb), 0) 40%, rgba(var(--shade-rgb), 0.42) 100%);
+}
+:global([data-theme='light']) .ctaScene {
+  filter: none;
+}
+:global([data-theme='light']) .ctaShade {
+  background: linear-gradient(90deg, var(--void) 14%, rgba(var(--void-rgb), 0.55) 62%, rgba(var(--void-rgb), 0.15));
+}
+:global([data-theme='light']) .newsThumb {
+  filter: var(--scene-fx);
+}
+:global([data-theme='light']) .champImg {
+  filter: grayscale(1) brightness(1.06) contrast(0.96) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.7)) drop-shadow(0 0 26px rgba(var(--glow-rgb), 0.35));
+}
+:global([data-theme='light']) .champImg:hover {
+  filter: grayscale(0) brightness(1) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.7)) drop-shadow(0 0 26px rgba(var(--glow-rgb), 0.35));
+}
+
 @media (prefers-reduced-motion: reduce) {
   .champImg:hover {
-    filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(140, 203, 255, 0.75));
+    filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.75));
   }
 }

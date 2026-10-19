@@ -30,7 +30,7 @@ export function PodiumScene({ rows, label, isClan, scoreIcon }: { rows: BoardRow
           const r = rows[i];
           return (
             <Link key={i} href={r?.href ?? '#'} className={s.step} aria-label={r ? `${['First', 'Second', 'Third'][i]}: ${r.name}` : undefined}>
-              <div style={{ height: 'clamp(54px,7vw,92px)', display: 'flex', alignItems: 'flex-end', filter: 'drop-shadow(0 0 16px rgba(58,160,255,.4))' }}>
+              <div style={{ height: 'clamp(54px,7vw,92px)', display: 'flex', alignItems: 'flex-end', filter: 'drop-shadow(0 0 16px rgba(var(--glow-rgb), .4))' }}>
                 {r?.badgeId != null && <ClanBadge badgeId={r.badgeId} size={64} name={isClan ? r.name : undefined} />}
               </div>
               <span style={{ font: '600 clamp(13px,1.3vw,17px)/1.1 var(--sans)', textAlign: 'center', minHeight: '1.1em', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -42,14 +42,14 @@ export function PodiumScene({ rows, label, isClan, scoreIcon }: { rows: BoardRow
               </span>
               <div
                 className={s.block}
-                style={{ height: HEIGHT[i], boxShadow: `inset 0 1px 0 rgba(255,255,255,.18),0 -10px 40px ${i === 0 ? 'rgba(230,179,74,.15)' : 'rgba(58,160,255,.15)'}` }}
+                style={{ height: HEIGHT[i], boxShadow: `inset 0 1px 0 rgba(255,255,255,.18),0 -10px 40px ${i === 0 ? 'rgba(var(--gold-rgb), .15)' : 'rgba(var(--glow-rgb), .15)'}` }}
               >
                 <span
                   style={{
                     font: '800 clamp(40px,6vw,88px)/1 var(--mono)',
                     letterSpacing: '-.04em',
-                    color: i === 0 ? '#E6B34A' : '#DDEBFF',
-                    textShadow: i === 0 ? '0 0 30px rgba(230,179,74,.6)' : '0 0 24px rgba(140,203,255,.6)',
+                    color: i === 0 ? 'var(--gold)' : 'var(--silver)',
+                    textShadow: i === 0 ? '0 0 30px rgba(var(--gold-rgb), .6)' : '0 0 24px rgba(var(--glow-hi-rgb), .6)',
                   }}
                 >
                   {['I', 'II', 'III'][i]}
@@ -60,7 +60,7 @@ export function PodiumScene({ rows, label, isClan, scoreIcon }: { rows: BoardRow
         })}
       </div>
       <div className={s.title}>
-        <span style={{ font: '500 10px/1.4 var(--mono)', letterSpacing: '.14em', color: '#A4A9B4', textTransform: 'uppercase' }}>● Live · {label}</span>
+        <span style={{ font: '500 10px/1.4 var(--mono)', letterSpacing: '.14em', color: 'var(--text-2)', textTransform: 'uppercase' }}>● Live · {label}</span>
         <Reveal as="h1" style={{ margin: 0, font: '800 clamp(40px,6.4vw,100px)/.86 var(--mono)', letterSpacing: '-.06em' }}>
           LEADER
           <br />

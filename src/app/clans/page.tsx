@@ -29,7 +29,7 @@ function ClanCard({ c }: { c: Row }) {
         gap: 16,
         padding: 20,
         color: 'var(--text-1)',
-        background: 'radial-gradient(260px circle at var(--mx,-400px) var(--my,-400px),rgba(58,160,255,.12),transparent 70%),var(--charcoal)',
+        background: 'radial-gradient(260px circle at var(--mx,-400px) var(--my,-400px),rgba(var(--glow-rgb), .12),transparent 70%),var(--charcoal)',
       }}
     >
       <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>

@@ -10,15 +10,15 @@
   overflow: hidden;
 }
 .battle[data-r='win'] {
-  border-color: rgba(58, 160, 255, 0.35);
+  border-color: rgba(var(--glow-rgb), 0.35);
   background:
-    linear-gradient(90deg, rgba(58, 160, 255, 0.08), transparent 40%),
+    linear-gradient(90deg, rgba(var(--glow-rgb), 0.08), transparent 40%),
     var(--charcoal);
 }
 .battle[data-r='loss'] {
-  border-color: rgba(255, 84, 100, 0.3);
+  border-color: rgba(var(--ember-rgb), 0.3);
   background:
-    linear-gradient(90deg, rgba(255, 84, 100, 0.07), transparent 40%),
+    linear-gradient(90deg, rgba(var(--ember-rgb), 0.07), transparent 40%),
     var(--charcoal);
 }
 .ribbon {

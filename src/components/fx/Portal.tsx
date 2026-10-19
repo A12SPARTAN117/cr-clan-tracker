@@ -8,15 +8,15 @@ export function Portal({ size = 64, label }: { size?: number; label?: string }) 
       role={label ? 'img' : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
-      style={{ overflow: 'visible', filter: 'drop-shadow(0 0 6px rgba(58,160,255,.8))', flex: 'none' }}
+      style={{ overflow: 'visible', filter: 'drop-shadow(0 0 6px rgba(var(--glow-rgb), .8))', flex: 'none' }}
     >
-      <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.08)" strokeWidth="2" />
+      <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(var(--ink-rgb), .08)" strokeWidth="2" />
       <circle
         cx="50"
         cy="50"
         r="42"
         fill="none"
-        stroke="#8CCBFF"
+        stroke="var(--blue-hi)"
         strokeWidth="2"
         strokeLinecap="round"
         pathLength={100}

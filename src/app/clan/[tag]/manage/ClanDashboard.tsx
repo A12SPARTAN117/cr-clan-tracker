@@ -128,7 +128,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
         scene="/scenes/war-room.jpg"
         status={
           <>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#F3F4F6' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-1)' }}>
               <span className="live-dot" />
               Live · {war ? `River race ${war.label.toLowerCase()}${war.kind === 'training' ? ' · practice only' : ''}` : 'River race unavailable'}
             </span>
@@ -161,7 +161,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
                     flash(`Tag #${tag} copied`);
                   }}
                 >
-                  Tag #{tag} <span style={{ color: '#80868F' }}>Copy</span>
+                  Tag #{tag} <span style={{ color: 'var(--text-3)' }}>Copy</span>
                 </button>
                 <span>{TYPE_LABEL[data.clan.type]}</span>
                 {data.clan.location && <span>{data.clan.location}</span>}
@@ -176,7 +176,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
               type="button"
               data-magnet=""
               className="btn btn-primary"
-              style={{ background: 'linear-gradient(110deg,#F3F4F6 40%,#fff 50%,#F3F4F6 60%) 120% 0/250% 100%', color: '#07080A' }}
+              style={{ background: 'linear-gradient(110deg,var(--text-1) 40%,var(--btn-shine) 50%,var(--text-1) 60%) 120% 0/250% 100%', color: 'var(--void)' }}
               disabled={syncing}
               onClick={() =>
                 startSync(async () => {
@@ -269,7 +269,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
 
       {compare && (
         <>
-          <div className={s.backdrop} style={{ background: 'rgba(7,8,10,.7)', backdropFilter: 'blur(4px)' }} onClick={() => setCompare(false)} />
+          <div className={s.backdrop} style={{ background: 'rgba(var(--void-rgb), .7)', backdropFilter: 'blur(4px)' }} onClick={() => setCompare(false)} />
           <div role="dialog" aria-modal="true" aria-label="Compare members" className={s.modal}>
             <div style={{ position: 'absolute', inset: 10, border: '1px solid var(--hair)', borderRadius: 6, pointerEvents: 'none' }} />
             <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -289,9 +289,9 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
                     style={{
                       padding: 16,
                       background: 'var(--obsidian)',
-                      border: `1px solid ${best ? 'rgba(58,160,255,.7)' : 'var(--hair)'}`,
+                      border: `1px solid ${best ? 'rgba(var(--glow-rgb), .7)' : 'var(--hair)'}`,
                       borderRadius: 8,
-                      boxShadow: best ? '0 0 18px rgba(58,160,255,.3)' : 'none',
+                      boxShadow: best ? '0 0 18px rgba(var(--glow-rgb), .3)' : 'none',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: 10,

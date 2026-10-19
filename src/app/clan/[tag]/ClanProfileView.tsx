@@ -69,21 +69,21 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
 
   return (
     <>
-      <section style={{ position: 'relative', minHeight: 'clamp(480px,55vh,620px)', overflow: 'hidden', background: '#07080A', color: '#F3F4F6', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'url(/scenes/shields.jpg) center/cover', filter: 'grayscale(1) contrast(1.1) brightness(.55)' }} />
+      <section style={{ position: 'relative', minHeight: 'clamp(480px,55vh,620px)', overflow: 'hidden', background: 'var(--void)', color: 'var(--text-1)', display: 'flex', flexDirection: 'column' }}>
+        <div data-art="" style={{ position: 'absolute', inset: 0, background: 'var(--art-shields) center/cover', filter: 'grayscale(1) contrast(1.1) brightness(.55)' }} />
         <div style={{ position: 'absolute', left: '18%', top: '20%', width: 160, height: 240, background: 'radial-gradient(closest-side,rgba(255,180,90,.18),transparent)', animation: 'oaFlicker 2.6s infinite', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', right: '18%', top: '24%', width: 160, height: 240, background: 'radial-gradient(closest-side,rgba(255,180,90,.16),transparent)', animation: 'oaFlicker 3.1s infinite', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', left: '50%', top: '9%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
-          <span style={{ width: 1, height: 46, background: 'linear-gradient(#62676F,#A4A9B4)' }} />
+          <span style={{ width: 1, height: 46, background: 'linear-gradient(var(--metal-lo),var(--text-2))' }} />
           <div
             style={{
               width: 'clamp(120px,13vw,180px)',
               height: 'clamp(140px,15vw,210px)',
               padding: 14,
-              border: '1px solid rgba(140,203,255,.6)',
+              border: '1px solid rgba(var(--glow-hi-rgb), .6)',
               borderRadius: '8px 8px 50% 50% / 8px 8px 30% 30%',
-              background: 'rgba(7,8,10,.5)',
-              boxShadow: '0 0 40px rgba(58,160,255,.35),inset 0 0 30px rgba(58,160,255,.15)',
+              background: 'rgba(var(--void-rgb), .5)',
+              boxShadow: '0 0 40px rgba(var(--glow-rgb), .35),inset 0 0 30px rgba(var(--glow-rgb), .15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -94,7 +94,8 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
         </div>
         <div
           aria-hidden
-          style={{ position: 'absolute', left: 0, right: 0, bottom: '8%', height: '30%', display: 'flex', justifyContent: 'center', gap: '6%', filter: 'grayscale(1) brightness(.5) drop-shadow(0 0 20px rgba(58,160,255,.4))', opacity: 0.7, pointerEvents: 'none' }}
+          data-figure=""
+          style={{ position: 'absolute', left: 0, right: 0, bottom: '8%', height: '30%', display: 'flex', justifyContent: 'center', gap: '6%', filter: 'grayscale(1) brightness(.5) drop-shadow(0 0 20px rgba(var(--glow-rgb), .4))', opacity: 0.7, pointerEvents: 'none' }}
         >
           {troops.map((t) => (
             <div key={t} style={{ width: '12%', height: '100%', background: `url(/characters/${t}.png) bottom center/contain no-repeat` }} />
@@ -107,14 +108,14 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
             position: 'absolute',
             inset: 0,
             pointerEvents: 'none',
-            background: 'linear-gradient(to bottom,rgba(7,8,10,.4) 0%,rgba(7,8,10,0) 30%,rgba(7,8,10,.6) 62%,#07080A 100%),radial-gradient(ellipse at center,rgba(7,8,10,0) 40%,rgba(7,8,10,.7) 100%)',
+            background: 'linear-gradient(to bottom,rgba(var(--void-rgb), .4) 0%,rgba(var(--void-rgb), 0) 30%,rgba(var(--void-rgb), .6) 62%,var(--void) 100%),radial-gradient(ellipse at center,rgba(var(--void-rgb), 0) 40%,rgba(var(--void-rgb), .7) 100%)',
           }}
         />
-        <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(255,255,255,.55)', borderRadius: 4, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(var(--ink-rgb), .55)', borderRadius: 4, pointerEvents: 'none' }} />
         <div style={{ position: 'relative', flex: 1, width: '100%', maxWidth: 1440, margin: '0 auto', padding: '36px clamp(28px,4vw,64px) 40px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 24 }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', font: '500 10px/1.4 var(--mono)', letterSpacing: '.14em', color: '#A4A9B4', textTransform: 'uppercase' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', font: '500 10px/1.4 var(--mono)', letterSpacing: '.14em', color: 'var(--text-2)', textTransform: 'uppercase' }}>
             {c.race && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#F3F4F6' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-1)' }}>
                 <span className="live-dot" />
                 Live · River race · {c.race.label}
               </span>
@@ -127,17 +128,17 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
               <Reveal as="h1" style={{ margin: 0, font: '800 clamp(42px,8.4vw,132px)/.86 var(--mono)', letterSpacing: '-.055em', overflowWrap: 'anywhere' }}>
                 {c.name.toUpperCase()}
               </Reveal>
-              {c.description && <p style={{ margin: 0, maxWidth: 560, font: '400 15px/1.55 var(--sans)', color: '#A4A9B4', textWrap: 'pretty', overflowWrap: 'anywhere' }}>{c.description}</p>}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', font: '500 11px/1 var(--mono)', letterSpacing: '.12em', color: '#A4A9B4', textTransform: 'uppercase' }}>
+              {c.description && <p style={{ margin: 0, maxWidth: 560, font: '400 15px/1.55 var(--sans)', color: 'var(--text-2)', textWrap: 'pretty', overflowWrap: 'anywhere' }}>{c.description}</p>}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', font: '500 11px/1 var(--mono)', letterSpacing: '.12em', color: 'var(--text-2)', textTransform: 'uppercase' }}>
                 <button
                   type="button"
                   onClick={() => {
                     navigator.clipboard?.writeText(`#${c.tag}`).catch(() => {});
                     flash('TAG COPIED');
                   }}
-                  style={{ display: 'flex', gap: 8, background: 'none', border: '1px solid rgba(255,255,255,.2)', borderRadius: 4, padding: '5px 8px', color: '#F3F4F6', font: 'inherit', letterSpacing: 'inherit', cursor: 'pointer' }}
+                  style={{ display: 'flex', gap: 8, background: 'none', border: '1px solid rgba(var(--ink-rgb), .2)', borderRadius: 4, padding: '5px 8px', color: 'var(--text-1)', font: 'inherit', letterSpacing: 'inherit', cursor: 'pointer' }}
                 >
-                  #{c.tag} <span style={{ color: '#80868F' }}>COPY</span>
+                  #{c.tag} <span style={{ color: 'var(--text-3)' }}>COPY</span>
                 </button>
                 {c.location && <span style={{ padding: '5px 0' }}>{c.location}</span>}
                 <span style={{ padding: '5px 0' }}>{TYPE[c.type]}</span>
@@ -151,9 +152,9 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                 height: 56,
                 padding: '0 26px',
                 fontSize: 12,
-                background: 'linear-gradient(110deg,#F3F4F6 40%,#fff 50%,#F3F4F6 60%) 120% 0/250% 100%',
-                color: '#07080A',
-                boxShadow: '0 0 0 1px rgba(58,160,255,.5),0 0 30px rgba(58,160,255,.3)',
+                background: 'linear-gradient(110deg,var(--text-1) 40%,var(--btn-shine) 50%,var(--text-1) 60%) 120% 0/250% 100%',
+                color: 'var(--void)',
+                boxShadow: '0 0 0 1px rgba(var(--glow-rgb), .5),0 0 30px rgba(var(--glow-rgb), .3)',
               }}
             >
               Manage this clan →
@@ -275,7 +276,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                       <Link href={`/clan/${r.tag}`} style={{ display: 'flex', flexDirection: 'column', gap: 6, color: r.us ? 'var(--text-1)' : 'var(--text-2)' }}>
                         <span style={{ font: '600 14px/1 var(--sans)' }}>{r.name}</span>
                         <span style={{ height: 2, background: 'var(--hair)' }}>
-                          <span style={{ display: 'block', height: '100%', width: `${(r.fame / max) * 100}%`, background: r.us ? '#8CCBFF' : 'var(--text-3)', boxShadow: r.us ? '0 0 8px rgba(58,160,255,.8)' : 'none' }} />
+                          <span style={{ display: 'block', height: '100%', width: `${(r.fame / max) * 100}%`, background: r.us ? 'var(--blue-hi)' : 'var(--text-3)', boxShadow: r.us ? '0 0 8px rgba(var(--glow-rgb), .8)' : 'none' }} />
                         </span>
                       </Link>
                       <span style={{ textAlign: 'right', font: '600 13px/1 var(--mono)' }}>{fmt(r.fame)}</span>
@@ -301,8 +302,8 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                             width: '100%',
                             height: Math.max(4, Math.round((p.fame / maxPastFame) * 110)),
                             borderRadius: '3px 3px 0 0',
-                            background: p.rank === 1 ? 'rgba(58,160,255,.85)' : 'var(--slate)',
-                            boxShadow: p.rank === 1 ? '0 0 12px rgba(58,160,255,.5)' : 'none',
+                            background: p.rank === 1 ? 'rgba(var(--glow-rgb), .85)' : 'var(--slate)',
+                            boxShadow: p.rank === 1 ? '0 0 12px rgba(var(--glow-rgb), .5)' : 'none',
                           }}
                         />
                       </div>
@@ -382,7 +383,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
         )}
       </main>
       {toast && (
-        <div role="status" style={{ position: 'fixed', left: '50%', bottom: 84, transform: 'translateX(-50%)', zIndex: 100, padding: '12px 18px', background: 'var(--obsidian)', border: '1px solid rgba(58,160,255,.6)', borderRadius: 6, boxShadow: '0 0 18px rgba(58,160,255,.35)', font: '500 11px/1 var(--mono)', letterSpacing: '.12em' }}>
+        <div role="status" style={{ position: 'fixed', left: '50%', bottom: 84, transform: 'translateX(-50%)', zIndex: 100, padding: '12px 18px', background: 'var(--obsidian)', border: '1px solid rgba(var(--glow-rgb), .6)', borderRadius: 6, boxShadow: '0 0 18px rgba(var(--glow-rgb), .35)', font: '500 11px/1 var(--mono)', letterSpacing: '.12em' }}>
           {toast}
         </div>
       )}

@@ -51,9 +51,9 @@ export function ThemeToggle({ className }: { className?: string }) {
 
 export function BrandMark() {
   return (
-    <svg width="30" height="26" viewBox="0 0 30 26" aria-hidden style={{ filter: 'drop-shadow(0 0 6px rgba(58,160,255,.6))' }}>
-      <polyline points="2,22 2,8 8,14 12,4 16,14 22,8 22,22 2,22" fill="none" stroke="#A4A9B4" strokeWidth="1.4" strokeLinejoin="round" />
-      <polyline points="8,24 8,10 14,16 18,6 22,16 28,10 28,24 8,24" fill="none" stroke="#8CCBFF" strokeWidth="1.4" strokeLinejoin="round" />
+    <svg width="30" height="26" viewBox="0 0 30 26" aria-hidden style={{ filter: 'drop-shadow(0 0 6px rgba(var(--glow-rgb), .6))' }}>
+      <polyline points="2,22 2,8 8,14 12,4 16,14 22,8 22,22 2,22" fill="none" stroke="var(--text-2)" strokeWidth="1.4" strokeLinejoin="round" />
+      <polyline points="8,24 8,10 14,16 18,6 22,16 28,10 28,24 8,24" fill="none" stroke="var(--blue-hi)" strokeWidth="1.4" strokeLinejoin="round" />
     </svg>
   );
 }
