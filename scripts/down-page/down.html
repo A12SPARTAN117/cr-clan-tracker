@@ -46,6 +46,19 @@
   .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block;
     -webkit-mask-image: radial-gradient(ellipse 58% 62% at 50% 46%, #000 42%, transparent 100%); mask-image: radial-gradient(ellipse 58% 62% at 50% 46%, #000 42%, transparent 100%); }
   .stage.live .crown { display: none; }
+  .replay { position: absolute; right: 6%; bottom: 8%; z-index: 2; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(140,203,255,.45);
+    background: rgba(7,8,10,.7); color: var(--ice); font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+    animation: fadeIn .5s ease-out both; }
+  .replay:hover { border-color: var(--ice); box-shadow: 0 0 16px rgba(58,160,255,.45); }
+  .replay:focus-visible { outline: 2px solid var(--ice); outline-offset: 3px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } }
+  /* The enemy's crowns, filling in as each tower falls (a `crowned` event from scene.js). */
+  .score { display: flex; gap: 10px; margin-top: -6px; }
+  .score i { width: 34px; height: 27px; opacity: .22; filter: grayscale(1);
+    background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 32'%3E%3Cpath d='M4 3h7v5h5V3h8v5h5V3h7v17H4Z' fill='%23ffc23d' stroke='%237a4a00' stroke-width='1.5'/%3E%3Crect x='3' y='19' width='34' height='10' rx='2' fill='%23e2283c' stroke='%237a0f1c' stroke-width='1.5'/%3E%3Cpath d='M20 20.5l3.5 3.5-3.5 3.5-3.5-3.5Z' fill='%23ffd36b'/%3E%3C/svg%3E");
+    transition: opacity .2s, filter .2s; }
+  .score i.on { opacity: 1; filter: drop-shadow(0 0 10px rgba(226,40,60,.6)); animation: crownPop .45s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes crownPop { from { transform: scale(.4) translateY(-10px); } }
   .kicker { font: 500 10px/1.4 var(--mono); letter-spacing: .16em; color: var(--ember); text-transform: uppercase; }
   .big { margin: 0; font: 800 clamp(96px, min(18vw, 18vh), 220px)/.8 var(--mono); letter-spacing: -.08em; color: transparent;
     background: linear-gradient(180deg, #C9CCD2, #5A5E66); -webkit-background-clip: text; background-clip: text;
@@ -91,7 +104,7 @@
   .offline-only { display: none; }
   .offline .offline-only { display: block; }
 
-  @media (prefers-reduced-motion: reduce) { .fog, .crown, .dot { animation: none; } .btn { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .fog, .crown, .dot, .score i, .replay { animation: none; } .btn { transition: none; } }
   @media (max-width: 520px) { main { padding-top: 48px; } .card { padding: 18px; } .row .btn { flex: 1 1 100%; } }
   /* Wide screens: the donate card sits beside the 503 instead of under it, so it's always in view. */
   @media (min-width: 1000px) {
@@ -107,13 +120,15 @@
 
 <main>
  <div class="hero">
-  <div class="stage" id="stage" role="img" aria-label="Three gold crowns smash our three towers: we got three-crowned">
+  <div class="stage" id="stage">
   <svg class="crown" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
     <path d="M10 46 6 18l14 12 12-18 12 18 14-12-4 28Z" fill="rgba(58,160,255,.12)"/>
     <path d="M10 46h44v6H10Z" fill="rgba(140,203,255,.25)"/>
     <circle cx="6" cy="17" r="2.6" fill="currentColor"/><circle cx="32" cy="10" r="2.6" fill="currentColor"/><circle cx="58" cy="17" r="2.6" fill="currentColor"/>
   </svg>
+  <button class="replay" id="replay" type="button" hidden>&#8635; Watch again</button>
   </div>
+  <div class="score" id="score" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></div>
 
   <div class="online-only">
     <span class="kicker">● Server offline</span>
@@ -159,6 +174,9 @@
 <script>
 (function () {
   var body = document.body, status = document.getElementById('status');
+  // The crown counter follows the scene; without WebGL it just shows all three.
+  var pips = document.querySelectorAll('#score i');
+  addEventListener('crowned', function (e) { for (var i = 0; i < pips.length; i++) pips[i].className = i < e.detail ? 'on' : ''; });
   function setOffline() { body.classList.toggle('offline', navigator.onLine === false); }
   setOffline();
   addEventListener('offline', setOffline);
