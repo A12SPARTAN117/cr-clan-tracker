@@ -209,3 +209,204 @@ td[data-lead='true'] .val::before {
     overflow-wrap: anywhere;
   }
 }
+
+/* ---------- showdown (CompareArena) ---------- */
+.arena {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.stage {
+  position: relative;
+  height: clamp(360px, 58vh, 620px);
+  border: 1px solid var(--hair);
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 35%, rgba(var(--glow-rgb), 0.16), transparent 70%),
+    radial-gradient(ellipse 120% 70% at 50% 110%, rgba(var(--shade-rgb), 0.6), transparent 70%),
+    var(--void);
+}
+.stage::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(var(--ink-rgb), 0.35);
+  border-radius: 6px;
+  pointer-events: none;
+}
+.canvas {
+  position: absolute;
+  inset: 0;
+}
+/* Name plates along the top of the stage, one per contender. */
+.lanes {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 24px;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  gap: 10px;
+  pointer-events: none;
+}
+.lanes span {
+  justify-self: center;
+  max-width: 100%;
+  padding: 7px 12px;
+  border: 1px solid var(--c);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--c) 18%, rgba(var(--void-rgb), 0.85));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--c) 45%, transparent);
+  font: 700 13px/1 var(--sans);
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.legend {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  font: 500 11px/1.4 var(--mono);
+  color: var(--text-2);
+}
+.legend b {
+  color: var(--text-3);
+  font-weight: 700;
+}
+.board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+}
+.seat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 18px 16px;
+  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius: 10px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--c) 14%, var(--charcoal)), var(--charcoal) 70%);
+  overflow: hidden;
+}
+.seat[data-champ='true'] {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 1px rgba(var(--gold-rgb), 0.35),
+    0 0 32px rgba(var(--gold-rgb), 0.25);
+}
+.champTag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(var(--gold-rgb), 0.16);
+  border: 1px solid rgba(var(--gold-rgb), 0.6);
+  font: 700 10px/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-hi);
+}
+.seatName {
+  padding-right: 88px;
+  font: 800 20px/1.1 var(--mono);
+  letter-spacing: -0.03em;
+  color: var(--text-1);
+  overflow-wrap: anywhere;
+}
+.seatSub {
+  font: 500 10px/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.seatScore {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+}
+.seatScore b {
+  font: 800 44px/0.9 var(--mono);
+  letter-spacing: -0.05em;
+  color: var(--c);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--c) 55%, transparent);
+}
+.seatScore small {
+  font: 500 11px/1 var(--mono);
+  color: var(--text-2);
+}
+.seatBar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--well);
+  overflow: hidden;
+}
+.seatBar span {
+  display: block;
+  height: 100%;
+  background: var(--c);
+  box-shadow: 0 0 10px var(--c);
+}
+@media (max-width: 599px) {
+  .stage {
+    height: 320px;
+  }
+  .lanes {
+    left: 16px;
+    right: 16px;
+    top: 18px;
+  }
+  .lanes span {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}
+
+/* One-click showdowns when there's nothing to compare yet. */
+.suggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+.suggestCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 18px;
+  border: 1px solid rgba(var(--glow-rgb), 0.45);
+  border-radius: 10px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(var(--glow-rgb), 0.16), transparent 70%), var(--charcoal);
+  color: var(--text-1);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.suggestCard:hover {
+  color: var(--text-1);
+  border-color: var(--blue-hi);
+  box-shadow: var(--glow);
+}
+.suggestCard small {
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.suggestCard span {
+  font: 700 15px/1.2 var(--sans);
+}
+.suggestCard b {
+  margin: 0 6px;
+  font: 800 12px/1 var(--mono);
+  color: var(--blue-hi);
+}

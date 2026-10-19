@@ -26,6 +26,7 @@ import {
   WinRateIcon,
 } from '@/components/ui/icons';
 import type { CompareIcon, CompareKind, CompareRow, Comparison } from '@/lib/compare';
+import { CompareArena } from './CompareArena';
 import s from './compare.module.css';
 
 const MAX = 4;
@@ -67,7 +68,9 @@ function leader(r: CompareRow): number | null {
   return idx.length === 1 ? idx[0] : null;
 }
 
-export function CompareView({ data }: { data: Comparison }) {
+type Pair = { tag: string; name: string }[] | null;
+
+export function CompareView({ data, suggest }: { data: Comparison; suggest?: { players: Pair; clans: Pair } | null }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const tags = data.entities.map((e) => e.tag);
@@ -119,6 +122,29 @@ export function CompareView({ data }: { data: Comparison }) {
       )}
 
       {data.missing.length > 0 && <div className="data-since">Couldn&apos;t load: {data.missing.map((t) => `#${t}`).join(', ')}</div>}
+
+      {suggest && (suggest.players || suggest.clans) && (
+        <div className={s.suggest}>
+          <span className="label">Try a showdown</span>
+          {(
+            [
+              ['player', suggest.players, 'Top 2 Path of Legends players'],
+              ['clan', suggest.clans, 'Top 2 war clans'],
+            ] as const
+          ).map(([kind, pair, title]) =>
+            pair ? (
+              <Link key={kind} href={`/compare?type=${kind}&tags=${pair.map((x) => x.tag).join(',')}`} className={s.suggestCard}>
+                <small>{title}</small>
+                <span>
+                  {pair[0].name} <b>VS</b> {pair[1].name}
+                </span>
+              </Link>
+            ) : null,
+          )}
+        </div>
+      )}
+
+      {n >= 2 && <CompareArena data={data} colors={COLORS} />}
 
       {n === 0 ? (
         <p className="body">Add two or more {data.kind === 'player' ? 'players' : 'clans'} to compare them stat by stat. The leader of each row is highlighted.</p>
