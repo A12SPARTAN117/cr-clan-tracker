@@ -39,6 +39,9 @@ export type Contender = {
   leads: boolean[];
   /** Leads the most stats overall: gets the crown. */
   champion: boolean;
+  /** Clans: the league frame's colours (light to dark) and tier (1–3), drawn as a metal ring with gems. */
+  frame?: [string, string, string] | null;
+  tier?: number;
 };
 
 /** Same-origin URL for official art (WebGL needs CORS; see /api/art); local art as is. */
@@ -168,7 +171,25 @@ const emberFragment = /* glsl */ `
  * the lane in a spinning ring, embers rise in their colour, and the overall leader wears a crown.
  * Two contenders face off across a river under a VS sigil. Returns a cleanup function.
  */
-export function mountShowdown(el: HTMLElement, { contenders }: { contenders: Contender[] }) {
+export function mountShowdown(el: HTMLElement, { contenders, titles = [], names = [] }: { contenders: Contender[]; titles?: string[]; names?: string[] }) {
+  // Name plates ride above each contender's floating art.
+  const plates = names.map((n, i) => {
+    const d = document.createElement('span');
+    d.className = 'sd-name';
+    d.style.setProperty('--c', contenders[i]?.color ?? '#3aa0ff');
+    d.textContent = n;
+    el.appendChild(d);
+    return d;
+  });
+  // Stat titles are HTML (crisp at any size), placed under each column group every frame.
+  const labels = titles.map((t, j) => {
+    const d = document.createElement('span');
+    d.className = 'sd-title';
+    d.innerHTML = `<b>${j + 1}</b>`;
+    d.append(t);
+    el.appendChild(d);
+    return d;
+  });
   let pointer = { x: 0, y: 0 };
   const onMove = (e: PointerEvent) => {
     const r = el.getBoundingClientRect();
@@ -220,6 +241,9 @@ export function mountShowdown(el: HTMLElement, { contenders }: { contenders: Con
         return { color, body, cap: own(new MeshBasicMaterial({ color: color.clone().lerp(new Color(0xffffff), 0.55) })) };
       });
 
+      const nums: Sprite[] = [];
+      const titleAt: Vector3[] = [];
+      const scratch = new Vector3();
       for (let j = 0; j < m; j++) {
         const th = thetaOf(j);
         const gx = Math.sin(th) * R;
@@ -237,6 +261,8 @@ export function mountShowdown(el: HTMLElement, { contenders }: { contenders: Con
         num.scale.set(0.5, 0.5, 1);
         num.position.set(gx - Math.sin(th) * 1.15, 0.25, gz + Math.cos(th) * 1.15);
         world.add(num);
+        nums.push(num);
+        titleAt.push(new Vector3(gx - Math.sin(th) * 1.75, 0, gz + Math.cos(th) * 1.75));
         contenders.forEach((c, i) => {
           const off = (i - (n - 1) / 2) * colW * 1.18;
           const x = gx + tx * off;
@@ -276,10 +302,28 @@ export function mountShowdown(el: HTMLElement, { contenders }: { contenders: Con
         const g = new Group();
         g.position.set(artX(i), artY, artZ);
         const color = new Color(c.color);
-        const ring = new Mesh(own(new TorusGeometry(1.1, 0.028, 8, 96)), own(new MeshBasicMaterial({ color, transparent: true, opacity: 0.9 })));
-        const aura = new Sprite(own(new SpriteMaterial({ map: glow, color, transparent: true, opacity: 0.4, depthWrite: false, blending: AdditiveBlending })));
+        // Clans sit in their league frame: a thick metal ring in the league's colours, a gem per tier.
+        const frame = c.frame ? c.frame.map((x) => new Color(x)) : null;
+        const ring = new Mesh(
+          own(new TorusGeometry(1.1, frame ? 0.09 : 0.028, 12, 96)),
+          own(new MeshBasicMaterial({ color: frame ? frame[1] : color, transparent: true, opacity: frame ? 1 : 0.9 })),
+        );
+        const aura = new Sprite(own(new SpriteMaterial({ map: glow, color: frame ? frame[1] : color, transparent: true, opacity: 0.4, depthWrite: false, blending: AdditiveBlending })));
         aura.scale.setScalar(3.6);
         g.add(aura, ring);
+        if (frame) {
+          const inner = new Mesh(own(new TorusGeometry(0.99, 0.022, 8, 96)), own(new MeshBasicMaterial({ color: frame[0] })));
+          const outer = new Mesh(own(new TorusGeometry(1.2, 0.02, 8, 96)), own(new MeshBasicMaterial({ color: frame[2] })));
+          g.add(inner, outer);
+          const gem = own(new BoxGeometry(0.16, 0.16, 0.06));
+          const gemMat = own(new MeshBasicMaterial({ color: frame[0] }));
+          for (let k = 0; k < (c.tier ?? 0); k++) {
+            const m = new Mesh(gem, gemMat);
+            m.rotation.z = Math.PI / 4;
+            m.position.set((k - ((c.tier ?? 1) - 1) / 2) * 0.28, -1.32, 0.05);
+            g.add(m);
+          }
+        }
         if (c.art) {
           const [w, h] = c.art.kind === 'card' ? [1.2, 1.78] : c.art.kind === 'badge' ? [1.5, 1.68] : [2.2, 2.2];
           const mat = own(new MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
@@ -365,7 +409,7 @@ export function mountShowdown(el: HTMLElement, { contenders }: { contenders: Con
 
       // ---- camera: a slow orbit, nudged by the pointer; pulled back on narrow screens ----
       let dist = 11;
-      const look = new Vector3(0, 2, -2.2);
+      const look = new Vector3(0, 2.7, -2.2);
       // Widest thing on stage: the arc of stats, or the row of floating art.
       const span = Math.max(2 * R * Math.sin(arc / 2) + 1.8, (n - 1) * artGap + 3);
       let px = 0;
@@ -374,6 +418,9 @@ export function mountShowdown(el: HTMLElement, { contenders }: { contenders: Con
 
       return {
         resize: (w, h) => {
+          // Where the HTML titles show (CSS hides them on phones), the floor numbers would repeat them.
+          const titled = labels.length > 0 && getComputedStyle(labels[0]).display !== 'none';
+          for (const n of nums) n.visible = !titled;
           // Back off until the whole span fits the horizontal field of view (fov 40° is vertical).
           const half = Math.atan(Math.tan((20 * Math.PI) / 180) * (w / h));
           dist = Math.max(10, (span / 2 / Math.tan(half)) * (w / h < 1 ? 0.98 : 1.08) + (w / h < 1 ? 0.5 : 2));
@@ -428,6 +475,29 @@ export function mountShowdown(el: HTMLElement, { contenders }: { contenders: Con
           const a = (still ? 0 : Math.sin(t * 0.12) * 0.16) + px * 0.12;
           camera.position.set(Math.sin(a) * dist, 5.4 + dist * 0.18 - py * 0.6, Math.cos(a) * dist);
           camera.lookAt(look);
+          if (labels.length && labels[0].offsetParent) {
+            camera.updateMatrixWorld();
+            const w = el.clientWidth;
+            const h = el.clientHeight;
+            labels.forEach((d, j) => {
+              const p = titleAt[j];
+              if (!p) return;
+              scratch.copy(p).project(camera);
+              // Alternate rows so neighbours in the crowded middle of the arc never overlap.
+              d.style.transform = `translate(-50%, -50%) translate(${((scratch.x + 1) / 2) * w}px, ${((1 - scratch.y) / 2) * h + (j % 2 ? 15 : -11)}px)`;
+            });
+          }
+          if (plates.length) {
+            camera.updateMatrixWorld();
+            const w = el.clientWidth;
+            const h = el.clientHeight;
+            plates.forEach((d, i) => {
+              const f = floaters[i];
+              if (!f) return;
+              scratch.set(f.g.position.x, f.g.position.y + (contenders[i]?.champion ? 2.15 : 1.5), f.g.position.z).project(camera);
+              d.style.transform = `translate(-50%, -100%) translate(${((scratch.x + 1) / 2) * w}px, ${((1 - scratch.y) / 2) * h}px)`;
+            });
+          }
         },
         dispose: () => {
           for (const o of owned) o.dispose();
@@ -439,6 +509,7 @@ export function mountShowdown(el: HTMLElement, { contenders }: { contenders: Con
   );
   return () => {
     removeEventListener('pointermove', onMove);
+    for (const d of [...labels, ...plates]) d.remove();
     stop?.();
   };
 }

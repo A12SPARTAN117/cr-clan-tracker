@@ -1,7 +1,7 @@
 import 'server-only';
 import { connection } from 'next/server';
 import { getClan, getClanRankings, getClanWarRankings, getLocations, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
-import { findPlayersByName, indexPlayers, rankByName, seedDirectory, type DirPlayer } from './directory';
+import { findPlayersByName, indexClanMembers, indexPlayers, rankByName, seedDirectory, type DirPlayer } from './directory';
 import { checkTag } from './tags';
 
 /**
@@ -99,5 +99,7 @@ export async function search(raw: string, scope: SearchScope = 'all', limit = 10
     out.players = rankByName([...merged.values()], name, limit);
   }
   if (out.tagPlayer) void indexPlayers([out.tagPlayer]);
+  // A clan found by tag brings its whole roster into the directory.
+  if (clan?.ok) void indexClanMembers(clan.data);
   return out;
 }

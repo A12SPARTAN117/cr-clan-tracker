@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { Reveal } from '@/components/fx/Reveal';
 import { EmptyState } from '@/components/EmptyState';
-import { ClanBadge } from '@/components/ui/ClanBadge';
+import { ClanFrame } from '@/components/ui/ClanFrame';
 import { getClan, getClanWarRankings, getLocations, searchClans } from '@/lib/cr/api';
 import { pool } from '@/lib/pool';
 import type { Clan } from '@/lib/cr/types';
@@ -34,7 +34,7 @@ function ClanCard({ c }: { c: Row }) {
       }}
     >
       <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-        <ClanBadge badgeId={c.badgeId} size={52} name={c.name} />
+        <ClanFrame badgeId={c.badgeId} warTrophies={c.clanWarTrophies} size={44} name={c.name} label />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
           <span style={{ font: '800 20px/1.05 var(--mono)', letterSpacing: '-.03em', overflowWrap: 'anywhere' }}>{c.name}</span>
           <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.1em', color: 'var(--text-3)', textTransform: 'uppercase' }}>

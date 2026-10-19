@@ -17,6 +17,8 @@ export type CompareEntity = {
   name: string;
   sub: string;
   badgeId?: number;
+  /** Clans: war trophies, for the league frame. */
+  warTrophies?: number;
   deck?: PlayerProfile['deck'];
   /** Art for the 3D showdown: the favourite card's troop render (local) or card art (official). */
   art?: { src: string; kind: 'render' | 'card' } | null;
@@ -158,7 +160,7 @@ export async function compare(kind: CompareKind, tags: string[]): Promise<Compar
   const cs = got.filter((c): c is ClanProfile => !!c);
   return {
     kind,
-    entities: cs.map((c) => ({ tag: c.tag, name: c.name, sub: c.location ?? `#${c.tag}`, badgeId: c.badgeId })),
+    entities: cs.map((c) => ({ tag: c.tag, name: c.name, sub: c.location ?? `#${c.tag}`, badgeId: c.badgeId, warTrophies: c.clanWarTrophies })),
     missing: list.filter((_, i) => !got[i]),
     sections: cs.length ? clans(cs) : [],
   };

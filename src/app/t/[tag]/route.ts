@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
+import { after } from 'next/server';
 import { getClan, getPlayer } from '@/lib/cr/api';
 import { limitRequest } from '@/lib/ratelimit';
+import { indexClanMembers, indexPlayers } from '@/lib/directory';
 import { checkTag } from '@/lib/tags';
 
 /**
@@ -15,6 +17,12 @@ export async function GET(req: Request, ctx: RouteContext<'/t/[tag]'>) {
   const c = checkTag(decodeURIComponent(raw));
   if (c.kind !== 'valid') redirect(`/player/${encodeURIComponent(raw)}`);
   const [player, clan] = await Promise.all([getPlayer(c.tag), getClan(c.tag)]);
+  // Everyone found by tag joins the name directory, so their name finds them next time (and a
+  // clan brings its whole roster).
+  after(async () => {
+    if (player.ok) await indexPlayers([{ tag: player.data.tag, name: player.data.name, clanTag: player.data.clan?.tag, clanName: player.data.clan?.name, trophies: player.data.trophies }]);
+    if (clan.ok) await indexClanMembers(clan.data);
+  });
   if (player.ok && clan.ok) redirect(`/t/${c.tag}/pick`);
   if (player.ok) redirect(`/player/${c.tag}`);
   if (clan.ok) redirect(`/clan/${c.tag}`);

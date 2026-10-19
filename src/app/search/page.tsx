@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { EmptyState } from '@/components/EmptyState';
+import { TagFirst } from '@/components/TagFirst';
 import { Portal } from '@/components/fx/Portal';
 import { Reveal } from '@/components/fx/Reveal';
 import { TagSearch } from '@/components/TagSearch';
@@ -152,10 +153,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
               No players by that name yet.
             </p>
           )}
-          <span style={{ font: '500 10px/1.6 var(--mono)', letterSpacing: '.08em', color: 'var(--text-3)' }}>
-            The Clash Royale API can only look players up by tag, so name search covers the global Path of Legends top 1000 and everyone in a clan
-            opened on this site. Search by #tag to find anyone.
-          </span>
+          <TagFirst found={r.players.length > 0} />
         </section>
       )}
 

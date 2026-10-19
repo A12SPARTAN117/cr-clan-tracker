@@ -9,6 +9,7 @@ import { PinnedPlayer } from './PinnedPlayer';
 import { TrophyIcon } from '@/components/ui/icons';
 import { fmt } from '@/lib/format';
 import { search } from '@/lib/search';
+import { TagFirst } from '@/components/TagFirst';
 
 export const metadata: Metadata = { title: 'Players' };
 
@@ -76,13 +77,10 @@ async function PlayerResults({ searchParams }: { searchParams: Promise<Record<st
         </div>
       ) : (
         <p className="body" style={{ fontSize: 14 }}>
-          No players by that name yet. Search by #tag to find anyone.
+          No players by that name yet.
         </p>
       )}
-      <span style={{ font: '500 10px/1.6 var(--mono)', letterSpacing: '.08em', color: 'var(--text-3)' }}>
-        The Clash Royale API only finds players by tag, so names are matched against the Path of Legends leaderboards of every country, plus
-        everyone in a clan or battle log opened on this site.
-      </span>
+      <TagFirst found={rows.length > 0} />
     </section>
   );
 }

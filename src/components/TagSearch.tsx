@@ -129,7 +129,11 @@ export function TagSearch({
     hint = `Looks like a tag · Enter to open #${c.kind === 'valid' ? c.tag : ''}`;
     hintFg = 'var(--blue-hi)';
   } else if (trimmed.length >= 2) {
-    hint = `Enter to see every ${scope === 'player' ? 'player' : scope === 'clan' ? 'clan' : 'player and clan'} matching "${trimmed}"`;
+    // Player names only find people already in our directory, so point at the tag.
+    hint =
+      scope === 'clan'
+        ? `Enter to see every clan matching "${trimmed}" · not there? Search its #tag`
+        : `Enter to see every match for "${trimmed}" · not found? Search the #tag once and the name works after`;
   }
 
   const fg = 'var(--text-1)';
