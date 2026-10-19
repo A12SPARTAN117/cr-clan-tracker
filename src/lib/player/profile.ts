@@ -1,6 +1,6 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getBattleLog, getClan, getPlayer, getRiverRaceLog, tags } from '../cr/api';
+import { anyFailed, getBattleLog, getClan, getPlayer, getRiverRaceLog, tags } from '../cr/api';
 import type { ApiBadge, ApiCard, Battle, Player, PolResult } from '../cr/types';
 import { CARDS, TOWER_TROOPS, cardById, realLevel, type Rarity } from '../cards';
 import { characterFor } from '../characters';
@@ -282,7 +282,7 @@ function toBadge(b: ApiBadge): Badge {
   };
 }
 
-async function build(tag: string): Promise<PlayerProfile | null> {
+async function build(tag: string): Promise<{ data: PlayerProfile; failed: boolean } | null> {
   // The battle log doesn't depend on the profile, so it loads alongside it (one round trip less).
   const [r, log] = await Promise.all([getPlayer(tag), getBattleLog(tag)]);
   if (!r.ok) return null;
@@ -427,7 +427,7 @@ async function build(tag: string): Promise<PlayerProfile | null> {
     });
   }
 
-  return {
+  const data: PlayerProfile = {
     generatedAt: now.toISOString(),
     tag: bare(p.tag),
     name: p.name,
@@ -474,13 +474,15 @@ async function build(tag: string): Promise<PlayerProfile | null> {
     decks: [...deckMap.values()].sort((a, b) => b.games - a.games || a.lastHours - b.lastHours),
     war,
   };
+  return { data, failed: anyFailed([log, clan, raceLog]) };
 }
 
 export async function getPlayerProfile(tag: string): Promise<PlayerProfile | null> {
   'use cache';
   cacheTag(tags.player(tag));
-  const d = await build(bare(tag));
-  if (d) cacheLife('crLive');
+  const b = await build(bare(tag));
+  // A partial build (one of its API calls failed) only lives as long as an error.
+  if (b && !b.failed) cacheLife('crLive');
   else cacheLife('crError');
-  return d;
+  return b?.data ?? null;
 }

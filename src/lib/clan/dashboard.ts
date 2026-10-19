@@ -1,6 +1,6 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getBattleLog, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags } from '../cr/api';
+import { anyFailed, getBattleLog, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags } from '../cr/api';
 import type { ApiRole, Battle, Clan, CurrentRiverRace, RiverRaceLogEntry } from '../cr/types';
 import type { ClanHistory, RosterEvent } from '../history';
 import { parseApiDate } from '../format';
@@ -194,7 +194,7 @@ function raceStreak(hist: WeekHistory[]): number {
   return n;
 }
 
-async function build(tag: string): Promise<Dashboard | null> {
+async function build(tag: string): Promise<{ data: Dashboard; failed: boolean } | null> {
   const [clanR, raceR, logR] = await Promise.all([getClan(tag), getCurrentRiverRace(tag), getRiverRaceLog(tag, 10)]);
   if (!clanR.ok) return null;
   const clan = clanR.data;
@@ -315,7 +315,7 @@ async function build(tag: string): Promise<Dashboard | null> {
       .sort((a, b) => b.decks - a.decks || b.fame - a.fame),
   }));
 
-  return {
+  const data: Dashboard = {
     generatedAt: now.toISOString(),
     clan: {
       tag: ourTag,
@@ -337,16 +337,18 @@ async function build(tag: string): Promise<Dashboard | null> {
     history: null,
     logsRead: logs.filter((l) => l.ok).length,
   };
+  return { data, failed: anyFailed([raceR, logR, ...players, ...logs]) };
 }
 
 /** Everything the clan dashboard shows, cached per clan (Refresh revalidates the clan tag). */
 export async function getDashboard(tag: string): Promise<Dashboard | null> {
   'use cache';
   cacheTag(tags.clan(tag));
-  const d = await build(bare(tag));
-  if (d) cacheLife('cr');
+  const b = await build(bare(tag));
+  // A partial build (one of its API calls failed) only lives as long as an error.
+  if (b && !b.failed) cacheLife('cr');
   else cacheLife('crError');
-  return d;
+  return b?.data ?? null;
 }
 
 
