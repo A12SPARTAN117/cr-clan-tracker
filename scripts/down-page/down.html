@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#07080A">
-<title>The arena is down · CR Clan Tracker</title>
+<title>We got three-crowned · CR Clan Tracker</title>
 <style>
   :root { color-scheme: dark; --bg: #07080A; --text: #F3F4F6; --text-2: #A4A9B4; --text-3: #6B7079; --blue: #3AA0FF; --ice: #8CCBFF; --ember: #FF5464;
     --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; --sans: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif; }
@@ -26,7 +26,8 @@
       radial-gradient(ellipse 90% 60% at 50% 110%, rgba(140,203,255,.10), transparent 70%),
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='900' height='900'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.0025 0.012' numOctaves='5' seed='11'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 -2.2 1.35'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.05'/></svg>"),
       var(--bg); }
-  .fog { position: absolute; width: 140vmax; height: 60vmax; left: -20vmax; border-radius: 50%; filter: blur(60px); opacity: .5;
+  /* No blur filter: Chrome clips blurs on layers this big, which drew a hard edge. The gradient is soft enough. */
+  .fog { position: absolute; width: 140vmax; height: 60vmax; left: -20vmax; border-radius: 50%; opacity: .5;
     background: radial-gradient(ellipse at center, rgba(164,169,180,.22), transparent 65%); animation: drift 38s ease-in-out infinite alternate; }
   .fog.b { top: 55%; animation-duration: 52s; animation-direction: alternate-reverse; opacity: .4; }
   .fog.a { top: 20%; }
@@ -35,11 +36,18 @@
   @keyframes drift { from { transform: translateX(-8vmax); } to { transform: translateX(8vmax); } }
 
   main { position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 20px; padding: 64px 24px 40px; text-align: center; }
-  .crown { width: 72px; height: 72px; color: var(--ice); filter: drop-shadow(0 0 18px rgba(58,160,255,.55)); animation: pulse 3.2s ease-in-out infinite; }
+    gap: clamp(14px, 2.2vh, 20px); padding: clamp(36px, 6vh, 64px) 24px 40px; text-align: center; }
+  /* Sizes follow the window height too, so the Donate button fits above the fold on laptops. */
+  .hero { display: flex; flex-direction: column; align-items: center; gap: clamp(14px, 2.2vh, 20px); }
+  .crown { width: clamp(48px, 7vh, 72px); height: clamp(48px, 7vh, 72px); color: var(--ice); filter: drop-shadow(0 0 18px rgba(58,160,255,.55)); animation: pulse 3.2s ease-in-out infinite; }
   @keyframes pulse { 50% { filter: drop-shadow(0 0 30px rgba(58,160,255,.85)); transform: translateY(-3px); } }
+  /* The three-crowned scene (scene.js, inlined at build). The crown icon shows until WebGL starts. */
+  .stage { position: relative; width: min(600px, 92vw); height: clamp(170px, 32vh, 320px); display: grid; place-items: center; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+    -webkit-mask-image: radial-gradient(ellipse 72% 80% at 50% 45%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 72% 80% at 50% 45%, #000 55%, transparent 100%); }
+  .stage.live .crown { display: none; }
   .kicker { font: 500 10px/1.4 var(--mono); letter-spacing: .16em; color: var(--ember); text-transform: uppercase; }
-  .big { margin: 0; font: 800 clamp(96px, 18vw, 220px)/.8 var(--mono); letter-spacing: -.08em; color: transparent;
+  .big { margin: 0; font: 800 clamp(96px, min(18vw, 18vh), 220px)/.8 var(--mono); letter-spacing: -.08em; color: transparent;
     background: linear-gradient(180deg, #C9CCD2, #5A5E66); -webkit-background-clip: text; background-clip: text;
     filter: drop-shadow(0 0 30px rgba(58,160,255,.25)); }
   h2 { margin: 0; font: 700 clamp(22px, 3.2vw, 36px)/1.1 var(--mono); letter-spacing: -.03em; }
@@ -85,6 +93,12 @@
 
   @media (prefers-reduced-motion: reduce) { .fog, .crown, .dot { animation: none; } .btn { transition: none; } }
   @media (max-width: 520px) { main { padding-top: 48px; } .card { padding: 18px; } .row .btn { flex: 1 1 100%; } }
+  /* Wide screens: the donate card sits beside the 503 instead of under it, so it's always in view. */
+  @media (min-width: 1000px) {
+    main { flex-direction: row; gap: clamp(40px, 5vw, 88px); padding: 48px 56px; }
+    .hero { flex: 0 1 560px; }
+    .card { flex: 0 1 460px; margin-top: 0; }
+  }
 </style>
 </head>
 <body class="%DONATE_STATE%">
@@ -92,11 +106,14 @@
 <div class="frame" aria-hidden="true"></div>
 
 <main>
+ <div class="hero">
+  <div class="stage" id="stage" role="img" aria-label="Three gold crowns smash our three towers: we got three-crowned">
   <svg class="crown" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true">
     <path d="M10 46 6 18l14 12 12-18 12 18 14-12-4 28Z" fill="rgba(58,160,255,.12)"/>
     <path d="M10 46h44v6H10Z" fill="rgba(140,203,255,.25)"/>
     <circle cx="6" cy="17" r="2.6" fill="currentColor"/><circle cx="32" cy="10" r="2.6" fill="currentColor"/><circle cx="58" cy="17" r="2.6" fill="currentColor"/>
   </svg>
+  </div>
 
   <div class="online-only">
     <span class="kicker">● Server offline</span>
@@ -108,8 +125,8 @@
   <h1 class="big">503</h1>
 
   <div class="online-only">
-    <h2>THE ARENA IS DOWN</h2>
-    <p class="lead" style="margin-top:14px">Our server can't answer right now. Nothing is lost: your clan, history and pins are all safe. The site will be back soon.</p>
+    <h2>WE GOT THREE-CROWNED</h2>
+    <p class="lead" style="margin-top:14px">Our server lost all three towers and is rebuilding them. Nothing is lost: your clan, history and pins are all safe. The site will be back soon.</p>
   </div>
   <div class="offline-only">
     <h2>YOU'RE OFFLINE</h2>
@@ -120,6 +137,7 @@
     <button class="btn btn-light" type="button" id="retry">Try again</button>
   </div>
   <p class="status" id="status" role="status" aria-live="polite"></p>
+ </div>
 
   <section class="card online-only" aria-labelledby="why">
     <span class="kicker">● Keep the arena open</span>
@@ -169,5 +187,6 @@
   schedule();
 })();
 </script>
+<!--SCENE-->
 </body>
 </html>
