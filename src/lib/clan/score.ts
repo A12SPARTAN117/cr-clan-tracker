@@ -13,7 +13,7 @@ export const FACTOR_INFO: Record<Factor, { label: string; color: string; hint: s
   don: { label: 'Donations', color: 'var(--text-1)', hint: 'Cards donated this week' },
   act: { label: 'Activity', color: 'var(--text-2)', hint: 'Hours since last seen' },
   bat: { label: 'Win rate', color: 'var(--text-3)', hint: 'War battle win % (tracked battles)' },
-  ten: { label: 'Tenure', color: '#4a4e57', hint: 'Days in clan, maxes at 1 year' },
+  ten: { label: 'Loyalty', color: '#4a4e57', hint: 'Days in the clan, maxes at 1 year' },
 };
 
 const clamp = (n: number, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, n));

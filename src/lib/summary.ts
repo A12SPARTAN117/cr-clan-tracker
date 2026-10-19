@@ -1,5 +1,6 @@
 import 'server-only';
-import { getClan, getCurrentRiverRace, getPlayer } from './cr/api';
+import { getBattleLog, getClan, getCurrentRiverRace, getPlayer } from './cr/api';
+import { streakOf } from './player/profile';
 import { cardById, type Rarity } from './cards';
 import { parseApiDate } from './format';
 import type { ApiRole } from './cr/types';
@@ -27,7 +28,7 @@ export type ClanSummary = {
 };
 
 export async function playerSummary(tag: string): Promise<PlayerSummary | null> {
-  const r = await getPlayer(tag);
+  const [r, log] = await Promise.all([getPlayer(tag), getBattleLog(tag)]);
   if (!r.ok) return null;
   const p = r.data;
   const fav = p.currentFavouriteCard ? cardById(p.currentFavouriteCard.id) : undefined;
@@ -38,7 +39,8 @@ export async function playerSummary(tag: string): Promise<PlayerSummary | null> 
     trophies: p.trophies,
     role: p.role ?? null,
     clan: p.clan ? { tag: p.clan.tag.replace('#', ''), name: p.clan.name } : null,
-    streak: p.currentWinLoseStreak ?? 0,
+    // Same count as the player page; the API's own currentWinLoseStreak lags behind the battle log.
+    streak: log.ok ? streakOf(log.data) : (p.currentWinLoseStreak ?? 0),
     league: pol?.leagueNumber ?? null,
     rating: pol?.trophies ?? null,
     favourite: fav ? { slug: fav.slug, rarity: fav.rarity, img: fav.icons.normal } : null,

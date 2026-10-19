@@ -31,21 +31,24 @@
   border-color: var(--blue);
   color: var(--text-1);
 }
+/* Facts sit in aligned columns: 2 across on phones, 3 from 600px (two even rows of three). */
 .facts {
-  display: flex;
-  flex-wrap: wrap;
-  border-top: 1px solid rgba(var(--ink-rgb), 0.14);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 22px;
+}
+@media (min-width: 600px) {
+  .facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 .fact {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  padding: 14px 22px 0 0;
-  margin-right: 22px;
-  border-right: 1px solid rgba(var(--ink-rgb), 0.1);
-}
-.fact:last-child {
-  border-right: 0;
+  min-width: 0;
+  padding: 14px 0 12px;
+  border-top: 1px solid rgba(var(--ink-rgb), 0.14);
 }
 .factK {
   font: 500 9px/1 var(--mono);

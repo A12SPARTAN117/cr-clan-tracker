@@ -348,6 +348,21 @@ img {
     var(--charcoal);
 }
 
+/* Hairline grid. Each cell draws its own 1px lines (the shadows meet in the gaps and the 1px
+   padding), so a part-filled last row ends where its cells do instead of leaving an empty grey
+   block. Cells bring their own background. */
+.cells {
+  position: relative;
+  display: grid;
+  gap: 1px;
+  padding: 1px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cells > * {
+  box-shadow: 0 0 0 1px var(--hair);
+}
+
 /* ---------- buttons ---------- */
 .btn {
   display: inline-flex;

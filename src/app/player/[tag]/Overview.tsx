@@ -3,7 +3,7 @@
 import { CardTile } from '@/components/CardTile';
 import { DeckBlock } from '@/components/DeckBlock';
 import { EmberField } from '@/components/fx/EmberField';
-import { BadgeIcon, CardsIcon, ChestIcon, CrownIcon, DonationIcon, SwordsIcon, TrophyIcon, WinRateIcon } from '@/components/ui/icons';
+import { BadgeIcon, CardsIcon, ChestIcon, CrownIcon, DonationIcon, SwordsIcon, TrophyIcon, WinRateIcon, ClanWarIcon } from '@/components/ui/icons';
 import { FitValue } from '@/components/ui/primitives';
 import { agoShort, fmt } from '@/lib/format';
 import type { PlayerProfile } from '@/lib/player/profile';
@@ -48,7 +48,7 @@ function StreakPanel({ p }: { p: PlayerProfile }) {
       <div className={s.form} aria-label="Last 30 battles, newest first">
         {form.map((b) => (
           <span key={b.id} className={s.formCell} data-r={b.result} title={`${b.result.toUpperCase()} · ${KIND_LABEL[b.kind]} · vs ${b.opp.name}`}>
-            <BattleKindIcon kind={b.kind} size={14} />
+            <BattleKindIcon kind={b.kind} size={22} />
             <span>{b.result === 'win' ? 'W' : b.result === 'loss' ? 'L' : 'D'}</span>
           </span>
         ))}
@@ -104,6 +104,7 @@ export function OverviewTab({ p, onCopy }: { p: PlayerProfile; onCopy: (t: strin
     ['Star points', fmt(t.starPoints), '', <BadgeIcon key="i" />],
     ['Challenge best', fmt(t.challengeMaxWins), 'wins', <ChestIcon key="i" />],
     ['Donations', fmt(t.totalDonations), 'total', <DonationIcon key="i" />],
+    ['War day wins', fmt(t.warDayWins), '', <ClanWarIcon key="i" />],
   ];
 
   return (

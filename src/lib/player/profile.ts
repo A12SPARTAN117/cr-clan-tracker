@@ -181,6 +181,20 @@ function runOf(battles: BattleRow[]): PlayerProfile['streakRun'] {
   return { kind: first, count: ids.length, ids };
 }
 
+/**
+ * The current streak straight from a raw battle log, signed (+3 = three wins, -2 = two losses),
+ * counted the same way as the player page: friendlies, boat battles and draws are skipped.
+ */
+export function streakOf(battles: Battle[]): number {
+  const counted = battles
+    .filter((b) => !['friendly', 'boat'].includes(battleKind(b)))
+    .map((b) => Math.sign(b.team.reduce((a, t) => Math.max(a, t.crowns), 0) - b.opponent.reduce((a, t) => Math.max(a, t.crowns), 0)))
+    .filter((r) => r !== 0);
+  let n = 0;
+  while (n < counted.length && counted[n] === counted[0]) n++;
+  return n * (counted[0] ?? 0);
+}
+
 /** The seasonal trophy road entry of `progress` ("seasonal-trophy-road-YYYYMM"). */
 function seasonalOf(p: Player): PlayerProfile['seasonal'] {
   const e = Object.entries(p.progress ?? {}).find(([k]) => k.startsWith('seasonal-trophy-road'))?.[1];
@@ -193,6 +207,32 @@ function pol(r?: PolResult): Pol {
 
 function leveled(c: ApiCard): LeveledCard {
   return { ...toDeckCard(c), level: c.level && c.maxLevel ? realLevel(c.level, c.maxLevel) : null };
+}
+
+/**
+ * The current deck with each card in the form it's played in. The API's currentDeck flags every
+ * card whose evo or hero the player has unlocked, wherever it sits, so it can show four evos.
+ * In the game only three slots take one: slot 1 is the evo slot, slot 2 the hero slot and slot 3
+ * either (checked across 661 logged decks; no other slot ever plays as one). The latest battle
+ * with this deck says the actual forms; without one, unlocks decide (slot 3 prefers the evo).
+ */
+function currentDeckCards(p: Player, battles: Battle[]): LeveledCard[] {
+  const deck = p.currentDeck ?? [];
+  const ids = (cs: { id: number }[]) => cs.map((c) => c.id).sort((a, b) => a - b).join();
+  const me = bare(p.tag);
+  const played = battles
+    .flatMap((b) => b.team)
+    .find((t) => bare(t.tag) === me && t.cards.length === deck.length && ids(t.cards) === ids(deck));
+  const unlocked = new Map(p.cards.map((c) => [c.id, c.evolutionLevel ?? 0]));
+  return deck.map((c, i) => {
+    if (played) return leveled({ ...c, evolutionLevel: i < 3 ? played.cards[i].evolutionLevel : undefined });
+    const info = cardById(c.id);
+    const lv = Math.max(c.evolutionLevel ?? 0, unlocked.get(c.id) ?? 0);
+    const evo = !!info?.hasEvolution && (lv === 1 || lv === 3 || (!info.hasHero && lv > 0));
+    const hero = !!info?.hasHero && (lv === 2 || lv === 3 || (!info.hasEvolution && lv > 0));
+    const form = i === 0 ? (evo ? 1 : 0) : i === 1 ? (hero ? 2 : 0) : i === 2 ? (evo ? 1 : hero ? 2 : 0) : 0;
+    return leveled({ ...c, evolutionLevel: form || undefined });
+  });
 }
 
 export function modeLabel(b: Battle): string {
@@ -263,7 +303,7 @@ async function build(tag: string): Promise<PlayerProfile | null> {
   // Current deck, in slot order (evo/hero slots first).
   let deck: PlayerProfile['deck'] = null;
   if (p.currentDeck?.length) {
-    const cards = p.currentDeck.map(leveled);
+    const cards = currentDeckCards(p, log.ok ? log.data : []);
     const t = p.currentDeckSupportCards?.[0];
     const st = deckStats(cards);
     deck = {

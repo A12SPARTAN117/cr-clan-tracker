@@ -234,7 +234,7 @@ export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Sc
                     <span style={{ textAlign: 'right', color: 'var(--text-3)' }}>{open ? '−' : '+'}</span>
                   </button>
                   {open && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 1, background: 'var(--hair)', borderTop: '1px solid var(--hair)' }}>
+                    <div className="cells" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', borderRadius: 0 }}>
                       {w.members.map((pm) => (
                         <div key={pm.tag} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '10px 18px', background: 'var(--obsidian)', font: '500 12px/1.2 var(--mono)' }}>
                           <span style={{ fontFamily: 'var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pm.name}</span>

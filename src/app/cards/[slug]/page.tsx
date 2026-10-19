@@ -120,7 +120,7 @@ export default async function CardPage({ params }: PageProps<'/cards/[slug]'>) {
           <div className="panel" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div style={{ position: 'absolute', inset: 12, border: '1px solid var(--hair)', borderRadius: 4, pointerEvents: 'none' }} />
             <CardArt c={c} />
-            <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1, background: 'var(--hair)', border: '1px solid var(--hair)', borderRadius: 6, overflow: 'hidden' }}>
+            <div className="cells" style={{ gridTemplateColumns: 'repeat(3,1fr)', borderRadius: 6 }}>
               {facts.map(([k, v, fg]) => (
                 <div key={k} style={{ padding: '12px 14px', background: 'var(--obsidian)', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <span className="label-sm">{k}</span>

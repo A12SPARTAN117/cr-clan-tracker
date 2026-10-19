@@ -26,7 +26,7 @@ export const COLS: [SortKey, string, 'left' | 'right'][] = [
   ['warWin', 'War W%', 'right'],
   ['fWin', '1v1', 'right'],
   ['score', 'Asset', 'left'],
-  ['tenure', 'In clan', 'right'],
+  ['tenure', 'Loyalty', 'right'],
   ['trend', 'Trend', 'right'],
 ];
 
@@ -347,7 +347,7 @@ export function MembersTab({
                 <td style={{ padding: '6px 12px' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <ScoreGauge score={m.score} />
-                    <span className={s.segs} title="War · Donations · Activity · Win rate · Tenure">
+                    <span className={s.segs} title="War · Donations · Activity · Win rate · Loyalty">
                       {FACTORS.map((k) => (
                         <span key={k} style={{ width: `${((m.factors[k] * weights[k]) / sw).toFixed(1)}%`, background: FACTOR_INFO[k].color }} />
                       ))}
