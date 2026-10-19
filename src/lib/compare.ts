@@ -1,5 +1,6 @@
 import 'server-only';
 import { getClanProfile, type ClanProfile } from './clan/profile';
+import { cardBySlug } from './cards';
 import { leagueName } from './leagues';
 import { getPlayerProfile, type PlayerProfile } from './player/profile';
 
@@ -11,7 +12,15 @@ import { getPlayerProfile, type PlayerProfile } from './player/profile';
 export type CompareKind = 'player' | 'clan';
 export type CompareIcon = 'trophy' | 'medal' | 'crown' | 'swords' | 'cards' | 'star' | 'donation' | 'war' | 'members' | 'winrate' | 'streak' | 'clock' | 'chest' | 'fame' | 'badge' | 'tower' | 'alert';
 export type CompareRow = { label: string; icon: CompareIcon; values: (number | string | null)[]; better: 'high' | 'low' | null; unit?: string; digits?: number; /** Text to show instead of the number. */ labels?: (string | null)[] };
-export type CompareEntity = { tag: string; name: string; sub: string; badgeId?: number; deck?: PlayerProfile['deck'] };
+export type CompareEntity = {
+  tag: string;
+  name: string;
+  sub: string;
+  badgeId?: number;
+  deck?: PlayerProfile['deck'];
+  /** Art for the 3D showdown: the favourite card's troop render (local) or card art (official). */
+  art?: { src: string; kind: 'render' | 'card' } | null;
+};
 export type Comparison = { kind: CompareKind; entities: CompareEntity[]; missing: string[]; sections: { title: string; rows: CompareRow[] }[] };
 
 export const MAX_COMPARE = 4;
@@ -127,6 +136,12 @@ function clans(cs: ClanProfile[]): Comparison['sections'] {
   ];
 }
 
+function artOf(p: PlayerProfile): CompareEntity['art'] {
+  if (p.favourite?.render) return { src: p.favourite.render, kind: 'render' };
+  const card = p.favourite ? cardBySlug(p.favourite.slug)?.icons.normal : p.deck?.cards[0]?.img;
+  return card ? { src: card, kind: 'card' } : null;
+}
+
 export async function compare(kind: CompareKind, tags: string[]): Promise<Comparison> {
   const list = [...new Set(tags.map((t) => t.replace('#', '').toUpperCase()).filter(Boolean))].slice(0, MAX_COMPARE);
   if (kind === 'player') {
@@ -134,7 +149,7 @@ export async function compare(kind: CompareKind, tags: string[]): Promise<Compar
     const ps = got.filter((p): p is PlayerProfile => !!p);
     return {
       kind,
-      entities: ps.map((p) => ({ tag: p.tag, name: p.name, sub: p.clan?.name ?? 'No clan', deck: p.deck })),
+      entities: ps.map((p) => ({ tag: p.tag, name: p.name, sub: p.clan?.name ?? 'No clan', deck: p.deck, art: artOf(p) })),
       missing: list.filter((_, i) => !got[i]),
       sections: ps.length ? players(ps) : [],
     };
