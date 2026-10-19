@@ -239,30 +239,32 @@ td[data-lead='true'] .val::before {
   position: absolute;
   inset: 0;
 }
-/* Name plates along the top of the stage, one per contender. */
-.lanes {
+/* Name plates, placed above each contender's art by gl/showdown. */
+.stage :global(.sd-name) {
   position: absolute;
-  left: 24px;
-  right: 24px;
-  top: 24px;
-  display: grid;
-  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-  gap: 10px;
-  pointer-events: none;
-}
-.lanes span {
-  justify-self: center;
-  max-width: 100%;
-  padding: 7px 12px;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  max-width: 180px;
+  padding: 6px 11px;
   border: 1px solid var(--c);
   border-radius: 999px;
   background: color-mix(in srgb, var(--c) 18%, rgba(var(--void-rgb), 0.85));
   box-shadow: 0 0 18px color-mix(in srgb, var(--c) 45%, transparent);
-  font: 700 13px/1 var(--sans);
+  font: 700 12px/1 var(--sans);
   color: var(--text-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  pointer-events: none;
+  will-change: transform;
+}
+@media (max-width: 599px) {
+  .stage :global(.sd-name) {
+    max-width: 90px;
+    padding: 4px 7px;
+    font-size: 10px;
+  }
 }
 .legend {
   margin: 0;
@@ -360,15 +362,6 @@ td[data-lead='true'] .val::before {
   .stage {
     height: 320px;
   }
-  .lanes {
-    left: 16px;
-    right: 16px;
-    top: 18px;
-  }
-  .lanes span {
-    padding: 6px 8px;
-    font-size: 11px;
-  }
 }
 
 /* One-click showdowns when there's nothing to compare yet. */
@@ -409,4 +402,40 @@ td[data-lead='true'] .val::before {
   margin: 0 6px;
   font: 800 12px/1 var(--mono);
   color: var(--blue-hi);
+}
+.seat {
+  align-items: flex-start;
+}
+.seatBar {
+  align-self: stretch;
+}
+/* Stat titles under each column group (positioned by gl/showdown). */
+.stage :global(.sd-title) {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  max-width: 78px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(var(--void-rgb), 0.72);
+  border: 1px solid rgba(var(--glow-hi-rgb), 0.3);
+  font: 600 8px/1.2 var(--mono);
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--text-1);
+  pointer-events: none;
+  white-space: normal;
+  will-change: transform;
+}
+.stage :global(.sd-title b) {
+  color: var(--blue-hi);
+  margin-right: 4px;
+}
+@media (max-width: 759px) {
+  /* Phones: too narrow for titles; the numbered legend below names them. */
+  .stage :global(.sd-title) {
+    display: none;
+  }
 }

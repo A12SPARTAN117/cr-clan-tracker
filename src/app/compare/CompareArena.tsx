@@ -4,6 +4,8 @@ import { useMemo, useRef } from 'react';
 import { useLazyScene } from '@/components/fx/lazy';
 import type { Contender } from '@/components/fx/gl/showdown';
 import { badgeSrc } from '@/components/ui/ClanBadge';
+import { ClanFrame } from '@/components/ui/ClanFrame';
+import { clanLeague } from '@/lib/clanLeague';
 import { CrownIcon } from '@/components/ui/icons';
 import type { Comparison, CompareRow } from '@/lib/compare';
 import s from './compare.module.css';
@@ -56,11 +58,13 @@ export function CompareArena({ data, colors }: { data: Comparison; colors: strin
       values: scaled.map((r) => r[i]),
       leads: leads.map((l) => l === i),
       champion: champ === i,
+      frame: e.badgeId != null ? (clanLeague(e.warTrophies)?.colors ?? null) : null,
+      tier: clanLeague(e.warTrophies)?.tier ?? 0,
     }));
   }, [data, rows, leads, champ, colors]);
 
-  const key = JSON.stringify(contenders);
-  useLazyScene(host, () => import('@/components/fx/gl/showdown'), (m, el) => m.mountShowdown(el, { contenders }), [key]);
+  const key = JSON.stringify(contenders) + rows.map((r) => r.label).join();
+  useLazyScene(host, () => import('@/components/fx/gl/showdown'), (m, el) => m.mountShowdown(el, { contenders, titles: rows.map((r) => r.label), names: data.entities.map((e) => e.name) }), [key]);
 
   if (data.entities.length < 2 || !rows.length) return null;
   const label = data.entities.map((e, i) => `${e.name} leads ${tally[i]} of ${rows.length} stats`).join('; ');
@@ -69,13 +73,6 @@ export function CompareArena({ data, colors }: { data: Comparison; colors: strin
     <section className={s.arena} aria-label="Showdown">
       <div className={s.stage}>
         <div ref={host} className={s.canvas} role="img" aria-label={`3D showdown. ${label}.`} />
-        <div className={s.lanes} style={{ ['--n' as string]: data.entities.length }} aria-hidden>
-          {data.entities.map((e, i) => (
-            <span key={e.tag} style={{ ['--c' as string]: colors[i] }}>
-              {e.name}
-            </span>
-          ))}
-        </div>
       </div>
       <p className={s.legend}>
         <span className="label-sm">Columns, front to back</span>
@@ -94,6 +91,7 @@ export function CompareArena({ data, colors }: { data: Comparison; colors: strin
                 <CrownIcon size={14} /> Leader
               </span>
             )}
+            {e.badgeId != null && <ClanFrame badgeId={e.badgeId} warTrophies={e.warTrophies} size={30} name={e.name} label />}
             <span className={s.seatName}>{e.name}</span>
             <span className={s.seatSub}>{e.sub}</span>
             <span className={s.seatScore}>

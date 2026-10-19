@@ -6,6 +6,7 @@ import { useTransition } from 'react';
 import { DeckBlock } from '@/components/DeckBlock';
 import { TagSearch } from '@/components/TagSearch';
 import { ClanBadge } from '@/components/ui/ClanBadge';
+import { ClanFrame } from '@/components/ui/ClanFrame';
 import {
   AlertIcon,
   BadgeIcon,
@@ -157,7 +158,7 @@ export function CompareView({ data, suggest }: { data: Comparison; suggest?: { p
                 {data.entities.map((e, i) => (
                   <th key={e.tag} style={{ ['--c' as string]: COLORS[i] }}>
                     <Link href={data.kind === 'player' ? `/player/${e.tag}` : `/clan/${e.tag}`} className={s.who}>
-                      {e.badgeId != null && <ClanBadge badgeId={e.badgeId} size={30} />}
+                      {e.badgeId != null && <ClanFrame badgeId={e.badgeId} warTrophies={e.warTrophies} size={34} label />}
                       <span>
                         <b>{e.name}</b>
                         <small>{e.sub}</small>

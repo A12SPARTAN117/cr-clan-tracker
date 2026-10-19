@@ -65,6 +65,29 @@
   padding-bottom: 6px;
   margin-bottom: -6px;
 }
+/* Support stands out a little: a pill with a heart. */
+.link.support {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: -7px 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(var(--ember-rgb), 0.45);
+  border-radius: 999px;
+  color: var(--nav-fg, var(--text-1));
+}
+.link.support::before {
+  content: '♥';
+  color: var(--ember);
+  font-size: 10px;
+}
+.link.support:hover {
+  border-color: var(--ember);
+  box-shadow: 0 0 14px rgba(var(--ember-rgb), 0.35);
+}
+.link.support[aria-current='page'] {
+  box-shadow: 0 0 14px rgba(var(--ember-rgb), 0.45);
+}
 .link:hover {
   color: var(--nav-fg, var(--text-1));
 }
@@ -416,10 +439,11 @@
 }
 @media (min-width: 1000px) and (max-width: 1239px) {
   .header {
-    gap: 18px;
+    gap: 14px;
   }
   .links {
-    gap: 16px;
+    gap: 12px;
+    letter-spacing: 0.06em;
   }
   .themeLabel,
   .hint {

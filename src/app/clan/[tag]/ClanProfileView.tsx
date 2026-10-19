@@ -8,7 +8,7 @@ import { RiverRace3D } from '@/components/fx/RiverRace3D';
 import { Fog } from '@/components/fx/Fog';
 import { Reveal } from '@/components/fx/Reveal';
 import { EmptyState } from '@/components/EmptyState';
-import { ClanBadge } from '@/components/ui/ClanBadge';
+import { ClanFrame } from '@/components/ui/ClanFrame';
 import { activityOf, FitValue, ROLE_LABEL } from '@/components/ui/primitives';
 import { ClockIcon, DonationIcon, ExpIcon, KingLevel, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { Tabs } from '@/components/ui/Tabs';
@@ -93,7 +93,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
               justifyContent: 'center',
             }}
           >
-            <ClanBadge badgeId={c.badgeId} size={110} name={c.name} />
+            <ClanFrame badgeId={c.badgeId} warTrophies={c.clanWarTrophies} size={74} name={c.name} label />
           </div>
         </div>
         <div

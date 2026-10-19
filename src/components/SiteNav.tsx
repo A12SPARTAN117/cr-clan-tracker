@@ -15,6 +15,8 @@ const LINKS = [
   { href: '/compare', label: 'Compare', match: ['/compare'] },
   { href: '/leaderboards', label: 'Leaderboards', match: ['/leaderboards'] },
   { href: '/news', label: 'News', match: ['/news'] },
+  { href: '/help', label: 'Help', match: ['/help'] },
+  { href: '/support', label: 'Support', match: ['/support'] },
 ];
 
 /** Every page, for the menu sheet on phones and tablets (the header links need a laptop's width). */
@@ -23,8 +25,6 @@ const MENU = [
   ...LINKS.slice(0, 6),
   { href: '/cards', label: 'Cards', match: ['/cards'] },
   ...LINKS.slice(6),
-  { href: '/help', label: 'Help', match: ['/help'] },
-  { href: '/support', label: 'Support us', match: ['/support'] },
 ];
 
 const TABS = [
@@ -184,7 +184,7 @@ function NavView({ pathname: path }: { pathname: string | null }) {
         </Link>
         <nav className={s.links} aria-label="Main">
           {LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className={s.link} aria-current={isActive(pathname, l.match) ? 'page' : undefined}>
+            <Link key={l.href} href={l.href} className={l.href === '/support' ? `${s.link} ${s.support}` : s.link} aria-current={isActive(pathname, l.match) ? 'page' : undefined}>
               {l.label}
             </Link>
           ))}
