@@ -1,6 +1,6 @@
 import 'server-only';
 import { desc, like, sql } from 'drizzle-orm';
-import { getDb, schema } from './db';
+import { enqueue, getDb, schema } from './db';
 
 /**
  * Player directory for name search. The official API only finds players by tag, so every
@@ -24,11 +24,6 @@ function remember(rows: DirPlayer[]) {
   if (m.size > MEM_MAX) for (const k of [...m.keys()].slice(0, m.size - MEM_MAX)) m.delete(k);
 }
 
-/**
- * Database writes go through one queue: the embedded Postgres (PGlite) is single-threaded and
- * crashed under many concurrent upserts, which corrupted its data folder.
- */
-let queue: Promise<unknown> = Promise.resolve();
 
 /**
  * Records players (deduped by tag). Never throws: search is best-effort. `persist: false`
@@ -48,9 +43,7 @@ export async function indexPlayers(
   if (!rows.length) return;
   remember(rows);
   if (!persist) return;
-  const job = queue.then(() => persistRows(rows));
-  queue = job.catch(() => {});
-  return job;
+  return enqueue(() => persistRows(rows));
 }
 
 async function persistRows(rows: DirPlayer[]) {

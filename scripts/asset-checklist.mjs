@@ -7,6 +7,10 @@
 // cards, arenas players are in), RoyaleAPI/cr-api-data (emotes, magic items, chests, game modes,
 // arenas, clan badges; last updated 2023, so newer items only show up via the API sample), and the
 // art already on disk. Everything the API and the data can't list is in MANUAL below.
+//
+// Badge levels the site has recorded from real profile views come from /api/badge-art on the
+// running site (SITE_URL, default http://localhost:3000); any we still need are saved as copies
+// in public/player-badges. Commit those so the site can fall back to them.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -69,11 +73,52 @@ async function sample() {
 }
 const S = process.argv.includes('--cached') && fs.existsSync(cacheFile) ? JSON.parse(fs.readFileSync(cacheFile, 'utf8')) : await sample();
 
+// Badge levels the site has recorded from real profile views (/api/badge-art). The site has to
+// be running; SITE_URL points at a deployed one instead of the local dev server.
+const SITE = process.env.SITE_URL || env.SITE_URL || 'http://localhost:3000';
+const recorded = await fetch(`${SITE}/api/badge-art`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+if (!recorded) console.warn(`[assets] couldn't read recorded badge art from ${SITE}/api/badge-art (is the site running?)`);
+const seenLevels = {}; // name -> level -> url, from profile views
+for (const r of recorded?.rows ?? []) {
+  (seenLevels[r.name] ??= {})[r.level] = r.url;
+  const b = (S.badges[r.name] ??= { maxLevel: r.maxLevel ?? 1, owners: 0, levels: {} });
+  b.maxLevel = Math.max(b.maxLevel, r.maxLevel ?? 1, r.level);
+}
+
 // Which badge-level images actually load (the CDN has dropped some).
-const urls = Object.values(S.badges).flatMap((b) => Object.values(b.levels));
+const urls = [...new Set([...Object.values(S.badges).flatMap((b) => Object.values(b.levels)), ...Object.values(seenLevels).flatMap((l) => Object.values(l))])];
 const live = new Set();
 await pool(urls, 16, async (u) => { const r = await fetch(u, { method: 'HEAD' }).catch(() => null); if (r?.ok) live.add(u); });
-console.log(`[assets] ${S.players} players, ${Object.keys(S.badges).length} badges, ${live.size}/${urls.length} badge images load`);
+console.log(`[assets] ${S.players} players, ${Object.keys(S.badges).length} badges, ${live.size}/${urls.length} badge images load, ${recorded?.count ?? 0} levels recorded by the site`);
+
+// Save a copy of every badge level we still need that a visitor's profile has shown us. Copies
+// are shrunk to 256 px (the site draws badges at 92 px) so the repo stays small; the Badges tab
+// falls back to them whenever Supercell's server doesn't load an image.
+const { createRequire } = await import('node:module');
+const sharp = createRequire(path.join(root, 'package.json'))('sharp');
+const badgeFile = (name, max, level) => `public/player-badges/${max > 1 ? `${name}_L${level}` : name}.png`;
+fs.mkdirSync(path.join(root, 'public/player-badges'), { recursive: true });
+let saved = 0;
+await pool(
+  Object.entries(seenLevels).flatMap(([name, levels]) => Object.entries(levels).map(([level, url]) => ({ name, level: +level, url }))),
+  6,
+  async ({ name, level, url }) => {
+    const b = S.badges[name];
+    const fromSample = b.levels[level] && live.has(b.levels[level]);
+    const file = path.join(root, badgeFile(name, b.maxLevel, level));
+    if (fromSample || fs.existsSync(file) || !live.has(url)) return;
+    const img = await fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null);
+    if (!img) return;
+    await sharp(Buffer.from(img)).resize(256, 256, { fit: 'inside' }).png({ palette: true, quality: 90 }).toFile(file);
+    saved++;
+  },
+);
+if (saved) console.log(`[assets] saved ${saved} new badge copies to public/player-badges`);
+// The Badges tab only tries copies listed here, so it never requests one that isn't there.
+fs.writeFileSync(
+  path.join(root, 'data/player-badges.json'),
+  JSON.stringify(fs.readdirSync(path.join(root, 'public/player-badges')).filter((f) => f.endsWith('.png')).sort(), null, 1) + '\n',
+);
 
 const [emotes, consumables, gameModes, arenaData, clanBadges] = await Promise.all(
   ['emotes', 'consumables', 'game_modes', 'arenas', 'alliance_badges'].map(data),
@@ -113,7 +158,8 @@ const label = (n) => {
 const badgeRows = {};
 for (const [name, b] of Object.entries(S.badges).sort(([a], [c]) => a.localeCompare(c))) {
   const levels = Array.from({ length: Math.max(1, b.maxLevel) }, (_, i) => i + 1);
-  const have = levels.filter((l) => b.levels[l] && live.has(b.levels[l]));
+  // Have: the official image loads (from the sample), or we've saved a copy.
+  const have = levels.filter((l) => (b.levels[l] && live.has(b.levels[l])) || onDisk(badgeFile(name, b.maxLevel, l)));
   const need = levels.filter((l) => !have.includes(l));
   const file = b.maxLevel > 1 ? `public/player-badges/${name}_L<level>.png` : `public/player-badges/${name}.png`;
   (badgeRows[badgeGroup(name)] ??= []).push([label(name), `\`${name}\``, b.maxLevel > 1 ? b.maxLevel : 1, have.join(', ') || '—', need.join(', ') || '—', need.length ? `\`${file}\`` : 'all set']);
@@ -243,7 +289,7 @@ md.push('', `**${T.toLocaleString('en-US')} assets in total: ${HV.toLocaleString
 
 h('## 1. Player badges');
 md.push(
-  `Every badge held by the ${S.players.toLocaleString('en-US')} players sampled. **Each level has its own art** (mastery frames, the ×10 → ×100 laurels…), so a badge with 10 levels is 10 images. "Have" lists the levels we already load from the official API; save the others as \`<Name>_L<level>.png\`. A badge nobody in the sample owns (very old or very rare ones) won't be here: add any you know of.`,
+  `Every badge held by the ${S.players.toLocaleString('en-US')} players sampled. **Each level has its own art** (mastery frames, the ×10 → ×100 laurels…), so a badge with 10 levels is 10 images. "Have" lists the levels we already load from the official API or have saved a copy of. **These fill in by themselves:** whenever anyone opens a profile, the site records each badge level's art, and the next run of this script saves a copy of every level still missing (${recorded?.count ?? 0} levels recorded so far). Badges nobody has shown yet (very old or very rare ones) aren't listed; add any you know of as \`<Name>_L<level>.png\`.`,
 );
 for (const g of ['Achievements & milestones', 'Card mastery', 'Events, leagues & tournaments', 'Seasonal & yearly', 'Esports & special']) {
   if (!badgeRows[g]) continue;

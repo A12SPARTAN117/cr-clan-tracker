@@ -6,6 +6,7 @@ import { getPlayer } from '@/lib/cr/api';
 import { getPlayerProfile } from '@/lib/player/profile';
 import { getPlayerHistory } from '@/lib/history';
 import { checkTag } from '@/lib/tags';
+import { recordBadgeArt } from '@/lib/badgeArt';
 import { indexPlayers } from '@/lib/directory';
 import { after, connection } from 'next/server';
 import { PlayerView } from './PlayerView';
@@ -30,6 +31,8 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (!p) return <LostScene variant="error" tag={c.tag} />;
   // Everyone they played against goes into the name-search directory too.
   after(() => indexPlayers(p.battles.flatMap((b) => (b.them.tag ? [{ tag: b.them.tag, name: b.them.name, clanName: b.them.clan }] : []))));
+  // Each badge level's art, for the asset checklist (the API only shows the level they own).
+  after(() => recordBadgeArt(p.badges));
   return <PlayerView p={p} history={history} />;
 }
 

@@ -64,7 +64,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },
-      { source: '/:dir(characters|scenes|cards|badges|leagues)/:file*', headers: [{ key: 'Cache-Control', value: artCache }] },
+      { source: '/:dir(characters|scenes|cards|badges|leagues|ui|player-badges)/:file*', headers: [{ key: 'Cache-Control', value: artCache }] },
       // The worker must always be re-checked so fixes reach visitors straight away.
       { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }] },
       { source: '/down.html', headers: [{ key: 'Cache-Control', value: 'no-cache' }, { key: 'X-Robots-Tag', value: 'noindex' }] },

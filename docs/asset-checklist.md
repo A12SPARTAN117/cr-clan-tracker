@@ -31,7 +31,7 @@ _Generated 2026-10-19 by `node scripts/asset-checklist.mjs` from 3,252 real play
 
 ## 1. Player badges
 
-Every badge held by the 3,252 players sampled. **Each level has its own art** (mastery frames, the ×10 → ×100 laurels…), so a badge with 10 levels is 10 images. "Have" lists the levels we already load from the official API; save the others as `<Name>_L<level>.png`. A badge nobody in the sample owns (very old or very rare ones) won't be here: add any you know of.
+Every badge held by the 3,252 players sampled. **Each level has its own art** (mastery frames, the ×10 → ×100 laurels…), so a badge with 10 levels is 10 images. "Have" lists the levels we already load from the official API or have saved a copy of. **These fill in by themselves:** whenever anyone opens a profile, the site records each badge level's art, and the next run of this script saves a copy of every level still missing (172 levels recorded so far). Badges nobody has shown yet (very old or very rare ones) aren't listed; add any you know of as `<Name>_L<level>.png`.
 
 ### Achievements & milestones (15)
 
