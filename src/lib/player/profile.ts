@@ -283,13 +283,13 @@ function toBadge(b: ApiBadge): Badge {
 }
 
 async function build(tag: string): Promise<PlayerProfile | null> {
-  const r = await getPlayer(tag);
+  // The battle log doesn't depend on the profile, so it loads alongside it (one round trip less).
+  const [r, log] = await Promise.all([getPlayer(tag), getBattleLog(tag)]);
   if (!r.ok) return null;
   const p = r.data;
   const now = new Date();
   const clanTag = p.clan ? bare(p.clan.tag) : null;
-  const [log, clan, raceLog] = await Promise.all([
-    getBattleLog(tag),
+  const [clan, raceLog] = await Promise.all([
     clanTag ? getClan(clanTag) : Promise.resolve(null),
     clanTag ? getRiverRaceLog(clanTag, 10) : Promise.resolve(null),
   ]);

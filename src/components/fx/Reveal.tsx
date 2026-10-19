@@ -25,6 +25,37 @@ function useInViewOnce<T extends Element>() {
   return [ref, seen] as const;
 }
 
+/**
+ * Reveal state that never waits on JavaScript for what's already on screen. The server HTML plays
+ * the reveal with CSS alone ('auto'), so an above-the-fold title shows on first paint even while
+ * the page is still loading. Once hydrated, anything that starts off screen is hidden ('pre')
+ * and plays when scrolled to ('in').
+ */
+function useReveal<T extends Element>() {
+  const ref = useRef<T>(null);
+  const [phase, setPhase] = useState<'auto' | 'pre' | 'in'>('auto');
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    if (r.top < innerHeight && r.bottom > 0) return; // on screen: the CSS reveal already ran
+    // Hidden only after this check, so nothing on screen ever flashes away.
+    setPhase('pre');
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setPhase('in');
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return [ref, phase] as const;
+}
+
 type Tag = 'h1' | 'h2' | 'h3' | 'div' | 'p' | 'span';
 
 /**
@@ -44,16 +75,16 @@ export function Reveal({
   style?: CSSProperties;
   children: ReactNode;
 }) {
-  const [ref, seen] = useInViewOnce<HTMLElement>();
-  return createElement(as, { ref, className, style }, <span className={seen ? 'oa-reveal-in' : 'oa-reveal-pre'}>{children}</span>);
+  const [ref, phase] = useReveal<HTMLElement>();
+  return createElement(as, { ref, className, style }, <span className={`oa-reveal-${phase}`}>{children}</span>);
 }
 
 /** Hairline that draws in from the left (1100ms). */
 export function Draw({ style }: { style?: CSSProperties }) {
-  const [ref, seen] = useInViewOnce<HTMLDivElement>();
+  const [ref, phase] = useReveal<HTMLDivElement>();
   return (
     <div ref={ref} aria-hidden style={{ height: 1, ...style, background: 'none' }}>
-      <div className={seen ? 'oa-draw-in' : 'oa-draw-pre'} style={{ height: '100%', background: style?.background ?? 'var(--hair)' }} />
+      <div className={`oa-draw-${phase}`} style={{ height: '100%', background: style?.background ?? 'var(--hair)' }} />
     </div>
   );
 }
