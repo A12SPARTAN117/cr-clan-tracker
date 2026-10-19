@@ -523,9 +523,35 @@ img {
 }
 
 /* ---------- reveal / draw (see components/fx/Reveal.tsx) ---------- */
+.oa-reveal-auto,
 .oa-reveal-pre,
 .oa-reveal-in {
   display: block;
+}
+/* Server HTML: the reveal plays from CSS alone, so it never waits for JavaScript. */
+.oa-reveal-auto {
+  animation: oaRevealUp 0.9s var(--ease-out) both;
+}
+.oa-draw-auto {
+  transform-origin: left;
+  animation: oaDrawIn 1.1s var(--ease-io) both;
+}
+@keyframes oaRevealUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 -10% 0);
+  }
+}
+@keyframes oaDrawIn {
+  from {
+    transform: scaleX(0);
+  }
 }
 .oa-reveal-pre {
   opacity: 0;
