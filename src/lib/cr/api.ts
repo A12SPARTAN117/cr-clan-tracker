@@ -62,6 +62,15 @@ function settle<T>(r: ApiResult<T>, profile: 'cr' | 'crLive'): ApiResult<T> {
   return r;
 }
 
+/**
+ * True when any of these calls failed for a reason other than 404. A cache built on top of them
+ * sets its own `cacheLife`, which overrides theirs, so it must check this and use `crError`
+ * itself, or one rate-limited call sticks for the whole lifetime.
+ */
+export function anyFailed(rs: readonly (ApiResult<unknown> | null)[]): boolean {
+  return rs.some((r) => r !== null && !r.ok && r.status !== 404);
+}
+
 export async function getPlayer(tag: string) {
   'use cache';
   cacheTag(tags.player(tag));

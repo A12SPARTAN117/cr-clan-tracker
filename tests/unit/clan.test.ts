@@ -69,6 +69,7 @@ vi.mock('@/lib/cr/api', () => ({
   getRiverRaceLog: async () => ({ ok: true, data: { items: [] } }),
   getPlayer: async (t: string) => (players[t] ? { ok: true, data: { ...players[t], cards: [], badges: [], achievements: [], currentDeck: [] } } : { ok: false, status: 404, reason: 'notFound' }),
   getBattleLog: async (t: string) => ({ ok: true, data: logs[t] ?? [] }),
+  anyFailed: () => false,
 }));
 
 describe('clan dashboard on a training day', async () => {

@@ -1,6 +1,6 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags } from '../cr/api';
+import { anyFailed, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags } from '../cr/api';
 import type { ApiRole, Clan } from '../cr/types';
 import type { RosterEvent } from '../history';
 import { parseApiDate } from '../format';
@@ -28,7 +28,7 @@ export type ClanProfile = {
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
 
-async function build(tag: string): Promise<ClanProfile | null> {
+async function build(tag: string): Promise<{ data: ClanProfile; failed: boolean } | null> {
   const [c, race, log] = await Promise.all([getClan(tag), getCurrentRiverRace(tag), getRiverRaceLog(tag, 10)]);
   if (!c.ok) return null;
   const clan = c.data;
@@ -64,7 +64,7 @@ async function build(tag: string): Promise<ClanProfile | null> {
         };
       })
     : [];
-  return {
+  const data: ClanProfile = {
     generatedAt: new Date(now).toISOString(),
     tag: ours,
     name: clan.name,
@@ -90,13 +90,15 @@ async function build(tag: string): Promise<ClanProfile | null> {
     past,
     history: null,
   };
+  return { data, failed: anyFailed([race, log, ...profiles]) };
 }
 
 export async function getClanProfile(tag: string): Promise<ClanProfile | null> {
   'use cache';
   cacheTag(tags.clan(tag));
-  const d = await build(bare(tag));
-  if (d) cacheLife('cr');
+  const b = await build(bare(tag));
+  // A partial build (race, log or a profile failed) only lives as long as an error.
+  if (b && !b.failed) cacheLife('cr');
   else cacheLife('crError');
-  return d;
+  return b?.data ?? null;
 }

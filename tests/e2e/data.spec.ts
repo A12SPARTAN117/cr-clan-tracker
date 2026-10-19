@@ -59,9 +59,11 @@ test.describe('data shown on screen matches the API', () => {
     const p = await api<Player>(`/players/${enc(tag)}`);
     await page.goto(`/player/${tag}`);
     await expect(page.locator('h1:visible')).toHaveText(p.name, { timeout: 60_000 });
+    // Above 14,000 the header shows the seasonal trophy road, which lives in `progress`.
+    const seasonal = Object.entries(p.progress ?? {}).find(([k]) => k.startsWith('seasonal-trophy-road'))?.[1];
     const body = page.locator('body');
-    await expect(body).toContainText(fmt(p.trophies));
-    await expect(body).toContainText(`BEST ${fmt(p.bestTrophies)}`);
+    await expect(body).toContainText(fmt(seasonal?.trophies ?? p.trophies));
+    await expect(body).toContainText(`BEST ${fmt(seasonal?.bestTrophies ?? p.bestTrophies)}`);
   });
 
   test('Path of Legends top 5 on the home page, with medals', async ({ page }) => {
