@@ -17,6 +17,8 @@ export function SiteFooter() {
         <Link href="/cards">Cards</Link>
         <Link href="/leaderboards">Leaderboards</Link>
         <Link href="/news">News</Link>
+        <Link href="/help">Help</Link>
+        <Link href="/support">Support us</Link>
         <span className={s.muted}>CR Clan Tracker · Fan-made</span>
       </nav>
     </footer>
