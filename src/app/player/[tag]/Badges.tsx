@@ -12,6 +12,7 @@ import {
   SwordsIcon,
   TrophyIcon,
 } from '@/components/ui/icons';
+import { CARDS } from '@/lib/cards';
 import { fmt } from '@/lib/format';
 import type { Badge, BadgeGroup, PlayerProfile } from '@/lib/player/profile';
 import extraBadges from '../../../../data/badge-art.json';
@@ -28,10 +29,36 @@ function pillOf(b: Badge): string | null {
   return null;
 }
 
+/**
+ * Real game art for badges the official CDN doesn't serve: a mastery badge shows its card, a year
+ * badge the experience star with the year on it, and event completions the chest they reward.
+ */
+function standIn(b: Badge): { src: string; year?: string } | null {
+  const mastery = /^Mastery(.+)$/.exec(b.id);
+  if (mastery) {
+    const slug = mastery[1].replace(/_v\d+$/, '').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+    const card = CARDS.find((c) => c.slug === slug || c.slug.replace(/[^a-z]/g, '') === slug.replace(/[^a-z]/g, ''));
+    return card?.icons.normal ? { src: card.icons.normal } : null;
+  }
+  const year = /^(\d{4})YearBadge$/.exec(b.id);
+  if (year) return { src: '/ui/experience.png', year: year[1] };
+  if (/Completion$/.test(b.id)) return { src: /Draft/.test(b.id) ? '/ui/chest-draft.png' : '/ui/chest-kinglegendary.png' };
+  return null;
+}
+
 function BadgeArt({ b }: { b: Badge }) {
   const [broken, setBroken] = useState(false);
   const local = EXTRA[b.id];
   const src = broken ? local : (b.img ?? local);
+  const alt = broken && !local ? standIn(b) : null;
+  if (alt)
+    return (
+      <span className={s.standIn}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- game art stand-in */}
+        <img src={alt.src} alt="" loading="lazy" />
+        {alt.year && <b>{alt.year}</b>}
+      </span>
+    );
   if (!src || (broken && !local))
     return (
       <span className={s.placeholder} aria-hidden>

@@ -6,7 +6,7 @@ import { Portal } from '@/components/fx/Portal';
 import { Reveal } from '@/components/fx/Reveal';
 import { TagSearch } from '@/components/TagSearch';
 import { ClanBadge } from '@/components/ui/ClanBadge';
-import { ExpIcon, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
+import { KingLevel, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { fmt } from '@/lib/format';
 import { search, type SearchClan, type SearchScope } from '@/lib/search';
 
@@ -107,10 +107,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
                 </span>
                 <span style={{ display: 'flex', gap: 14, font: '600 12px/1 var(--mono)', color: 'var(--text-2)' }}>
                   {r.tagPlayer.expLevel != null && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                      <ExpIcon size={14} />
-                      {r.tagPlayer.expLevel}
-                    </span>
+                    <KingLevel level={r.tagPlayer.expLevel} size={24} />
                   )}
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                     <TrophyIcon size={14} />

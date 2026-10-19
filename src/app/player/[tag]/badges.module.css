@@ -141,3 +141,22 @@
   display: inline-flex;
   gap: 2px;
 }
+
+/* Game-art stand-in for badges the official CDN doesn't serve (see standIn in Badges.tsx). */
+.standIn {
+  position: relative;
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+}
+.standIn img {
+  grid-area: 1 / 1;
+}
+.standIn b {
+  grid-area: 1 / 1;
+  position: relative;
+  font: 800 17px/1 var(--sans);
+  color: #fff;
+  text-shadow: 0 1px 0 #0a3a8a, 0 0 4px rgba(0, 30, 90, 0.8);
+}

@@ -10,7 +10,7 @@ import { Reveal } from '@/components/fx/Reveal';
 import { EmptyState } from '@/components/EmptyState';
 import { ClanBadge } from '@/components/ui/ClanBadge';
 import { activityOf, FitValue, ROLE_LABEL } from '@/components/ui/primitives';
-import { ClockIcon, DonationIcon, ExpIcon, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
+import { ClockIcon, DonationIcon, ExpIcon, KingLevel, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { Tabs } from '@/components/ui/Tabs';
 import type { ClanProfile } from '@/lib/clan/profile';
 import { agoShort, dstr, fmt } from '@/lib/format';
@@ -249,7 +249,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                         {ROLE_LABEL[m.role]}
                       </td>
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.trophies)}</td>
-                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{m.expLevel || '—'}</td>
+                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{m.expLevel ? <KingLevel level={m.expLevel} size={32} /> : '—'}</td>
                       <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.donations)}</td>
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 12px/1 var(--mono)', color: a === 'active' ? 'var(--blue)' : a === 'risk' ? 'var(--text-2)' : 'var(--ember)' }}>
                         {a === 'active' ? '● ' : a === 'risk' ? '◐ ' : '○ '}
