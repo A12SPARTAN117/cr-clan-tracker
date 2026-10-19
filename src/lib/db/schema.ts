@@ -95,3 +95,20 @@ export const players = pgTable(
   // drizzle/0002_players_name_trigram.sql because drizzle can't declare gin_trgm_ops.
   (t) => [index('players_name_lower').on(t.nameLower)],
 );
+
+/**
+ * Player badge art seen on profiles: each badge has its own image per level, and the API only
+ * hands out the level a player owns, so this fills in as players are looked up. The asset
+ * checklist (scripts/asset-checklist.mjs) reads it and saves copies of the levels we still need.
+ */
+export const badgeArt = pgTable(
+  'badge_art',
+  {
+    name: text('name').notNull(),
+    level: integer('level').notNull(),
+    maxLevel: integer('max_level'),
+    url: text('url').notNull(),
+    firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.name, t.level] })],
+);

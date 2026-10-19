@@ -51,4 +51,15 @@ async function open(url: string): Promise<Db> {
   return db as unknown as Db;
 }
 
+/**
+ * Background database writes go through one queue: the embedded Postgres (PGlite) is
+ * single-threaded and crashed under many concurrent upserts, which corrupted its data folder.
+ */
+let queue: Promise<unknown> = Promise.resolve();
+export function enqueue<T>(job: () => Promise<T>): Promise<T> {
+  const run = queue.then(job);
+  queue = run.catch(() => {});
+  return run;
+}
+
 export { schema };
