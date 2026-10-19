@@ -159,3 +159,12 @@ a.pname:hover {
   gap: 5px;
   color: var(--text-1);
 }
+
+/* Touch: opponent names are links, so give them a finger-sized hit area. */
+@media (pointer: coarse) {
+  a.pname {
+    display: inline-block;
+    padding: 8px 0;
+    margin: -8px 0;
+  }
+}

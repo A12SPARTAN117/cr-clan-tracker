@@ -159,3 +159,53 @@ td[data-lead='true'] .val::before {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 16px;
 }
+
+@media (pointer: coarse) {
+  .chip {
+    height: 40px;
+  }
+  .chip button {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* The metric names stay pinned on the left while the columns scroll. */
+.table th[scope='row'],
+.table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--charcoal);
+  box-shadow: inset -1px 0 0 var(--hair);
+}
+.table thead th:first-child {
+  z-index: 2;
+  background: var(--obsidian);
+}
+/* Phones: a narrow label column and tighter value columns, so two players fit side by side. */
+@media (max-width: 599px) {
+  .table {
+    min-width: calc(120px + var(--n) * 104px);
+  }
+  .table th,
+  .table td {
+    padding: 10px 10px;
+  }
+  .table th[scope='row'],
+  .table thead th:first-child {
+    width: 120px;
+  }
+  .rowLabel {
+    gap: 6px;
+    font-size: 12px;
+  }
+  .val {
+    font-size: 13px;
+    white-space: normal;
+  }
+  .who b {
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+}

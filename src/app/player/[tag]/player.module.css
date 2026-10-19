@@ -80,3 +80,10 @@
   padding: 9px 0;
   border-bottom: 1px solid var(--hair);
 }
+
+@media (pointer: coarse) {
+  .chip {
+    min-height: 36px;
+    padding: 8px 12px;
+  }
+}

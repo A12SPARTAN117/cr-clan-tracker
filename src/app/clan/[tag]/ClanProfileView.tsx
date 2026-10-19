@@ -14,6 +14,10 @@ import { ClockIcon, DonationIcon, ExpIcon, MembersIcon, TrophyIcon, WarTrophyIco
 import { Tabs } from '@/components/ui/Tabs';
 import type { ClanProfile } from '@/lib/clan/profile';
 import { agoShort, dstr, fmt } from '@/lib/format';
+import p from './profile.module.css';
+
+/** Columns phones drop to fit the screen (the role moves under the name). */
+const WIDE = new Set(['role', 'exp', 'don']);
 
 type Tab = 'members' | 'war' | 'roster' | 'stats';
 type SortKey = 'rank' | 'name' | 'role' | 'trophies' | 'exp' | 'don' | 'seen';
@@ -73,7 +77,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
         <div data-art="" style={{ position: 'absolute', inset: 0, background: 'var(--art-shields) center/cover', filter: 'grayscale(1) contrast(1.1) brightness(.55)' }} />
         <div style={{ position: 'absolute', left: '18%', top: '20%', width: 160, height: 240, background: 'radial-gradient(closest-side,rgba(255,180,90,.18),transparent)', animation: 'oaFlicker 2.6s infinite', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', right: '18%', top: '24%', width: 160, height: 240, background: 'radial-gradient(closest-side,rgba(255,180,90,.16),transparent)', animation: 'oaFlicker 3.1s infinite', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', left: '50%', top: '9%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
+        <div className={p.hang}>
           <span style={{ width: 1, height: 46, background: 'linear-gradient(var(--metal-lo),var(--text-2))' }} />
           <div
             style={{
@@ -132,6 +136,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', font: '500 11px/1 var(--mono)', letterSpacing: '.12em', color: 'var(--text-2)', textTransform: 'uppercase' }}>
                 <button
                   type="button"
+                  className="tap"
                   onClick={() => {
                     navigator.clipboard?.writeText(`#${c.tag}`).catch(() => {});
                     flash('TAG COPIED');
@@ -167,7 +172,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
       </section>
 
       <main style={{ position: 'relative', maxWidth: 1440, margin: '0 auto', padding: '0 var(--gutter) 80px', display: 'flex', flexDirection: 'column', gap: 28 }}>
-        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 1, background: 'var(--hair)', border: '1px solid var(--hair)', borderRadius: 8, overflow: 'hidden', marginTop: -20 }}>
+        <div className={p.stats}>
           {(
             [
               ['CLAN SCORE', fmt(c.clanScore), '', <TrophyIcon key="i" title="Clan score" />],
@@ -199,21 +204,22 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
 
         {tab === 'members' && (
           <div style={{ overflowX: 'auto', border: '1px solid var(--hair)', borderRadius: 8, background: 'var(--charcoal)' }}>
-            <table style={{ width: '100%', minWidth: 720, borderCollapse: 'collapse', fontVariantNumeric: 'tabular-nums' }}>
+            <table className={p.table}>
               <thead>
                 <tr>
                   {cols.map(([k, label, al, icon]) => {
                     const on = sort.k === k;
                     return (
-                      <th key={k} aria-sort={on ? (sort.d < 0 ? 'descending' : 'ascending') : 'none'} style={{ padding: 0, background: 'var(--glass)', borderBottom: '1px solid var(--hair)', textAlign: al }}>
+                      <th key={k} className={WIDE.has(k) ? p.wide : undefined} aria-sort={on ? (sort.d < 0 ? 'descending' : 'ascending') : 'none'} style={{ padding: 0, background: 'var(--glass)', borderBottom: '1px solid var(--hair)', textAlign: al }}>
                         <button
                           type="button"
+                          aria-label={label}
                           onClick={() => setSort((st) => ({ k, d: st.k === k ? ((-st.d) as 1 | -1) : k === 'name' || k === 'rank' || k === 'role' || k === 'seen' ? 1 : -1 }))}
                           style={{ width: '100%', height: 42, padding: '0 14px', background: 'none', border: 0, cursor: 'pointer', textAlign: al, font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: on ? 'var(--text-1)' : 'var(--text-3)' }}
                         >
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                             {icon}
-                            {label}
+                            <span className={icon ? p.iconLabel : undefined}>{label}</span>
                             <span style={{ color: 'var(--blue)' }}>{on ? (sort.d < 0 ? '▼' : '▲') : ''}</span>
                           </span>
                         </button>
@@ -235,13 +241,16 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                       onKeyDown={(e) => e.key === 'Enter' && router.push(`/player/${m.tag}`)}
                     >
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '500 12px/1 var(--mono)', color: 'var(--text-3)' }}>{String(m.rank).padStart(2, '0')}</td>
-                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '600 14px/1.2 var(--sans)' }}>{m.name}</td>
-                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '500 10px/1 var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase', color: m.role === 'leader' ? 'var(--gold)' : m.role === 'member' ? 'var(--text-2)' : 'var(--text-1)' }}>
+                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '600 14px/1.2 var(--sans)' }}>
+                        {m.name}
+                        <span className={p.roleSub}>{ROLE_LABEL[m.role]}</span>
+                      </td>
+                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '500 10px/1 var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase', color: m.role === 'leader' ? 'var(--gold)' : m.role === 'member' ? 'var(--text-2)' : 'var(--text-1)' }}>
                         {ROLE_LABEL[m.role]}
                       </td>
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.trophies)}</td>
-                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{m.expLevel || '—'}</td>
-                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.donations)}</td>
+                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{m.expLevel || '—'}</td>
+                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.donations)}</td>
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 12px/1 var(--mono)', color: a === 'active' ? 'var(--blue)' : a === 'risk' ? 'var(--text-2)' : 'var(--ember)' }}>
                         {a === 'active' ? '● ' : a === 'risk' ? '◐ ' : '○ '}
                         {agoShort(m.hours)}
