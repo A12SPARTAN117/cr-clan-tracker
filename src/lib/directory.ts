@@ -128,6 +128,9 @@ export async function findPlayersByName(q: string, limit = 100): Promise<DirPlay
 export function seedDirectory(fetchers: {
   locations: () => Promise<{ id: number; isCountry: boolean }[]>;
   board: (loc: number | 'global') => Promise<{ tag: string; name: string; clan?: { tag: string; name: string } }[]>;
+  /** Clan tags worth crawling for a location: top war and trophy clans. */
+  clans?: (loc: number | 'global', limit: number) => Promise<string[]>;
+  roster?: (tag: string) => Promise<{ tag: string; name: string; memberList: { tag: string; name: string; trophies: number }[] } | null>;
 }) {
   const g = globalThis as unknown as { __crSeed?: { at: number; running: boolean } };
   const st = (g.__crSeed ??= { at: 0, running: false });
@@ -150,6 +153,24 @@ export function seedDirectory(fetchers: {
           }
         }),
       );
+      // Then everyone in the strongest clans: the global top 200 and each country's top 5. This
+      // reaches the far larger pool of players who never rank in Path of Legends. Slow on
+      // purpose (3 at a time) so it never crowds out live pages; saved to the database too.
+      const { clans, roster } = fetchers;
+      if (clans && roster) {
+        const tags = new Set<string>();
+        for (const loc of locs) for (const t of await clans(loc.id, loc.id === 'global' ? 100 : 5).catch(() => [])) tags.add(t);
+        const queue = [...tags];
+        let j = 0;
+        await Promise.all(
+          Array.from({ length: 3 }, async () => {
+            while (j < queue.length) {
+              const c = await roster(queue[j++]).catch(() => null);
+              if (c) await indexClanMembers(c);
+            }
+          }),
+        );
+      }
       st.at = Date.now();
     } finally {
       st.running = false;
