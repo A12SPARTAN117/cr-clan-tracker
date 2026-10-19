@@ -2,7 +2,7 @@
   position: relative;
   max-width: var(--max);
   margin: 0 auto;
-  padding: 36px var(--gutter) 100px;
+  padding: 36px var(--gutter) calc(100px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--hair);
   display: flex;
   flex-wrap: wrap;
@@ -30,5 +30,19 @@
 @media (min-width: 760px) {
   .footer {
     padding-bottom: 36px;
+  }
+}
+
+/* Touch: the footer links are small type, so pad them to a finger-sized target. */
+@media (pointer: coarse) {
+  .nav {
+    gap: 0 6px;
+    align-items: center;
+  }
+  .nav a {
+    padding: 12px 8px;
+  }
+  .nav a:first-child {
+    padding-left: 0;
   }
 }

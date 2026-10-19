@@ -1,0 +1,86 @@
+/* The badge hangs from the top of the header on a chain. */
+.hang {
+  position: absolute;
+  left: 50%;
+  top: 9%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+/* Phones: the copy fills the header, so the badge hangs above it instead of behind it. */
+@media (max-width: 759px) {
+  .hang {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    align-self: center;
+    margin-top: 14px;
+  }
+  .hang > span {
+    height: 24px !important;
+  }
+}
+
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.roleSub {
+  display: none;
+}
+/* Phones: four columns that fit the screen; the role moves under the name. */
+@media (max-width: 599px) {
+  .table {
+    min-width: 0;
+  }
+  .wide,
+  .iconLabel {
+    display: none;
+  }
+  .roleSub {
+    display: block;
+    margin-top: 5px;
+    font: 500 9px/1 var(--mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .table td,
+  .table th button {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  .table :is(th, td):first-child,
+  .table th:first-child button {
+    padding-left: 12px !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* Six stats: 2 × 3 on phones, 3 × 2 on tablets, one row on wide screens. */
+.stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: -20px;
+  background: var(--hair);
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  overflow: hidden;
+}
+@media (min-width: 600px) {
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1100px) {
+  .stats {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}

@@ -131,3 +131,17 @@ a.name:hover {
     display: none;
   }
 }
+
+/* Touch: the small links get a finger-sized hit area without changing the layout. */
+@media (pointer: coarse) {
+  .stats,
+  a.name {
+    position: relative;
+  }
+  .stats::after,
+  a.name::after {
+    content: '';
+    position: absolute;
+    inset: -12px -6px;
+  }
+}

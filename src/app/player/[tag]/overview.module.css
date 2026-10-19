@@ -1,6 +1,8 @@
+/* Wrapping flex, not grid: 11 tiles never divide evenly, so the last row stretches to fill
+   instead of leaving empty cells. */
 .tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 168px), 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1px;
   background: var(--hair);
   border: 1px solid var(--hair);
@@ -8,6 +10,7 @@
   overflow: hidden;
 }
 .tile {
+  flex: 1 1 168px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

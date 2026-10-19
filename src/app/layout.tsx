@@ -21,6 +21,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: '#07080A',
+  // Fill the whole screen on notched phones; the header, tab bar and gutters pad for the safe areas.
+  viewportFit: 'cover',
 };
 
 // Applies the saved theme before first paint so Marble Day never flashes dark.

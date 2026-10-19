@@ -298,3 +298,23 @@
   font: 600 14px/1.2 var(--sans);
   color: var(--blue-hi);
 }
+
+/* Phones: the four views share the row equally instead of wrapping. */
+@media (max-width: 599px) {
+  .views {
+    display: flex;
+    flex-wrap: nowrap;
+    align-self: stretch;
+  }
+  .view {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 4px;
+    font-size: 12px;
+  }
+}
+@media (pointer: coarse) {
+  .view {
+    height: 40px;
+  }
+}

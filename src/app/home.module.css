@@ -112,6 +112,20 @@
   text-align: left;
 }
 
+/* Phones held sideways: the title and search have to fit in a short screen. */
+@media (max-height: 520px) and (orientation: landscape) {
+  .hero {
+    min-height: 420px;
+  }
+  .copy {
+    gap: 14px;
+    padding-bottom: 20px;
+  }
+  .title {
+    font-size: clamp(36px, 15vh, 80px);
+  }
+}
+
 /* ---------- sections ---------- */
 .main {
   position: relative;

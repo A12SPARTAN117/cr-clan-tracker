@@ -34,6 +34,13 @@
   gap: clamp(16px, 2vw, 28px);
   min-width: 0;
 }
+/* Small phones: the badge sits above the name so the facts get the full width. */
+@media (max-width: 479px) {
+  .ident {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 .clanName {
   margin: 0;
   font: 800 clamp(40px, 8.4vw, 132px) / 0.86 var(--mono);
@@ -88,13 +95,25 @@
 .tiles {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  /* Six tiles: 2 × 3 on phones, 3 × 2 on tablets, one row on wide screens. Never a half-empty row. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   background: var(--hair);
   border: 1px solid var(--hair);
   border-radius: 8px;
   overflow: hidden;
   margin-top: -28px;
+}
+
+@media (min-width: 600px) {
+  .tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1200px) {
+  .tiles {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 
 /* ---------- filters ---------- */
@@ -145,9 +164,10 @@
     radial-gradient(400px circle at var(--mx, -600px) var(--my, -600px), rgba(var(--glow-rgb), 0.06), transparent 70%),
     var(--charcoal);
 }
+/* Sized by its content: fits a wide laptop, and scrolls sideways (with the pinned columns
+   below) wherever it doesn't. */
 .table {
   width: 100%;
-  min-width: 1480px;
   border-collapse: separate;
   border-spacing: 0;
   font-variant-numeric: tabular-nums;
@@ -251,16 +271,71 @@
   color: var(--text-3);
 }
 
-/* mobile cards */
+/* Pinned columns: select, rank and name. Each needs its own background to cover what scrolls under it. */
+.stick0,
+.stick1,
+.stick2 {
+  position: sticky;
+  z-index: 1;
+  background: var(--charcoal);
+}
+.table th.stick0,
+.table th.stick1,
+.table th.stick2 {
+  z-index: 3;
+  background: var(--obsidian);
+}
+.stick0 {
+  left: 0;
+  width: 40px;
+  min-width: 40px;
+}
+.stick1 {
+  left: 40px;
+  width: 48px;
+  min-width: 48px;
+}
+.stick2 {
+  left: 88px;
+}
+.stickEdge {
+  box-shadow: inset -1px 0 0 var(--hair);
+}
+.row:hover .stick0,
+.row:hover .stick1,
+.row:hover .stick2,
+.row:focus-visible .stick0,
+.row:focus-visible .stick1,
+.row:focus-visible .stick2,
+.row[data-open='true'] .stick0,
+.row[data-open='true'] .stick1,
+.row[data-open='true'] .stick2 {
+  background: var(--slate);
+}
+.row:hover .stick0,
+.row:focus-visible .stick0,
+.row[data-open='true'] .stick0 {
+  box-shadow: inset 2px 0 0 var(--blue);
+}
+
+/* Phones and tablets get member cards (two across from 600px); the full table needs a laptop. */
 .desktopOnly {
   display: none;
 }
 .mobileOnly {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
 }
-@media (min-width: 760px) {
+.sortRow {
+  grid-column: 1 / -1;
+}
+@media (min-width: 600px) {
+  .mobileOnly {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1100px) {
   .desktopOnly {
     display: block;
   }
@@ -570,5 +645,12 @@
   .toast,
   .syncing {
     bottom: 24px;
+  }
+}
+
+@media (pointer: coarse) {
+  .copyTag {
+    min-height: 36px;
+    padding: 8px 12px;
   }
 }

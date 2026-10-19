@@ -17,12 +17,19 @@ const LINKS = [
   { href: '/news', label: 'News', match: ['/news'] },
 ];
 
+/** Every page, for the menu sheet on phones and tablets (the header links need a laptop's width). */
+const MENU = [
+  { href: '/', label: 'Home', match: [] as string[] },
+  ...LINKS.slice(0, 6),
+  { href: '/cards', label: 'Cards', match: ['/cards'] },
+  ...LINKS.slice(6),
+];
+
 const TABS = [
-  { href: '/', label: 'HOME', icon: { width: 16, height: 2, border: 0, background: 'currentColor' } },
-  { href: '/clans', label: 'SEARCH', icon: { borderRadius: '50%' } },
-  { href: '/my-clan', label: 'MY CLAN', icon: { transform: 'rotate(45deg)' } },
-  { href: '/decks', label: 'DECKS', icon: { width: 10, height: 14, borderRadius: 2 } },
-  { href: '/cards', label: 'MORE', icon: { borderRadius: '50%', borderStyle: 'dotted' } },
+  { href: '/', label: 'HOME', match: [], icon: { width: 16, height: 2, border: 0, background: 'currentColor' } },
+  { href: '/clans', label: 'CLANS', match: ['/clans', '/clan/'], icon: { borderRadius: '50%' } },
+  { href: '/my-clan', label: 'MY CLAN', match: ['/my-clan', '/manage'], icon: { transform: 'rotate(45deg)' } },
+  { href: '/decks', label: 'DECKS', match: ['/decks'], icon: { width: 10, height: 14, borderRadius: 2 } },
 ];
 
 function isActive(pathname: string, match: string[]) {
@@ -40,11 +47,11 @@ export function useTheme(): Theme {
   return useSyncExternalStore(subscribeTheme, getTheme, () => 'dark');
 }
 
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({ className, labelClassName }: { className?: string; labelClassName?: string }) {
   const theme = useTheme();
   return (
     <button type="button" className={className} onClick={() => toggleTheme()} aria-label="Toggle theme">
-      {theme === 'light' ? '◐ Marble' : '◑ Obsidian'}
+      <span aria-hidden>{theme === 'light' ? '◐' : '◑'}</span> <span className={labelClassName}>{theme === 'light' ? 'Marble' : 'Obsidian'}</span>
     </button>
   );
 }
@@ -58,13 +65,14 @@ export function BrandMark() {
   );
 }
 
-function NavSearch() {
+function NavSearch({ className, hotkey = true, onGo }: { className?: string; hotkey?: boolean; onGo?: () => void }) {
   const router = useRouter();
   const [q, setQ] = useState('');
   const input = useRef<HTMLInputElement>(null);
   const c = checkTag(q);
 
   useEffect(() => {
+    if (!hotkey) return;
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
@@ -73,11 +81,11 @@ function NavSearch() {
     };
     addEventListener('keydown', onKey);
     return () => removeEventListener('keydown', onKey);
-  }, []);
+  }, [hotkey]);
 
-  const hint = c.kind === 'empty' ? '⌘K' : c.kind === 'valid' ? 'TAG ↵' : 'NAME ↵';
+  const hint = c.kind === 'empty' ? (hotkey ? '⌘K' : '') : c.kind === 'valid' ? 'TAG ↵' : 'NAME ↵';
   return (
-    <label className={s.search} data-bad={c.kind === 'invalid' && !/\s/.test(q) && q.trim().startsWith('#')}>
+    <label className={`${s.search} ${className ?? ''}`} data-bad={c.kind === 'invalid' && !/\s/.test(q) && q.trim().startsWith('#')}>
       <span className={s.hash}>#</span>
       <input
         ref={input}
@@ -90,10 +98,14 @@ function NavSearch() {
             router.push(href);
             setQ('');
             input.current?.blur();
+            onGo?.();
           }
         }}
         placeholder="Tag or name"
         aria-label="Search players and clans"
+        enterKeyHint="search"
+        autoCorrect="off"
+        spellCheck={false}
       />
       <span className={s.hint} data-ok={c.kind === 'valid'}>
         {hint}
@@ -119,6 +131,15 @@ function NavView({ pathname: path }: { pathname: string | null }) {
   const pathname = path ?? '';
   const overlay = pathname === '/';
   const [scrolled, setScrolled] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [menuPath, setMenuPath] = useState(pathname);
+
+  // The menu sheet closes itself when the route changes (a link or a search inside it).
+  if (menu && menuPath !== pathname) setMenu(false);
+  const toggleMenu = () => {
+    setMenuPath(pathname);
+    setMenu(!menu);
+  };
 
   useEffect(() => {
     if (!overlay) return;
@@ -128,9 +149,31 @@ function NavView({ pathname: path }: { pathname: string | null }) {
     return () => removeEventListener('scroll', onScroll);
   }, [overlay]);
 
+  useEffect(() => {
+    if (!menu) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenu(false);
+    // At laptop width the header shows every link, so the sheet has nothing left to do.
+    const wide = matchMedia('(min-width: 1000px)');
+    const onWide = () => wide.matches && setMenu(false);
+    addEventListener('keydown', onKey);
+    wide.addEventListener('change', onWide);
+    document.documentElement.dataset.menu = 'open';
+    return () => {
+      removeEventListener('keydown', onKey);
+      wide.removeEventListener('change', onWide);
+      delete document.documentElement.dataset.menu;
+    };
+  }, [menu]);
+
+  const tabOn = TABS.map((t) => (t.href === '/' ? pathname === '/' : isActive(pathname, t.match)));
+  const moreOn = menu || !tabOn.some(Boolean);
+
   return (
     <>
-      <header className={`${s.header} ${overlay ? s.overlay : ''} ${overlay && scrolled ? s.scrolled : ''}`}>
+      <header
+        className={`${s.header} ${overlay ? s.overlay : ''} ${overlay && (scrolled || menu) ? s.scrolled : ''}`}
+        data-menu={menu || undefined}
+      >
         <Link href="/" className={s.brand} aria-label="CR Clan Tracker home">
           <BrandMark />
           <span className={s.brandText}>
@@ -152,18 +195,55 @@ function NavView({ pathname: path }: { pathname: string | null }) {
           </span>
         )}
         {!overlay && <NavSearch />}
-        <ThemeToggle className={s.theme} />
+        <ThemeToggle className={s.theme} labelClassName={s.themeLabel} />
+        <button
+          type="button"
+          className={s.menuBtn}
+          aria-expanded={menu}
+          aria-controls="site-menu"
+          aria-label={menu ? 'Close menu' : 'Open menu'}
+          onClick={toggleMenu}
+        >
+          <span className={s.burger} data-open={menu} aria-hidden />
+        </button>
       </header>
+      {menu && (
+        <>
+          <div className={s.backdrop} onClick={() => setMenu(false)} aria-hidden />
+          <div id="site-menu" className={s.sheet} role="dialog" aria-label="Site menu">
+            <NavSearch className={s.sheetSearch} hotkey={false} onGo={() => setMenu(false)} />
+            <nav className={s.sheetLinks} aria-label="All pages">
+              {MENU.map((l) => {
+                const cur = l.href === '/' ? pathname === '/' : isActive(pathname, l.match);
+                return (
+                  <Link key={l.href} href={l.href} className={s.sheetLink} aria-current={cur ? 'page' : undefined} onClick={() => setMenu(false)}>
+                    {l.label}
+                    <span aria-hidden>→</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        </>
+      )}
       <nav className={s.tabbar} aria-label="Primary">
-        {TABS.map((t) => {
-          const cur = t.href === '/' ? pathname === '/' : pathname.startsWith(t.href);
-          return (
-            <Link key={t.href} href={t.href} className={s.tab} aria-current={cur ? 'page' : undefined}>
-              <span className={s.tabIcon} style={t.icon} />
-              {t.label}
-            </Link>
-          );
-        })}
+        {TABS.map((t, i) => (
+          <Link key={t.href} href={t.href} className={s.tab} aria-current={tabOn[i] && !menu ? 'page' : undefined}>
+            <span className={s.tabIcon} style={t.icon} />
+            {t.label}
+          </Link>
+        ))}
+        <button
+          type="button"
+          className={s.tab}
+          aria-expanded={menu}
+          aria-controls="site-menu"
+          data-on={moreOn}
+          onClick={toggleMenu}
+        >
+          <span className={s.tabIcon} style={{ borderRadius: '50%', borderStyle: 'dotted' }} />
+          {menu ? 'CLOSE' : 'MORE'}
+        </button>
       </nav>
     </>
   );

@@ -30,6 +30,9 @@ export const COLS: [SortKey, string, 'left' | 'right'][] = [
   ['trend', 'Trend', 'right'],
 ];
 
+/** Select, rank and name stay pinned on the left while the table scrolls sideways. */
+const STICKY: Partial<Record<SortKey, string>> = { rank: s.stick1, name: `${s.stick2} ${s.stickEdge}` };
+
 /** Icons shown in the column headers next to the numbers they describe. */
 const COL_ICON: Partial<Record<SortKey, React.ReactNode>> = {
   trophies: <TrophyIcon size={12} />,
@@ -263,7 +266,7 @@ export function MembersTab({
         <table className={s.table}>
           <thead>
             <tr>
-              <th style={{ width: 40, padding: '0 0 0 14px', textAlign: 'left' }}>
+              <th className={s.stick0} style={{ padding: '0 0 0 14px', textAlign: 'left' }}>
                 <input
                   type="checkbox"
                   checked={allSel}
@@ -279,7 +282,7 @@ export function MembersTab({
               {COLS.map(([k, label, align]) => {
                 const on = sort.k === k;
                 return (
-                  <th key={k} aria-sort={on ? (sort.d < 0 ? 'descending' : 'ascending') : 'none'} style={{ textAlign: align }}>
+                  <th key={k} className={STICKY[k]} aria-sort={on ? (sort.d < 0 ? 'descending' : 'ascending') : 'none'} style={{ textAlign: align }}>
                     <button type="button" className={s.th} data-on={on} onClick={() => sortBy(k)} style={{ justifyContent: align === 'right' ? 'flex-end' : 'flex-start' }}>
                       {COL_ICON[k]}
                       {label}
@@ -293,13 +296,13 @@ export function MembersTab({
           <tbody>
             {rows.map((m) => (
               <tr key={m.tag} tabIndex={0} className={s.row} data-open={openTag === m.tag} onClick={() => onOpen(m.tag)} onKeyDown={key(m.tag)}>
-                <td style={{ padding: '0 0 0 14px' }} onClick={(e) => e.stopPropagation()}>
+                <td className={s.stick0} style={{ padding: '0 0 0 14px' }} onClick={(e) => e.stopPropagation()}>
                   <input type="checkbox" checked={sel.has(m.tag)} onChange={() => toggleSel(m.tag)} aria-label={`Select ${m.name}`} style={{ accentColor: 'var(--blue)' }} />
                 </td>
-                <td className={s.faint} style={{ fontSize: 12 }}>
+                <td className={`${s.faint} ${STICKY.rank}`} style={{ fontSize: 12 }}>
                   {String(m.rank).padStart(2, '0')}
                 </td>
-                <td style={{ minWidth: 170 }}>
+                <td className={STICKY.name} style={{ minWidth: 170 }}>
                   <div className={s.memberName}>
                     {m.name}
                     {m.isNew && <span className={s.newChip}>NEW</span>}
@@ -363,7 +366,7 @@ export function MembersTab({
       </div>
 
       <div className={s.mobileOnly}>
-        <div className="no-scrollbar" style={{ display: 'flex', gap: 6, overflowX: 'auto' }}>
+        <div className={`no-scrollbar ${s.sortRow}`} style={{ display: 'flex', gap: 6, overflowX: 'auto' }}>
           {COLS.filter(([k]) => k !== 'rank').map(([k, label]) => (
             <button key={k} type="button" className="chip" aria-pressed={sort.k === k} onClick={() => sortBy(k)} style={{ flex: 'none' }}>
               {label} {sort.k === k ? (sort.d < 0 ? '▼' : '▲') : ''}
