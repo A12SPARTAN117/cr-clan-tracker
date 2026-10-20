@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
+import { Analytics } from '@vercel/analytics/next';
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import { AmbientEmbers } from '@/components/fx/AmbientEmbers';
 import { MotionLayer } from '@/components/fx/MotionLayer';
@@ -44,6 +45,13 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           <MotionLayer />
         </Suspense>
         <ServiceWorker />
+        {/* Visitor counts (cookieless). Only on Vercel: its script is served from our own origin
+            there (/_vercel/insights), so the CSP needs no new host; locally it would 404. */}
+        {process.env.VERCEL === '1' && (
+          <Suspense fallback={null}>
+            <Analytics />
+          </Suspense>
+        )}
       </body>
     </html>
   );
