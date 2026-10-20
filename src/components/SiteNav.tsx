@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { FEATURES } from '@/lib/features';
 import { checkTag, searchHref } from '@/lib/tags';
 import { getTheme, toggleTheme, type Theme } from './fx/motion';
 import s from './SiteNav.module.css';
@@ -14,7 +15,7 @@ const LINKS = [
   { href: '/decks', label: 'Decks', match: ['/decks'] },
   { href: '/compare', label: 'Compare', match: ['/compare'] },
   { href: '/leaderboards', label: 'Leaderboards', match: ['/leaderboards'] },
-  { href: '/news', label: 'News', match: ['/news'] },
+  ...(FEATURES.news ? [{ href: '/news', label: 'News', match: ['/news'] }] : []),
   { href: '/help', label: 'Help', match: ['/help'] },
   { href: '/support', label: 'Support', match: ['/support'] },
 ];

@@ -1,3 +1,4 @@
+import { FEATURES as ON } from '@/lib/features';
 /**
  * The Help page's content: quick start, the feature list and step-by-step guides. Keep it in
  * step with the site; every instruction here names a real button or tab.
@@ -29,7 +30,7 @@ export const FEATURES: Feature[] = [
   { title: 'Compare', text: 'Up to four players or clans side by side in a 3D showdown, with every stat and who leads it.', href: '/compare', cta: 'Start a showdown' },
   { title: 'Leaderboards', text: 'Path of Legends, clan trophies, clan wars and event boards, global or by country.', href: '/leaderboards', cta: 'View leaderboards' },
   { title: 'Cards', text: 'Every card with its rarity, elixir and how much it is played and wins in each mode.', href: '/cards', cta: 'Browse cards' },
-  { title: 'News', text: 'Site updates, balance notes and guides like how the Asset Score works.', href: '/news', cta: 'Read news' },
+  ...(ON.news ? [{ title: 'News', text: 'Site updates, balance notes and guides like how the Asset Score works.', href: '/news', cta: 'Read news' }] : []),
 ];
 
 export const GUIDES: Guide[] = [

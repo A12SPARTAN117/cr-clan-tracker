@@ -12,13 +12,16 @@ const ROUTES = [
   '/leaderboards',
   '/cards',
   '/cards/hog-rider',
-  '/news',
   '/help',
   '/support',
   '/search?q=rosa',
   `/clan/${CLAN}`,
   `/clan/${CLAN}/manage`,
 ];
+
+test('hidden sections return 404', async ({ page }) => {
+  for (const route of ['/news', '/news/early-access']) expect((await page.goto(route))?.status(), route).toBe(404);
+});
 
 for (const route of ROUTES) {
   test(`loads ${route}`, async ({ page }) => {

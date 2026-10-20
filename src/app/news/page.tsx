@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { FEATURES } from '@/lib/features';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Reveal } from '@/components/fx/Reveal';
 import { NEWS } from '@/content/news';
@@ -7,6 +9,7 @@ import { NewsList } from './NewsList';
 export const metadata: Metadata = { title: 'News', description: 'Site updates and guides from CR Clan Tracker.' };
 
 export default function NewsPage() {
+  if (!FEATURES.news) notFound();
   const posts = [...NEWS].sort((a, b) => b.date.localeCompare(a.date));
   return (
     <>

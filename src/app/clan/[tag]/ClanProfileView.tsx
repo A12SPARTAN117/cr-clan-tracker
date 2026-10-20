@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, use, useState } from 'react';
 import { EmberField } from '@/components/fx/EmberField';
 import { RiverRace3D } from '@/components/fx/RiverRace3D';
 import { Fog } from '@/components/fx/Fog';
@@ -12,7 +12,7 @@ import { ClanFrame } from '@/components/ui/ClanFrame';
 import { activityOf, FitValue, ROLE_LABEL } from '@/components/ui/primitives';
 import { CardsIcon, ClockIcon, DonationIcon, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { Tabs } from '@/components/ui/Tabs';
-import type { ClanProfile } from '@/lib/clan/profile';
+import type { ClanProfile, MemberLevels } from '@/lib/clan/profile';
 import { agoShort, dstr, fmt } from '@/lib/format';
 import p from './profile.module.css';
 
@@ -25,28 +25,72 @@ const TYPE = { open: 'Open', inviteOnly: 'Invite only', closed: 'Closed' } as co
 const ROLE_IDX = { leader: 0, coLeader: 1, elder: 2, member: 3 } as const;
 const TROOPS = ['knight', 'valkyrie', 'musketeer', 'hog_rider', 'wizard', 'pekka', 'mini_pekka', 'prince', 'witch', 'giant', 'archers', 'bowler'];
 
-export function ClanProfileView({ c }: { c: ClanProfile }) {
+type Ranked = ClanProfile['members'][number] & { rank: number };
+type Sort = { k: SortKey; d: 1 | -1 };
+
+/** The member rows, sorted; `levels` is null while the collection levels are still streaming in. */
+function MemberRows({ ranked, sort, levels }: { ranked: Ranked[]; sort: Sort; levels: MemberLevels | null }) {
   const router = useRouter();
+  const coll = (m: Ranked) => levels?.[m.tag]?.coll ?? m.collectionLevel;
+  const key: Record<SortKey, (m: Ranked) => number | string> = {
+    rank: (m) => m.rank,
+    name: (m) => m.name.toLowerCase(),
+    role: (m) => ROLE_IDX[m.role],
+    trophies: (m) => m.trophies,
+    coll: (m) => coll(m) ?? -1,
+    don: (m) => m.donations,
+    seen: (m) => m.hours,
+  };
+  const g = key[sort.k];
+  const rows = [...ranked].sort((a, b) => ((g(a) < g(b) ? -1 : g(a) > g(b) ? 1 : 0) * sort.d) || a.rank - b.rank);
+  return rows.map((m) => {
+    const a = activityOf(m.hours);
+    const cl = coll(m);
+    return (
+      <tr
+        key={m.tag}
+        data-member={m.tag}
+        tabIndex={0}
+        className="oa-row"
+        onClick={() => router.push(`/player/${m.tag}`)}
+        onKeyDown={(e) => e.key === 'Enter' && router.push(`/player/${m.tag}`)}
+      >
+        <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '500 12px/1 var(--mono)', color: 'var(--text-3)' }}>{String(m.rank).padStart(2, '0')}</td>
+        <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '600 14px/1.2 var(--sans)' }}>
+          {m.name}
+          <span className={p.roleSub}>{ROLE_LABEL[m.role]}</span>
+        </td>
+        <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '500 10px/1 var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase', color: m.role === 'leader' ? 'var(--gold)' : m.role === 'member' ? 'var(--text-2)' : 'var(--text-1)' }}>
+          {ROLE_LABEL[m.role]}
+        </td>
+        <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.trophies)}</td>
+        <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>
+          {levels ? (cl != null ? fmt(cl) : '—') : <span className="skeleton" aria-label="Loading" style={{ display: 'inline-block', width: 34, height: 11, verticalAlign: 'middle' }} />}
+        </td>
+        <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.donations)}</td>
+        <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 12px/1 var(--mono)', color: a === 'active' ? 'var(--blue)' : a === 'risk' ? 'var(--text-2)' : 'var(--ember)' }}>
+          {a === 'active' ? '● ' : a === 'risk' ? '◐ ' : '○ '}
+          {agoShort(m.hours)}
+        </td>
+      </tr>
+    );
+  });
+}
+
+function LevelRows({ levels, ...rest }: { ranked: Ranked[]; sort: Sort; levels: Promise<MemberLevels> }) {
+  return <MemberRows {...rest} levels={use(levels)} />;
+}
+
+export function ClanProfileView({ c, levels }: { c: ClanProfile; levels?: Promise<MemberLevels> }) {
   const [tab, setTab] = useState<Tab>('members');
-  const [sort, setSort] = useState<{ k: SortKey; d: 1 | -1 }>({ k: 'trophies', d: -1 });
+  const [sort, setSort] = useState<Sort>({ k: 'trophies', d: -1 });
   const [toast, setToast] = useState('');
 
   // Three troops in the fog under the shield, picked from the clan tag so they stay stable.
   const seed = [...c.tag].reduce((a, ch) => a + ch.charCodeAt(0), 0);
   const troops = [0, 1, 2].map((i) => TROOPS[(seed + i * 5) % TROOPS.length]);
 
-  const ranked = [...c.members].sort((a, b) => b.trophies - a.trophies).map((m, i) => ({ ...m, rank: i + 1 }));
-  const key: Record<SortKey, (m: (typeof ranked)[number]) => number | string> = {
-    rank: (m) => m.rank,
-    name: (m) => m.name.toLowerCase(),
-    role: (m) => ROLE_IDX[m.role],
-    trophies: (m) => m.trophies,
-    coll: (m) => m.collectionLevel ?? -1,
-    don: (m) => m.donations,
-    seen: (m) => m.hours,
-  };
-  const g = key[sort.k];
-  const rows = [...ranked].sort((a, b) => ((g(a) < g(b) ? -1 : g(a) > g(b) ? 1 : 0) * sort.d) || a.rank - b.rank);
+  const ranked: Ranked[] = [...c.members].sort((a, b) => b.trophies - a.trophies).map((m, i) => ({ ...m, rank: i + 1 }));
   const cols: [SortKey, string, 'left' | 'right', React.ReactNode?][] = [
     ['rank', '#', 'left'],
     ['name', 'NAME', 'left'],
@@ -229,35 +273,13 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((m) => {
-                  const a = activityOf(m.hours);
-                  return (
-                    <tr
-                      key={m.tag}
-                      data-member={m.tag}
-                      tabIndex={0}
-                      className="oa-row"
-                      onClick={() => router.push(`/player/${m.tag}`)}
-                      onKeyDown={(e) => e.key === 'Enter' && router.push(`/player/${m.tag}`)}
-                    >
-                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '500 12px/1 var(--mono)', color: 'var(--text-3)' }}>{String(m.rank).padStart(2, '0')}</td>
-                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '600 14px/1.2 var(--sans)' }}>
-                        {m.name}
-                        <span className={p.roleSub}>{ROLE_LABEL[m.role]}</span>
-                      </td>
-                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', font: '500 10px/1 var(--mono)', letterSpacing: '.12em', textTransform: 'uppercase', color: m.role === 'leader' ? 'var(--gold)' : m.role === 'member' ? 'var(--text-2)' : 'var(--text-1)' }}>
-                        {ROLE_LABEL[m.role]}
-                      </td>
-                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.trophies)}</td>
-                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{m.collectionLevel != null ? fmt(m.collectionLevel) : '—'}</td>
-                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.donations)}</td>
-                      <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 12px/1 var(--mono)', color: a === 'active' ? 'var(--blue)' : a === 'risk' ? 'var(--text-2)' : 'var(--ember)' }}>
-                        {a === 'active' ? '● ' : a === 'risk' ? '◐ ' : '○ '}
-                        {agoShort(m.hours)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {levels ? (
+                  <Suspense fallback={<MemberRows ranked={ranked} sort={sort} levels={null} />}>
+                    <LevelRows ranked={ranked} sort={sort} levels={levels} />
+                  </Suspense>
+                ) : (
+                  <MemberRows ranked={ranked} sort={sort} levels={{}} />
+                )}
               </tbody>
             </table>
           </div>

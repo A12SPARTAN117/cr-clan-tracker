@@ -6,10 +6,12 @@ import { NEWS, newsBySlug } from '@/content/news';
 import { cardBySlug } from '@/lib/cards';
 import { art } from '@/lib/art';
 import { dstr } from '@/lib/format';
+import { FEATURES } from '@/lib/features';
 import { TAG_FG } from '../tags';
 
 export function generateStaticParams() {
-  return NEWS.map((n) => ({ slug: n.slug }));
+  // Hidden: nothing to prerender (Next needs one entry, which 404s).
+  return FEATURES.news ? NEWS.map((n) => ({ slug: n.slug })) : [{ slug: 'hidden' }];
 }
 
 export async function generateMetadata({ params }: PageProps<'/news/[slug]'>): Promise<Metadata> {
@@ -25,7 +27,7 @@ const KIND = {
 
 export default async function NewsArticle({ params }: PageProps<'/news/[slug]'>) {
   const n = newsBySlug((await params).slug);
-  if (!n) notFound();
+  if (!n || !FEATURES.news) notFound();
   const words = n.body.join(' ').split(/\s+/).length;
   return (
     <article style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(32px,5vw,64px) clamp(18px,4vw,24px) 80px', display: 'flex', flexDirection: 'column', gap: 26, animation: 'oaFade .35s' }}>

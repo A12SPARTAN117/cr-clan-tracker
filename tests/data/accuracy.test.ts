@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CARDS, cardById } from '@/lib/cards';
 import { getDashboard } from '@/lib/clan/dashboard';
-import { getClanProfile } from '@/lib/clan/profile';
+import { getClanProfile, getMemberLevels, withLevels } from '@/lib/clan/profile';
 import type { Clan, CurrentRiverRace, Player, PolRankedPlayer } from '@/lib/cr/types';
 import { deckStats } from '@/lib/decks';
 import { getMeta } from '@/lib/meta';
@@ -27,7 +27,8 @@ const enc = (t: string) => encodeURIComponent(`#${bare(t)}`);
 
 describe.skipIf(!KEY)('live data accuracy', () => {
   describe('clan profile', async () => {
-    const [api, ours] = await Promise.all([raw<Clan>(`/clans/${enc(CLAN)}`), getClanProfile(CLAN)]);
+    const [api, fast, levels] = await Promise.all([raw<Clan>(`/clans/${enc(CLAN)}`), getClanProfile(CLAN), getMemberLevels(CLAN)]);
+    const ours = fast && withLevels(fast, levels);
 
     it('matches the clan header numbers', () => {
       expect(ours).not.toBeNull();

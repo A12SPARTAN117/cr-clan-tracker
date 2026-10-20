@@ -108,8 +108,14 @@ describe('clan dashboard on a training day', async () => {
 });
 
 describe('clan profile', async () => {
-  const { getClanProfile } = await import('@/lib/clan/profile');
-  const c = (await getClanProfile('CLAN'))!;
+  const { getClanProfile, getMemberLevels, withLevels } = await import('@/lib/clan/profile');
+  const fast = (await getClanProfile('CLAN'))!;
+  // The page shows the profile first and streams the member levels in after.
+  const c = withLevels(fast, await getMemberLevels('CLAN'));
+
+  it('shows the roster without waiting for member profiles', () => {
+    expect(fast.members.map((m) => m.collectionLevel)).toEqual([null, null]);
+  });
 
   it('fills King level from player profiles when the roster reports 0', () => {
     expect(c.members.map((m) => [m.tag, m.expLevel])).toEqual([

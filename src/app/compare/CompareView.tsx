@@ -27,7 +27,7 @@ import {
   WinRateIcon,
 } from '@/components/ui/icons';
 import type { CompareIcon, CompareKind, CompareRow, Comparison } from '@/lib/compare';
-import { CompareArena } from './CompareArena';
+import { CompareArena, show } from './CompareArena';
 import s from './compare.module.css';
 
 const MAX = 4;
@@ -51,12 +51,6 @@ const ICONS: Record<CompareIcon, (p: { size?: number }) => React.ReactNode> = {
   alert: AlertIcon,
 };
 const COLORS = ['#3aa0ff', '#e6b34a', '#c79bff', '#4ed17a'];
-
-function show(v: number | string | null, r: CompareRow) {
-  if (v == null) return '—';
-  if (typeof v === 'string') return v;
-  return `${v.toLocaleString('en-US', { maximumFractionDigits: r.digits ?? 0, minimumFractionDigits: r.digits ?? 0 })}${r.unit ?? ''}`;
-}
 
 /** Index of the leading value for rows with a direction (ties: no leader). */
 function leader(r: CompareRow): number | null {

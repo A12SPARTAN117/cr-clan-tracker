@@ -8,5 +8,8 @@ export class NextResponse extends Response {
   static next() {
     return new NextResponse(null, { status: 200, headers: { 'x-middleware-next': '1' } });
   }
+  static rewrite(url: URL | string) {
+    return new NextResponse(null, { status: 200, headers: { 'x-middleware-rewrite': String(url) } });
+  }
 }
 export type NextRequest = Request & { nextUrl: URL };

@@ -154,3 +154,22 @@ describe('badge art recording (lib/badgeArt)', () => {
     vi.doUnmock('@/lib/db');
   });
 });
+
+describe('clan member levels (lib/clan/profile withLevels)', () => {
+  it('fills collection and king levels from member profiles, keeping roster values when missing', async () => {
+    vi.resetModules();
+    vi.doMock('server-only', () => ({}));
+    vi.doMock('next/cache', () => ({ cacheLife: () => {}, cacheTag: () => {} }));
+    const { withLevels } = await import('@/lib/clan/profile');
+    const m = (tag: string, expLevel: number) => ({ tag, name: tag, role: 'member' as const, trophies: 0, expLevel, collectionLevel: null, donations: 0, hours: 0, clanRank: 1 });
+    const c = { members: [m('A', 0), m('B', 54), m('C', 12)] } as unknown as Parameters<typeof withLevels>[0];
+    const out = withLevels(c, { A: { exp: 61, coll: 2104 }, B: { exp: 0, coll: null } });
+    expect(out.members.map((x) => [x.tag, x.expLevel, x.collectionLevel])).toEqual([
+      ['A', 61, 2104],
+      ['B', 54, null],
+      ['C', 12, null],
+    ]);
+    vi.doUnmock('server-only');
+    vi.doUnmock('next/cache');
+  });
+});

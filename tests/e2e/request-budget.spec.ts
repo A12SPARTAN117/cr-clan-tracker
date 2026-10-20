@@ -23,7 +23,7 @@ function watchIdle(page: Page) {
   return { seen, start: () => (on = true) };
 }
 
-const PAGES = ['/', '/players', '/clans', '/decks', '/leaderboards', '/cards', '/news', '/help', '/support', `/clan/${CLAN}`];
+const PAGES = ['/', '/players', '/clans', '/decks', '/leaderboards', '/cards', '/help', '/support', `/clan/${CLAN}`];
 
 for (const route of PAGES) {
   test(`${route} sits still once loaded`, async ({ page }) => {
