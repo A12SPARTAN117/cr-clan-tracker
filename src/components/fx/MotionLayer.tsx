@@ -103,6 +103,22 @@ export function MotionLayer() {
     return () => document.removeEventListener('click', onClick);
   }, []);
 
+  // A new page opens at the top. Next keeps the old scroll position whenever any of the new page
+  // is on screen, so a short loading screen at the bottom of a long page left visitors at the
+  // footer once the content arrived. Back and forward keep the browser's restored position.
+  const popped = useRef(false);
+  const firstPath = useRef(true);
+  useEffect(() => {
+    const onPop = () => (popped.current = true);
+    addEventListener('popstate', onPop);
+    return () => removeEventListener('popstate', onPop);
+  }, []);
+  useEffect(() => {
+    if (firstPath.current) firstPath.current = false;
+    else if (!popped.current && !location.hash) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    popped.current = false;
+  }, [pathname]);
+
   useEffect(() => {
     window.clearTimeout(slowTimer.current);
     const v = veil.current;
