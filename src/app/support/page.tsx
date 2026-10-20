@@ -41,7 +41,8 @@ function DonateButton() {
 export default function SupportPage() {
   return (
     <>
-      <SceneHeader scene="/scenes/chest.jpg" status={<span>Support us · free · fan-made</span>} height="clamp(340px, 46vh, 500px)">
+      {/* The throne room keeps its storm-blue light, so it skips the usual greyscale. */}
+      <SceneHeader scene="/scenes/throne.jpg" sceneFilter="brightness(0.78) saturate(0.95)" scenePosition="center 35%" status={<span>Support us · free · fan-made</span>} height="clamp(340px, 46vh, 500px)">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 22, alignItems: 'flex-start' }}>
           <Reveal as="h1" className="display-l">
             KEEP THE
