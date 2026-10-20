@@ -1,12 +1,13 @@
 import 'server-only';
 import { and, eq, isNull, sql } from 'drizzle-orm';
-import { getClan, getCurrentRiverRace } from '../cr/api';
-import type { ApiRole } from '../cr/types';
-import { getDb, schema } from '../db';
+import { getClan, getCurrentRiverRace, getPlayer } from '../cr/api';
+import type { ApiRole, Player } from '../cr/types';
+import { enqueue, getDb, schema } from '../db';
 import { warWeekKey } from '../war';
 import { indexClanMembers } from '../directory';
+import { playerDayOf } from './playerDaily';
 
-const { trackedClans, clanMembers, rosterEvents, memberDaily, warDays } = schema;
+const { trackedClans, clanMembers, rosterEvents, memberDaily, warDays, trackedPlayers, playerDaily } = schema;
 
 const RANK: Record<ApiRole, number> = { member: 0, elder: 1, coLeader: 2, leader: 3 };
 const LABEL: Record<ApiRole, string> = { member: 'Member', elder: 'Elder', coLeader: 'Co-Leader', leader: 'Leader' };
@@ -137,4 +138,50 @@ export async function trackClan(tagRaw: string): Promise<void> {
     return;
   }
   await snapshotClan(tag);
+}
+
+/** Writes today's row for a tracked player from a profile already fetched. */
+async function savePlayerDay(p: Player, now: Date) {
+  const db = await getDb();
+  if (!db) return;
+  const tag = bare(p.tag);
+  const { day, ...row } = playerDayOf(p, now.toISOString().slice(0, 10));
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(playerDaily)
+      .values({ playerTag: tag, day, ...row })
+      .onConflictDoUpdate({ target: [playerDaily.playerTag, playerDaily.day], set: row });
+    await tx.update(trackedPlayers).set({ name: p.name, lastSnapshotAt: now }).where(eq(trackedPlayers.tag, tag));
+  });
+}
+
+/** One daily snapshot of a tracked player's profile (trophies, Path of Legends, wins, battles…). */
+export async function snapshotPlayer(tagRaw: string): Promise<SnapshotResult> {
+  const tag = bare(tagRaw);
+  if (!(await getDb())) return { tag, ok: false, reason: 'no database' };
+  const r = await getPlayer(tag);
+  if (!r.ok) return { tag, ok: false, reason: `player: ${r.status} ${r.reason}` };
+  await savePlayerDay(r.data, new Date());
+  return { tag, ok: true };
+}
+
+/**
+ * Marks a player as tracked when their profile is opened, and records today's snapshot from the
+ * profile the page already loaded (no extra API call). Best-effort: never throws.
+ */
+export function trackPlayer(p: Player) {
+  return enqueue(async () => {
+    const db = await getDb();
+    if (!db) return;
+    const now = new Date();
+    try {
+      await db
+        .insert(trackedPlayers)
+        .values({ tag: bare(p.tag), name: p.name, lastViewedAt: now })
+        .onConflictDoUpdate({ target: trackedPlayers.tag, set: { name: p.name, lastViewedAt: now } });
+      await savePlayerDay(p, now);
+    } catch (e) {
+      console.warn('[history] track player failed (is migration 0005 applied?):', e instanceof Error ? e.message : e);
+    }
+  });
 }

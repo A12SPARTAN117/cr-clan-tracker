@@ -5,6 +5,7 @@ import { Portal } from '@/components/fx/Portal';
 import { getPlayer } from '@/lib/cr/api';
 import { getPlayerProfile } from '@/lib/player/profile';
 import { getPlayerHistory } from '@/lib/history';
+import { trackPlayer } from '@/lib/history/snapshot';
 import { checkTag } from '@/lib/tags';
 import { recordBadgeArt } from '@/lib/badgeArt';
 import { indexPlayers } from '@/lib/directory';
@@ -27,6 +28,8 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   // Background work below reads the clock, so it must run at request time, not in a prerender.
   await connection();
   after(() => indexPlayers([{ tag: r.data.tag, name: r.data.name, clanTag: r.data.clan?.tag, clanName: r.data.clan?.name, trophies: r.data.trophies }]));
+  // Opening a profile starts (or keeps up) its daily snapshots, so history builds from here on.
+  after(() => trackPlayer(r.data));
   const [p, history] = await Promise.all([getPlayerProfile(c.tag), getPlayerHistory(c.tag)]);
   if (!p) return <LostScene variant="error" tag={c.tag} />;
   // Everyone they played against goes into the name-search directory too.

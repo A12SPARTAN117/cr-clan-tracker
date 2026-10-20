@@ -22,6 +22,12 @@ export function agoShort(hours: number): string {
   return `${Math.floor(hours / 24)}d`;
 }
 
+/** "2025-10" → "Oct 2025" */
+export function monthStr(ym: string): string {
+  const [y, m] = ym.split('-');
+  return `${MON[+m - 1]} ${y}`;
+}
+
 /** "12d" / "4mo" / "1.2y" */
 export function tenureShort(days: number): string {
   if (days < 30) return `${Math.round(days)}d`;

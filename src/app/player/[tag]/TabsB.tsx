@@ -26,9 +26,11 @@ import {
 } from '@/components/ui/icons';
 import { DeckBlock, DeckGrid } from '@/components/DeckBlock';
 import { EmptyState } from '@/components/EmptyState';
-import { agoShort, dstr, fmt } from '@/lib/format';
+import { agoShort, dstr, fmt, monthStr } from '@/lib/format';
 import type { PlayerProfile } from '@/lib/player/profile';
 import type { PlayerHistory } from '@/lib/history';
+import { polChanges, withChanges } from '@/lib/history/playerDaily';
+import { reconstructFromBadges } from '@/lib/player/reconstruct';
 import s from './player.module.css';
 
 /* ---------------- Stats ---------------- */
@@ -278,8 +280,31 @@ function TrophyChart({ points }: { points: { day: string; trophies: number }[] }
 
 const ROLE_TXT: Record<string, string> = { leader: 'Leader', coLeader: 'Co-Leader', elder: 'Elder', member: 'Member' };
 
+/** Says where a table's rows come from: our own snapshots, or reconstructed from what the API still shows. */
+function Source({ kind, children }: { kind: 'tracked' | 'reconstructed'; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', font: '500 10px/1.5 var(--mono)', letterSpacing: '.1em', color: 'var(--text-3)' }}>
+      <span style={{ color: kind === 'tracked' ? 'var(--blue-hi)' : 'var(--text-2)', border: '1px solid var(--hair)', borderRadius: 4, padding: '2px 6px' }}>
+        {kind === 'tracked' ? 'TRACKED' : 'RECONSTRUCTED'}
+      </span>
+      <span>{children}</span>
+    </div>
+  );
+}
+
+const signed = (n: number | null) => (n == null ? '' : n > 0 ? ` (+${fmt(n)})` : n < 0 ? ` (${fmt(n)})` : '');
+const polCell = (league: number | null, rating: number | null) =>
+  league == null ? (
+    '—'
+  ) : (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <LeagueIcon league={league} size={18} />
+      {league >= 7 && rating != null ? <PolRating rating={rating} size={13} /> : leagueName(league)}
+    </span>
+  );
+
 export function HistoryTab({ p, h: hist }: { p: PlayerProfile; h: PlayerHistory | null }) {
-  const [h, setH] = useState<'trophy' | 'clan' | 'pol' | 'war'>(hist?.trophies.length ? 'trophy' : 'pol');
+  const [h, setH] = useState<'trophy' | 'clan' | 'pol' | 'war' | 'before'>(hist?.trophies.length || hist?.days.length ? 'trophy' : 'pol');
   const seasons = (
     [
       ['Current season', p.pol.current],
@@ -287,22 +312,40 @@ export function HistoryTab({ p, h: hist }: { p: PlayerProfile; h: PlayerHistory 
       ['Best season', p.pol.best],
     ] as const
   ).filter(([, x]) => x);
-  const since = hist?.clans.length ? hist.clans[hist.clans.length - 1].from : null;
+  // Tracking began with whichever came first: the player's own snapshots or a tracked clan's.
+  const since = [hist?.trackedSince, hist?.clans.length ? hist.clans[hist.clans.length - 1].from : null].filter((x): x is string => !!x).sort()[0] ?? null;
   const perDay = new Map((hist?.war ?? []).map((w) => [w.week, w.days]));
+  const days = withChanges(hist?.days ?? []).slice(0, 30);
+  const polDays = polChanges(hist?.days ?? []);
+  const past = reconstructFromBadges(p.badges, new Date(p.generatedAt));
+  const timeline: { sort: string; when: string; what: string; detail: string }[] = [
+    ...past.seasons.map((x) => ({ sort: x.month, when: monthStr(x.month), what: 'Seasonal trophy road badge', detail: x.level ? `Tier ${x.level}${x.maxLevel ? `/${x.maxLevel}` : ''}` : '—' })),
+    ...past.years.map((y) => ({ sort: `${y}-13`, when: String(y), what: 'Yearly badge', detail: 'Played that year' })),
+    ...past.dated.map((x) => ({ sort: `${x.year}-12`, when: String(x.year), what: x.label, detail: 'Event badge' })),
+  ].sort((a, b) => b.sort.localeCompare(a.sort));
+  if (past.playingSince?.date) {
+    timeline.push({
+      sort: '',
+      when: `~${monthStr(past.playingSince.date.slice(0, 7))}`,
+      what: 'Account created',
+      detail: `${past.playingSince.years} years · ${fmt(past.playingSince.days)} days ago`,
+    });
+  }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       <div className="data-since">
         {since
-          ? `Tracking started on ${dstr(new Date(since))}. History builds up from then.`
-          : 'History builds up once a clan this player is in gets tracked. The API only shows the present, plus the seasons below.'}
+          ? `Tracking since ${dstr(new Date(since))}. Daily snapshots build history from then; anything earlier is reconstructed from what the profile and the clan’s race log still show.`
+          : 'Tracking starts with this visit: a daily snapshot from today on. Anything earlier is reconstructed from what the profile and the clan’s race log still show.'}
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         {(
           [
             ['trophy', 'Trophy history'],
-            ['clan', 'Clan history'],
             ['pol', 'Path of Legends'],
+            ['clan', 'Clan history'],
             ['war', 'Clan wars'],
+            ['before', 'Before tracking'],
           ] as const
         ).map(([k, l]) => (
           <button key={k} type="button" className="chip" style={{ height: 32 }} aria-pressed={h === k} onClick={() => setH(k)}>
@@ -311,40 +354,65 @@ export function HistoryTab({ p, h: hist }: { p: PlayerProfile; h: PlayerHistory 
         ))}
       </div>
       {h === 'pol' && (
-        <Table
-          head={[
-            ['SEASON', 'left'],
-            ['LEAGUE', 'left'],
-            ['RATING', 'right'],
-            ['RANK', 'right'],
-          ]}
-          rows={seasons.map(([label, x]) => [
-            label,
-            <span key="l" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <LeagueIcon league={x!.league} size={20} />
-              {leagueName(x!.league)}
-            </span>,
-            x!.league >= 7 ? <PolRating key="r" rating={x!.rating} size={14} /> : fmt(x!.rating),
-            x!.rank ? `#${fmt(x!.rank)}` : '—',
-          ])}
-          empty={seasons.length ? undefined : 'No Path of Legends seasons on record.'}
-        />
+        <>
+          <Source kind="reconstructed">From the profile: the current, previous and best season results.</Source>
+          <Table
+            head={[
+              ['SEASON', 'left'],
+              ['LEAGUE', 'left'],
+              ['RATING', 'right'],
+              ['RANK', 'right'],
+            ]}
+            rows={seasons.map(([label, x]) => [
+              label,
+              <span key="l" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <LeagueIcon league={x!.league} size={20} />
+                {leagueName(x!.league)}
+              </span>,
+              x!.league >= 7 ? <PolRating key="r" rating={x!.rating} size={14} /> : fmt(x!.rating),
+              x!.rank ? `#${fmt(x!.rank)}` : '—',
+            ])}
+            empty={seasons.length ? undefined : 'No Path of Legends seasons on record.'}
+          />
+          {polDays.length > 0 && (
+            <>
+              <Source kind="tracked">Daily snapshots, on the days the league, rating or rank moved.</Source>
+              <Table
+                head={[
+                  ['DAY', 'left'],
+                  ['LEAGUE', 'left'],
+                  ['RATING', 'right'],
+                  ['RANK', 'right'],
+                ]}
+                rows={polDays.map((d) => [
+                  dstr(new Date(d.day)),
+                  polCell(d.polLeague, null),
+                  d.polLeague != null && d.polLeague >= 7 && d.polRating != null ? <PolRating key="r" rating={d.polRating} size={14} /> : fmt(d.polRating),
+                  d.polRank ? `#${fmt(d.polRank)}` : '—',
+                ])}
+              />
+            </>
+          )}
+        </>
       )}
       {h === 'war' && (
-        <Table
-          head={[
-            ['WEEK', 'left'],
-            ['CLAN', 'left'],
-            ['DECKS', 'right'],
-            ['FAME', 'right'],
-          ]}
-          rows={(p.war ?? []).map((w) => {
-            const days = w.week ? perDay.get(w.week) : undefined;
-            const split = days ? ` (${days.map((d) => (d == null ? '–' : d)).join(' ')})` : '';
-            return [w.label, p.clan?.name ?? '—', `${w.decks}/16${split}`, fmt(w.fame)];
-          })}
-          empty={p.war?.length ? undefined : p.clan ? 'No races for this player in the clan’s last 10 races.' : 'Not in a clan, so no river races to show.'}
-        />
+        <>
+          <Source kind="reconstructed">From the clan’s river race log: its last 10 races, with this player’s decks and fame in each.</Source>
+          <Table
+            head={[
+              ['WEEK', 'left'],
+              ['CLAN', 'left'],
+              ['DECKS', 'right'],
+              ['FAME', 'right'],
+            ]}
+            rows={(p.war ?? []).map((w) => {
+              const days = w.week ? perDay.get(w.week) : undefined;
+              const split = days ? ` (${days.map((d) => (d == null ? '–' : d)).join(' ')})` : '';
+              return [w.label, p.clan?.name ?? '—', `${w.decks}/16${split}`, fmt(w.fame)];
+            })}
+            empty={p.war?.length ? undefined : p.clan ? 'No races for this player in the clan’s last 10 races.' : 'Not in a clan, so no river races to show.'}
+          />
+        </>
       )}
       {h === 'clan' && (
         <Table
@@ -361,15 +429,64 @@ export function HistoryTab({ p, h: hist }: { p: PlayerProfile; h: PlayerHistory 
                 ? [[p.clan.name, p.role ? ROLE_TXT[p.role] : '—', 'Before tracking', 'Now']]
                 : []
           }
-          empty={hist?.clans.length ? undefined : 'Earlier clans were not tracked. Clan moves appear here once tracking starts.'}
+          empty={hist?.clans.length ? undefined : 'Earlier clans were not tracked. Clan moves appear here once a clan they are in gets tracked.'}
         />
       )}
-      {h === 'trophy' &&
-        (hist && hist.trophies.length >= 2 ? (
-          <TrophyChart points={hist.trophies} />
-        ) : (
-          <EmptyChest text="Trophy history needs daily snapshots. The chart fills in once this player’s clan is tracked." />
-        ))}
+      {h === 'trophy' && (
+        <>
+          {hist && hist.trophies.length >= 2 ? (
+            <TrophyChart points={hist.trophies} />
+          ) : (
+            <EmptyChest text="Trophy history needs daily snapshots. The chart fills in from the second tracked day." />
+          )}
+          {days.length > 0 && (
+            <>
+              <Source kind="tracked">Daily profile snapshots, newest first. Changes are since the snapshot before.</Source>
+              <Table
+                head={[
+                  ['DAY', 'left'],
+                  ['TROPHIES', 'right'],
+                  ['SEASONAL', 'right'],
+                  ['PATH OF LEGENDS', 'left'],
+                  ['WINS', 'right'],
+                  ['BATTLES', 'right'],
+                ]}
+                rows={days.map((d) => [
+                  dstr(new Date(d.day)),
+                  `${fmt(d.trophies)}${signed(d.trophyChange)}`,
+                  fmt(d.seasonalTrophies),
+                  polCell(d.polLeague, d.polRating),
+                  `${fmt(d.wins)}${signed(d.winsGained)}`,
+                  `${fmt(d.battleCount)}${signed(d.battlesPlayed)}`,
+                ])}
+              />
+            </>
+          )}
+        </>
+      )}
+      {h === 'before' && (
+        <>
+          <Source kind="reconstructed">From badges on the profile: account age, seasonal and yearly badges, and event badges that carry their year.</Source>
+          <Table
+            head={[
+              ['WHEN', 'left'],
+              ['WHAT', 'left'],
+              ['DETAIL', 'right'],
+            ]}
+            rows={timeline.map((t) => [t.when, t.what, t.detail])}
+            empty={timeline.length ? undefined : 'No dated badges on this profile.'}
+          />
+          {past.finishes.length > 0 && (
+            <Table
+              head={[
+                ['ALL TIME', 'left'],
+                ['COUNT', 'right'],
+              ]}
+              rows={past.finishes.map((f) => [f.label, fmt(f.count)])}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
