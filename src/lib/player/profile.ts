@@ -166,7 +166,7 @@ function masteryOf(b: ApiBadge): Mastery | null {
   return { slug, name: info.name, level: b.level ?? 0, maxLevel: b.maxLevel ?? 10, progress: b.progress ?? null, target: b.target ?? null, img: b.iconUrls?.large ?? null };
 }
 
-function battleKind(b: Battle): BattleKind {
+export function battleKind(b: Battle): BattleKind {
   if (b.type === 'boatBattle') return 'boat';
   if (b.type.startsWith('riverRace') && riverBattleKind(b.type, parseApiDate(b.battleTime)) === 'training') return 'training';
   if (b.type === 'friendly' || b.type === 'clanMate') return 'friendly';

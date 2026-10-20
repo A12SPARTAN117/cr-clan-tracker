@@ -158,3 +158,25 @@ export const eventBoards = pgTable('event_boards', {
   /** Null until the standings are seen to change. */
   changedAt: timestamp('changed_at', { withTimezone: true }),
 });
+
+/**
+ * 1v1 battles of players whose profile has been opened, kept past the API's ~40-battle log so
+ * head-to-head records (Rivals) can grow. Saved on each profile view and by the daily snapshot.
+ */
+export const playerBattles = pgTable(
+  'player_battles',
+  {
+    playerTag: text('player_tag').notNull(),
+    battleTime: timestamp('battle_time', { withTimezone: true }).notNull(),
+    oppTag: text('opp_tag').notNull(),
+    oppName: text('opp_name').notNull(),
+    oppClan: text('opp_clan'),
+    /** The player page's battle kind: ladder, ranked, friendly, war, training… */
+    kind: text('kind').notNull(),
+    /** 1 win, 0 draw, -1 loss (duels by rounds). */
+    result: integer('result').notNull(),
+    crowns: integer('crowns').notNull(),
+    oppCrowns: integer('opp_crowns').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.playerTag, t.battleTime] }), index('player_battles_opp').on(t.playerTag, t.oppTag)],
+);

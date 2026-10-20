@@ -43,6 +43,13 @@
       "when": 1792515896778,
       "tag": "0005_tracked_players",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792523644804,
+      "tag": "0006_player_battles",
+      "breakpoints": true
     }
   ]
 }

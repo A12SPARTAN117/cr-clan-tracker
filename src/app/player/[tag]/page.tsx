@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
-import { getPlayer } from '@/lib/cr/api';
+import { getBattleLog, getPlayer } from '@/lib/cr/api';
 import { getPlayerProfile } from '@/lib/player/profile';
 import { getPlayerHistory } from '@/lib/history';
 import { trackPlayer } from '@/lib/history/snapshot';
+import { getRivals, saveBattles } from '@/lib/history/battles';
 import { checkTag } from '@/lib/tags';
 import { recordBadgeArt } from '@/lib/badgeArt';
 import { indexPlayers } from '@/lib/directory';
@@ -30,13 +31,15 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   after(() => indexPlayers([{ tag: r.data.tag, name: r.data.name, clanTag: r.data.clan?.tag, clanName: r.data.clan?.name, trophies: r.data.trophies }]));
   // Opening a profile starts (or keeps up) its daily snapshots, so history builds from here on.
   after(() => trackPlayer(r.data));
-  const [p, history] = await Promise.all([getPlayerProfile(c.tag), getPlayerHistory(c.tag)]);
+  const [p, history, rivals, log] = await Promise.all([getPlayerProfile(c.tag), getPlayerHistory(c.tag), getRivals(c.tag), getBattleLog(c.tag)]);
   if (!p) return <LostScene variant="error" tag={c.tag} />;
   // Everyone they played against goes into the name-search directory too.
   after(() => indexPlayers(p.battles.flatMap((b) => (b.them.tag ? [{ tag: b.them.tag, name: b.them.name, clanName: b.them.clan }] : []))));
   // Each badge level's art, for the asset checklist (the API only shows the level they own).
   after(() => recordBadgeArt(p.badges));
-  return <PlayerView p={p} history={history} />;
+  // Their 1v1 games are kept past the API's ~40, so head-to-head records keep growing.
+  if (log.ok) after(() => saveBattles(c.tag, log.data));
+  return <PlayerView p={p} history={history} rivals={rivals} />;
 }
 
 export default function PlayerPage({ params }: PageProps<'/player/[tag]'>) {

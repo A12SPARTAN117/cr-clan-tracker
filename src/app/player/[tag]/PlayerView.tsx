@@ -12,6 +12,7 @@ import { agoShort, fmt } from '@/lib/format';
 import { setPin, usePins } from '@/lib/pins';
 import type { PlayerProfile } from '@/lib/player/profile';
 import type { PlayerHistory } from '@/lib/history';
+import type { Rivals } from '@/lib/player/rivals';
 import { refreshPlayer } from './actions';
 import { BadgesTab } from './Badges';
 import { BattlesTab } from './Battles';
@@ -22,7 +23,7 @@ import s from './player.module.css';
 
 type Tab = 'overview' | 'collection' | 'badges' | 'stats' | 'battles' | 'decks' | 'history';
 
-export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHistory | null }) {
+export function PlayerView({ p, history, rivals }: { p: PlayerProfile; history: PlayerHistory | null; rivals: Rivals }) {
   const [tab, setTab] = useState<Tab>('overview');
   const [toast, setToast] = useState('');
   const [syncing, startSync] = useTransition();
@@ -174,7 +175,7 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
             { key: 'history', label: 'History' },
           ]}
         />
-        {tab === 'overview' && <OverviewTab p={p} onCopy={flash} />}
+        {tab === 'overview' && <OverviewTab p={p} rivals={rivals} onCopy={flash} />}
         {tab === 'collection' && <CollectionTab p={p} />}
         {tab === 'badges' && <BadgesTab p={p} />}
         {tab === 'stats' && <StatsTab p={p} />}
