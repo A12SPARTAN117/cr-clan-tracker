@@ -79,7 +79,9 @@ const SITE = process.env.SITE_URL || env.SITE_URL || 'http://localhost:3000';
 const recorded = await fetch(`${SITE}/api/badge-art`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 if (!recorded) console.warn(`[assets] couldn't read recorded badge art from ${SITE}/api/badge-art (is the site running?)`);
 const seenLevels = {}; // name -> level -> url, from profile views
-for (const r of recorded?.rows ?? []) {
+// Only official art: the record comes over the network, so never fetch anything else from it.
+const official = (u) => { try { const x = new URL(u); return x.protocol === 'https:' && x.hostname === 'api-assets.clashroyale.com'; } catch { return false; } };
+for (const r of (recorded?.rows ?? []).filter((r) => official(r.url) && /^[A-Za-z0-9_]+$/.test(r.name) && Number.isInteger(r.level))) {
   (seenLevels[r.name] ??= {})[r.level] = r.url;
   const b = (S.badges[r.name] ??= { maxLevel: r.maxLevel ?? 1, owners: 0, levels: {} });
   b.maxLevel = Math.max(b.maxLevel, r.maxLevel ?? 1, r.level);

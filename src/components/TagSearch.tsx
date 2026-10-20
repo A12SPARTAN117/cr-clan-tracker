@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
+import { createClientCache } from '@/lib/clientCache';
 import { checkTag, surelyTag } from '@/lib/tags';
 import { ClanBadge } from './ui/ClanBadge';
 import { MembersIcon, TrophyIcon } from './ui/icons';
@@ -26,6 +27,9 @@ type Item = { kind: 'player' | 'clan'; tag: string; name: string; sub: string; b
  * while typing; Enter opens the highlighted match, a tag directly, or the full results page.
  * `scope` limits it to players or clans; `then="manage"` sends clans to their dashboard.
  */
+/** Suggestions seen in the last minute, shared by every search box on the page. */
+const suggestCache = createClientCache<Suggest>(60_000);
+
 export function TagSearch({
   size = 'hero',
   onScene = false,
@@ -74,9 +78,9 @@ export function TagSearch({
     const id = setTimeout(async () => {
       setBusy(true);
       try {
-        const r = await fetch(`/api/search?scope=${scope}&q=${encodeURIComponent(term)}`, { signal: ctl.signal });
-        if (!r.ok) return;
-        const d = (await r.json()) as Suggest;
+        const url = `/api/search?scope=${scope}&q=${encodeURIComponent(term)}`;
+        const d = await suggestCache.get(url, () => fetch(url).then((r) => (r.ok ? (r.json() as Promise<Suggest>) : Promise.reject(r.status))));
+        if (ctl.signal.aborted) return;
         const items: Item[] = [];
         if (d.tagPlayer) items.push({ kind: 'player', tag: d.tagPlayer.tag, name: d.tagPlayer.name, sub: `#${d.tagPlayer.tag} · tag match`, trophies: d.tagPlayer.trophies });
         if (d.tagClan) items.push({ kind: 'clan', tag: d.tagClan.tag, name: d.tagClan.name, sub: `#${d.tagClan.tag} · tag match`, badgeId: d.tagClan.badgeId, members: d.tagClan.members });

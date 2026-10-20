@@ -108,8 +108,8 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
   // Members of the top war clans play ladder, war and events far more than the ranked top 100.
   const clans = warTop.ok ? await Promise.all(warTop.data.items.map((c) => getClan(c.tag.replace('#', '')))) : [];
   const tags = [...new Set([...top.data.items.map((p) => p.tag), ...clans.flatMap((c) => (c.ok ? c.data.memberList.map((m) => m.tag) : []))])];
-  // A wide fan-out keeps a cold snapshot fast (the dev server flags slow cache fills).
-  const logs = await pool(tags, 30, (t) => getBattleLog(t.replace('#', '')));
+  // The shared API gate (cr/limiter) paces these; 10 at a time leaves room for visitors' pages.
+  const logs = await pool(tags, 10, (t) => getBattleLog(t.replace('#', '')));
 
   const now = Date.now();
   const seen = new Set<string>();

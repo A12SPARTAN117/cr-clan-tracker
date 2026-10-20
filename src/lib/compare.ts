@@ -2,6 +2,7 @@ import 'server-only';
 import { getClanProfile, type ClanProfile } from './clan/profile';
 import { cardBySlug } from './cards';
 import { leagueName } from './leagues';
+import { checkTag } from './tags';
 import { getPlayerProfile, type PlayerProfile } from './player/profile';
 
 /**
@@ -145,14 +146,17 @@ function artOf(p: PlayerProfile): CompareEntity['art'] {
 }
 
 export async function compare(kind: CompareKind, tags: string[]): Promise<Comparison> {
-  const list = [...new Set(tags.map((t) => t.replace('#', '').toUpperCase()).filter(Boolean))].slice(0, MAX_COMPARE);
+  // Only well-formed tags cost an API call; anything else is reported as missing.
+  const wanted = [...new Set(tags.map((t) => t.replace('#', '').toUpperCase().slice(0, 15)).filter(Boolean))].slice(0, MAX_COMPARE);
+  const list = wanted.filter((t) => checkTag(t).kind === 'valid');
+  const invalid = wanted.filter((t) => !list.includes(t));
   if (kind === 'player') {
     const got = await Promise.all(list.map((t) => getPlayerProfile(t)));
     const ps = got.filter((p): p is PlayerProfile => !!p);
     return {
       kind,
       entities: ps.map((p) => ({ tag: p.tag, name: p.name, sub: p.clan?.name ?? 'No clan', deck: p.deck, art: artOf(p) })),
-      missing: list.filter((_, i) => !got[i]),
+      missing: [...invalid, ...list.filter((_, i) => !got[i])],
       sections: ps.length ? players(ps) : [],
     };
   }
@@ -161,7 +165,7 @@ export async function compare(kind: CompareKind, tags: string[]): Promise<Compar
   return {
     kind,
     entities: cs.map((c) => ({ tag: c.tag, name: c.name, sub: c.location ?? `#${c.tag}`, badgeId: c.badgeId, warTrophies: c.clanWarTrophies })),
-    missing: list.filter((_, i) => !got[i]),
+    missing: [...invalid, ...list.filter((_, i) => !got[i])],
     sections: cs.length ? clans(cs) : [],
   };
 }

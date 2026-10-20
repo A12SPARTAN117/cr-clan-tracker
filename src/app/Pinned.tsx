@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { createClientCache } from '@/lib/clientCache';
 import { CardTile } from '@/components/CardTile';
 import { ClanBadge } from '@/components/ui/ClanBadge';
 import { LeagueIcon, PolRating, ROLE_LABEL } from '@/components/ui/primitives';
@@ -11,14 +12,18 @@ import { setPin, usePins } from '@/lib/pins';
 import type { ClanSummary, PlayerSummary } from '@/lib/summary';
 import s from './home.module.css';
 
+/** Pinned summaries from the last minute, so coming back to Home doesn't refetch them. */
+const summaryCache = createClientCache<unknown>(60_000);
+
 function useSummary<T>(kind: 'player' | 'clan', tag: string | null) {
   const [state, setState] = useState<{ tag: string | null; data: T | null; failed: boolean }>({ tag: null, data: null, failed: false });
   useEffect(() => {
     if (!tag) return;
     let live = true;
-    fetch(`/api/summary/${kind}/${tag}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((data: T) => live && setState({ tag, data, failed: false }))
+    const url = `/api/summary/${kind}/${tag}`;
+    summaryCache
+      .get(url, () => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject(r.status))))
+      .then((data) => live && setState({ tag, data: data as T, failed: false }))
       .catch(() => live && setState({ tag, data: null, failed: true }));
     return () => {
       live = false;

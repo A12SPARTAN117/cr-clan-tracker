@@ -14,6 +14,7 @@ import type {
   PolRankedPlayer,
   RiverRaceLogEntry,
 } from './types';
+import { limiter } from './limiter';
 
 /**
  * Typed, cached access to the official Clash Royale API (through the RoyaleAPI proxy).
@@ -37,21 +38,25 @@ export const tags = {
 async function request<T>(path: string): Promise<ApiResult<T>> {
   const key = process.env.CR_API_KEY;
   if (!key) return { ok: false, status: 0, reason: 'CR_API_KEY is not set' };
-  try {
-    const res = await fetch(BASE + path, {
-      headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' },
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (res.ok) return { ok: true, data: (await res.json()) as T };
-    let reason = res.statusText;
+  // Every call goes through the shared gate (rate, concurrency, visitor-first, 429 back-off).
+  const r = await limiter.run(async () => {
     try {
-      const body = (await res.json()) as { reason?: string; message?: string };
-      reason = body.reason || body.message || reason;
-    } catch {}
-    return { ok: false, status: res.status, reason };
-  } catch (e) {
-    return { ok: false, status: 0, reason: e instanceof Error ? e.message : 'network error' };
-  }
+      const res = await fetch(BASE + path, {
+        headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (res.ok) return { status: res.status, result: { ok: true, data: (await res.json()) as T } as ApiResult<T> };
+      let reason = res.statusText;
+      try {
+        const body = (await res.json()) as { reason?: string; message?: string };
+        reason = body.reason || body.message || reason;
+      } catch {}
+      return { status: res.status, retryAfter: Number(res.headers.get('retry-after')) || null, result: { ok: false, status: res.status, reason } as ApiResult<T> };
+    } catch (e) {
+      return { status: 0, result: { ok: false, status: 0, reason: e instanceof Error ? e.message : 'network error' } as ApiResult<T> };
+    }
+  });
+  return r.result;
 }
 
 /** Applies the right lifetime: `profile` on success or 404, `crError` otherwise. */

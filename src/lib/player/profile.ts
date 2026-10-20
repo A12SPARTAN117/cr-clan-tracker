@@ -216,7 +216,7 @@ function leveled(c: ApiCard): LeveledCard {
  * either (checked across 661 logged decks; no other slot ever plays as one). The latest battle
  * with this deck says the actual forms; without one, unlocks decide (slot 3 prefers the evo).
  */
-function currentDeckCards(p: Player, battles: Battle[]): LeveledCard[] {
+export function currentDeckCards(p: Player, battles: Battle[]): LeveledCard[] {
   const deck = p.currentDeck ?? [];
   const ids = (cs: { id: number }[]) => cs.map((c) => c.id).sort((a, b) => a - b).join();
   const me = bare(p.tag);

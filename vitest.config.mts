@@ -10,7 +10,7 @@ const r = (p: string) => path.resolve(import.meta.dirname, p);
  * - data: live accuracy checks against the Clash Royale API (needs CR_API_KEY in .env)
  */
 export default defineConfig({
-  esbuild: { jsx: 'automatic' },
+  oxc: { jsx: { runtime: 'automatic' } },
   resolve: {
     alias: {
       '@': r('src'),

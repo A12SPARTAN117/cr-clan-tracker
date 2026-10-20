@@ -1,5 +1,6 @@
 import 'server-only';
 import { headers } from 'next/headers';
+import { clientIp } from './ip';
 
 /**
  * Small per-key request limiter for the endpoints that are cheap to call in a loop (typeahead,
@@ -37,10 +38,8 @@ export function hit(key: string, max: number, windowMs: number): number {
   return w.n > max ? Math.ceil((w.reset - now) / 1000) : 0;
 }
 
-/** The visitor's IP as reported by the host's proxy (first X-Forwarded-For entry). */
-export function clientIp(h: Headers): string {
-  return h.get('x-forwarded-for')?.split(',')[0].trim() || h.get('x-real-ip') || 'unknown';
-}
+export { clientIp };
+
 
 /** Per-IP limits, per minute, for each kind of endpoint. */
 export const LIMITS = {
