@@ -10,17 +10,17 @@ import { Reveal } from '@/components/fx/Reveal';
 import { EmptyState } from '@/components/EmptyState';
 import { ClanFrame } from '@/components/ui/ClanFrame';
 import { activityOf, FitValue, ROLE_LABEL } from '@/components/ui/primitives';
-import { ClockIcon, DonationIcon, ExpIcon, KingLevel, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
+import { CardsIcon, ClockIcon, DonationIcon, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { Tabs } from '@/components/ui/Tabs';
 import type { ClanProfile } from '@/lib/clan/profile';
 import { agoShort, dstr, fmt } from '@/lib/format';
 import p from './profile.module.css';
 
 /** Columns phones drop to fit the screen (the role moves under the name). */
-const WIDE = new Set(['role', 'exp', 'don']);
+const WIDE = new Set(['role', 'coll', 'don']);
 
 type Tab = 'members' | 'war' | 'roster' | 'stats';
-type SortKey = 'rank' | 'name' | 'role' | 'trophies' | 'exp' | 'don' | 'seen';
+type SortKey = 'rank' | 'name' | 'role' | 'trophies' | 'coll' | 'don' | 'seen';
 const TYPE = { open: 'Open', inviteOnly: 'Invite only', closed: 'Closed' } as const;
 const ROLE_IDX = { leader: 0, coLeader: 1, elder: 2, member: 3 } as const;
 const TROOPS = ['knight', 'valkyrie', 'musketeer', 'hog_rider', 'wizard', 'pekka', 'mini_pekka', 'prince', 'witch', 'giant', 'archers', 'bowler'];
@@ -41,7 +41,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
     name: (m) => m.name.toLowerCase(),
     role: (m) => ROLE_IDX[m.role],
     trophies: (m) => m.trophies,
-    exp: (m) => m.expLevel,
+    coll: (m) => m.collectionLevel ?? -1,
     don: (m) => m.donations,
     seen: (m) => m.hours,
   };
@@ -52,7 +52,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
     ['name', 'NAME', 'left'],
     ['role', 'ROLE', 'left'],
     ['trophies', 'TROPHIES', 'right', <TrophyIcon key="i" size={12} />],
-    ['exp', 'KING LVL', 'right', <ExpIcon key="i" size={12} />],
+    ['coll', 'COLL. LVL', 'right', <CardsIcon key="i" size={12} />],
     ['don', 'DON. / WK', 'right', <DonationIcon key="i" size={12} />],
     ['seen', 'LAST SEEN', 'right', <ClockIcon key="i" size={12} />],
   ];
@@ -249,7 +249,7 @@ export function ClanProfileView({ c }: { c: ClanProfile }) {
                         {ROLE_LABEL[m.role]}
                       </td>
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.trophies)}</td>
-                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{m.expLevel ? <KingLevel level={m.expLevel} size={32} /> : '—'}</td>
+                      <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{m.collectionLevel != null ? fmt(m.collectionLevel) : '—'}</td>
                       <td className={p.wide} style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 13px/1 var(--mono)' }}>{fmt(m.donations)}</td>
                       <td style={{ padding: '11px 14px', borderBottom: '1px solid var(--hair)', textAlign: 'right', font: '500 12px/1 var(--mono)', color: a === 'active' ? 'var(--blue)' : a === 'risk' ? 'var(--text-2)' : 'var(--ember)' }}>
                         {a === 'active' ? '● ' : a === 'risk' ? '◐ ' : '○ '}

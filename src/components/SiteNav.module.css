@@ -27,6 +27,14 @@
   --nav-fg: var(--text-1);
   --nav-link: var(--text-2);
 }
+/* Marble Day: the daylight hero art is pale, so before scrolling the bar gets a soft frosted band
+   (fading out downward, so the scene still runs up behind it) and full-strength link ink. */
+:global([data-theme='light']) .overlay:not(.scrolled) {
+  background: linear-gradient(to bottom, rgba(var(--void-rgb), 0.9), rgba(var(--void-rgb), 0.6) 65%, rgba(var(--void-rgb), 0));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  --nav-link: var(--text-1);
+}
 .overlay.scrolled {
   background: var(--glass);
   backdrop-filter: blur(16px);
@@ -60,10 +68,9 @@
   text-transform: uppercase;
 }
 .link {
+  position: relative;
   white-space: nowrap;
   color: var(--nav-link, var(--text-2));
-  padding-bottom: 6px;
-  margin-bottom: -6px;
 }
 /* Support stands out a little: a pill with a heart. */
 .link.support {
@@ -93,9 +100,21 @@
 }
 .link[aria-current='page'] {
   color: var(--nav-fg, var(--text-1));
-  box-shadow:
-    0 2px 0 0 var(--blue-hi),
-    0 4px 10px rgba(var(--glow-rgb), 0.6);
+}
+/* The current page: a light bar well clear of the letters, a little wider than the word. */
+.link[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  left: -5px;
+  right: -5px;
+  bottom: -11px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--blue-hi);
+  box-shadow: 0 0 10px rgba(var(--glow-rgb), 0.6);
+}
+.link.support[aria-current='page']::after {
+  display: none;
 }
 
 .grow {
