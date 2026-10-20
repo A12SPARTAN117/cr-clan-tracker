@@ -1,0 +1,114 @@
+.dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid rgba(var(--glow-rgb), 0.5);
+  border-radius: 8px;
+  background: var(--obsidian);
+  color: var(--text-1);
+  box-shadow: 0 0 32px rgba(var(--glow-rgb), 0.25);
+  overflow: auto;
+}
+.dialog::backdrop {
+  background: rgba(var(--shade-rgb), 0.72);
+  backdrop-filter: blur(3px);
+}
+.dialog[open] {
+  animation: oaFade 0.2s;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font: 500 11px/1.3 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.close {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  background: none;
+  color: var(--text-1);
+  font: 500 14px/1 var(--mono);
+  cursor: pointer;
+}
+.close:hover {
+  border-color: var(--blue-hi);
+}
+
+/* The image keeps its 4:5 shape and fits short phone screens. */
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 5;
+  max-height: 58dvh;
+  margin: 0 auto;
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--void);
+}
+.preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.actions > * {
+  flex: 1 1 120px;
+}
+.actions [disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.note {
+  min-height: 1.3em;
+  margin: 0;
+  font: 500 10px/1.3 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue-hi);
+  overflow-wrap: anywhere;
+}

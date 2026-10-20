@@ -8,6 +8,7 @@ import { RiverRace3D } from '@/components/fx/RiverRace3D';
 import { Fog } from '@/components/fx/Fog';
 import { Reveal } from '@/components/fx/Reveal';
 import { EmptyState } from '@/components/EmptyState';
+import { ShareRecap } from '@/components/ShareRecap';
 import { ClanFrame } from '@/components/ui/ClanFrame';
 import { activityOf, FitValue, ROLE_LABEL } from '@/components/ui/primitives';
 import { CardsIcon, ClockIcon, DonationIcon, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
@@ -211,6 +212,7 @@ export function ClanProfileView({ c, levels }: { c: ClanProfile; levels?: Promis
             <Link href={`/compare?type=clan&tags=${c.tag}`} className="btn btn-scene" style={{ height: 56 }}>
               Compare ⇄
             </Link>
+            <ShareRecap src={`/clan/${c.tag}/recap`} file={`recap-${c.tag}.png`} title={`${c.name} · clan recap`} style={{ height: 56 }} />
           </div>
         </div>
       </section>
