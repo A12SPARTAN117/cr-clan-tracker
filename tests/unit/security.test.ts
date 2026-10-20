@@ -91,6 +91,13 @@ describe('page limit (lib/pageLimit, src/proxy.ts)', () => {
     expect(Number(res.headers.get('retry-after'))).toBeGreaterThan(0);
     expect(res.headers.get('content-type')).toContain('text/html');
   });
+
+  it('rewrites hidden sections (News) to the 404 page before anything renders', async () => {
+    const { proxy } = await import('@/proxy');
+    const r = (path: string) => Object.assign(new Request(`http://localhost${path}`, { headers: { 'x-real-ip': '8.8.8.8' } }), { nextUrl: new URL(`http://localhost${path}`) });
+    for (const path of ['/news', '/news/early-access']) expect(proxy(r(path) as never).headers.get('x-middleware-rewrite')).toBe('http://localhost/_hidden');
+    expect(proxy(r('/newsletter') as never).headers.get('x-middleware-rewrite')).toBeNull();
+  });
 });
 
 describe('endpoint limits (lib/ratelimit)', () => {

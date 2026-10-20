@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { FEATURES } from '@/lib/features';
 import { checkPage, slowDownPage } from '@/lib/pageLimit';
 
 /**
@@ -7,6 +8,9 @@ import { checkPage, slowDownPage } from '@/lib/pageLimit';
  * static files and our API routes (which have their own limits), never reaches this.
  */
 export function proxy(req: NextRequest) {
+  // A hidden section 404s before anything renders (a page that calls notFound() after it has
+  // started streaming would answer 200).
+  if (!FEATURES.news && /^\/news(\/|$)/.test(req.nextUrl.pathname)) return NextResponse.rewrite(new URL('/_hidden', req.url));
   const wait = checkPage(req.nextUrl.pathname, req.headers);
   if (!wait) return NextResponse.next();
   return new NextResponse(slowDownPage(wait), {
@@ -16,5 +20,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/player/:path*', '/clan/:path*', '/t/:path*', '/compare', '/search', '/decks/:path+'],
+  matcher: ['/player/:path*', '/clan/:path*', '/t/:path*', '/compare', '/search', '/decks/:path+', '/news/:path*'],
 };
