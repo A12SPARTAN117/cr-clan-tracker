@@ -129,16 +129,18 @@ export function seedDirectory(fetchers: {
   const st = (g.__crSeed ??= { at: 0, running: false });
   if (st.running || Date.now() - st.at < 24 * 3600_000) return;
   st.running = true;
+  // Paced on purpose: about 5 calls a second at most, a small share of the API budget (cr/limiter
+  // allows 20), so the crawl never crowds out visitors' pages.
+  const paced = <T>(p: Promise<T>) => Promise.all([p, new Promise((r) => setTimeout(r, 400))]).then(([v]) => v);
   void (async () => {
     try {
       const locs = [{ id: 'global' as const }, ...(await fetchers.locations()).filter((l) => l.isCountry)];
       let i = 0;
-      // A gentle fan-out: the leaderboard calls share the API key with live pages.
       await Promise.all(
-        Array.from({ length: 6 }, async () => {
+        Array.from({ length: 2 }, async () => {
           while (i < locs.length) {
             const loc = locs[i++];
-            const items = await fetchers.board(loc.id).catch(() => []);
+            const items = await paced(fetchers.board(loc.id).catch(() => []));
             await indexPlayers(
               items.map((p) => ({ tag: p.tag, name: p.name, clanTag: p.clan?.tag, clanName: p.clan?.name })),
               { persist: false },
@@ -146,19 +148,19 @@ export function seedDirectory(fetchers: {
           }
         }),
       );
-      // Then everyone in the strongest clans: the global top 200 and each country's top 5. This
-      // reaches the far larger pool of players who never rank in Path of Legends. Slow on
-      // purpose (3 at a time) so it never crowds out live pages; saved to the database too.
+      // Then everyone in the strongest clans: the global top 100 and each country's top 2. This
+      // reaches the far larger pool of players who never rank in Path of Legends; saved to the
+      // database too.
       const { clans, roster } = fetchers;
       if (clans && roster) {
         const tags = new Set<string>();
-        for (const loc of locs) for (const t of await clans(loc.id, loc.id === 'global' ? 100 : 5).catch(() => [])) tags.add(t);
+        for (const loc of locs) for (const t of await paced(clans(loc.id, loc.id === 'global' ? 50 : 2).catch(() => []))) tags.add(t);
         const queue = [...tags];
         let j = 0;
         await Promise.all(
-          Array.from({ length: 3 }, async () => {
+          Array.from({ length: 2 }, async () => {
             while (j < queue.length) {
-              const c = await roster(queue[j++]).catch(() => null);
+              const c = await paced(roster(queue[j++]).catch(() => null));
               if (c) await indexClanMembers(c);
             }
           }),

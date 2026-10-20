@@ -36,7 +36,7 @@ export async function GET(req: Request) {
   // Rosters of each location's top war clans reach players who never rank in Path of Legends.
   let members = 0;
   for (const loc of slice) {
-    const r = await getClanWarRankings(loc, 5);
+    const r = await getClanWarRankings(loc, 3);
     if (!r.ok) continue;
     for (const c of r.data.items) {
       const clan = await getClan(c.tag.replace('#', ''));
