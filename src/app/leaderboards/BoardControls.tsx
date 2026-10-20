@@ -4,8 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { Portal } from '@/components/fx/Portal';
 import { Tabs } from '@/components/ui/Tabs';
-
-type Tab = 'pol' | 'clans' | 'war' | 'events';
+import type { Tab } from './BoardView';
 
 export function BoardControls({
   tab,
@@ -30,7 +29,10 @@ export function BoardControls({
     if (t !== 'pol') p.set('tab', t);
     if (l !== 'global') p.set('loc', l);
     if (t === 'events' && (next.ev ?? ev)) p.set('ev', String(next.ev ?? ev));
-    start(() => router.replace(`${pathname}${p.size ? `?${p}` : ''}`, { scroll: false }));
+    const url = `${pathname}${p.size ? `?${p}` : ''}`;
+    // Tabs and events are already on the page (BoardView); only a new location loads.
+    if (l === loc) window.history.replaceState(null, '', url);
+    else start(() => router.replace(url, { scroll: false }));
   };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
