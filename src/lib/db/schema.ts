@@ -60,6 +60,37 @@ export const memberDaily = pgTable(
 );
 
 /**
+ * Players we snapshot on their own, whatever clan they are in. A player is tracked from the
+ * first time their profile is opened; the cron keeps a daily snapshot while it keeps being viewed.
+ */
+export const trackedPlayers = pgTable('tracked_players', {
+  tag: text('tag').primaryKey(),
+  name: text('name').notNull(),
+  trackedSince: timestamp('tracked_since', { withTimezone: true }).notNull().defaultNow(),
+  lastSnapshotAt: timestamp('last_snapshot_at', { withTimezone: true }),
+  lastViewedAt: timestamp('last_viewed_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** One row per tracked player per UTC day: their profile at the last snapshot of the day. */
+export const playerDaily = pgTable(
+  'player_daily',
+  {
+    playerTag: text('player_tag').notNull(),
+    day: date('day').notNull(),
+    trophies: integer('trophies').notNull(),
+    /** The month's seasonal trophy road (above 14,000); null when they haven't reached it. */
+    seasonalTrophies: integer('seasonal_trophies'),
+    polLeague: integer('pol_league'),
+    polRating: integer('pol_rating'),
+    polRank: integer('pol_rank'),
+    wins: integer('wins').notNull(),
+    battleCount: integer('battle_count').notNull(),
+    collectionLevel: integer('collection_level'),
+  },
+  (t) => [primaryKey({ columns: [t.playerTag, t.day] })],
+);
+
+/**
  * War decks per member per war day. week = date (YYYY-MM-DD) of the race week's first war
  * day (Thursday). Each snapshot keeps the highest decksUsedToday seen for that day.
  */

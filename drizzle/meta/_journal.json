@@ -36,6 +36,13 @@
       "when": 1792514478142,
       "tag": "0004_event_boards",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792515896778,
+      "tag": "0005_tracked_players",
+      "breakpoints": true
     }
   ]
 }
