@@ -30,14 +30,18 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
     setMinW(Number(params.get('minW') ?? 0));
   }
 
-  const push = (patch: Record<string, string | number | null>) => {
+  const urlWith = (patch: Record<string, string | number | null>) => {
     const next = new URLSearchParams(params.toString());
     for (const [k, v] of Object.entries(patch)) {
       if (v == null || v === '' || v === 0 || v === 'all') next.delete(k);
       else next.set(k, String(v));
     }
-    start(() => router.replace(`${pathname}?${next}`, { scroll: false }));
+    return next.size ? `${pathname}?${next}` : pathname;
   };
+  /** Name and location fetch new clans from the server. */
+  const push = (patch: { q?: string; loc?: string }) => start(() => router.replace(urlWith(patch), { scroll: false }));
+  /** Type, members and war trophies only filter the list on screen (ClanResults), so no round trip. */
+  const set = (patch: { type?: string; minM?: number; minW?: number }) => window.history.replaceState(null, '', urlWith(patch));
 
   // Debounced name search.
   useEffect(() => {
@@ -143,7 +147,7 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
         </label>
         <label className="label-sm" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           MIN MEMBERS
-          <input type="range" min={0} max={50} value={minM} onChange={(e) => setMinM(+e.target.value)} onPointerUp={() => push({ minM })} onKeyUp={() => push({ minM })} style={{ accentColor: 'var(--blue)', width: 120 }} />
+          <input type="range" min={0} max={50} value={minM} onChange={(e) => setMinM(+e.target.value)} onPointerUp={() => set({ minM })} onKeyUp={() => set({ minM })} style={{ accentColor: 'var(--blue)', width: 120 }} />
           <span style={{ color: 'var(--text-1)', fontSize: 12, minWidth: 22 }}>{minM}</span>
         </label>
         <label className="label-sm" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -155,8 +159,8 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
             step={250}
             value={minW}
             onChange={(e) => setMinW(+e.target.value)}
-            onPointerUp={() => push({ minW })}
-            onKeyUp={() => push({ minW })}
+            onPointerUp={() => set({ minW })}
+            onKeyUp={() => set({ minW })}
             style={{ accentColor: 'var(--blue)', width: 120 }}
           />
           <span style={{ color: 'var(--text-1)', fontSize: 12, minWidth: 40 }}>{minW.toLocaleString('en-US')}</span>
@@ -171,7 +175,7 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
               ['closed', 'Closed'],
             ] as const
           ).map(([v, l]) => (
-            <button key={v} type="button" className="chip" aria-pressed={type === v} onClick={() => push({ type: v })}>
+            <button key={v} type="button" className="chip" aria-pressed={type === v} onClick={() => set({ type: v })}>
               {l}
             </button>
           ))}
