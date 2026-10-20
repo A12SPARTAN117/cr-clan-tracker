@@ -10,9 +10,9 @@ describe('live event boards', () => {
     expect(boardState(undefined, 'a:1', now)).toEqual({ live: true, changed: false });
   });
 
-  it('hides a board that has not moved six hours after it was first seen', () => {
-    expect(boardState({ sig: 'a:1', firstSeenAt: ago(2), changedAt: null }, 'a:1', now).live).toBe(true);
-    expect(boardState({ sig: 'a:1', firstSeenAt: ago(7), changedAt: null }, 'a:1', now).live).toBe(false);
+  it('hides a board that has not moved two hours after it was first seen', () => {
+    expect(boardState({ sig: 'a:1', firstSeenAt: ago(1), changedAt: null }, 'a:1', now).live).toBe(true);
+    expect(boardState({ sig: 'a:1', firstSeenAt: ago(3), changedAt: null }, 'a:1', now).live).toBe(false);
   });
 
   it('shows a board as soon as its standings move', () => {

@@ -21,7 +21,8 @@ export type CompareEntity = {
   warTrophies?: number;
   deck?: PlayerProfile['deck'];
 };
-export type Comparison = { kind: CompareKind; entities: CompareEntity[]; missing: string[]; sections: { title: string; rows: CompareRow[] }[] };
+/** `pending`: labels of rows still loading (they show a placeholder, never a guessed number). */
+export type Comparison = { kind: CompareKind; entities: CompareEntity[]; missing: string[]; sections: { title: string; rows: CompareRow[] }[]; pending?: string[] };
 
 export const MAX_COMPARE = 4;
 
@@ -138,7 +139,14 @@ function clans(cs: ClanProfile[]): Comparison['sections'] {
   ];
 }
 
-export async function compare(kind: CompareKind, tags: string[]): Promise<Comparison> {
+/** Clan rows that need every member's own profile (the roster has neither level). */
+const MEMBER_LEVEL_ROWS = ['Average king level', 'Average collection level'];
+
+/**
+ * `levels: false` skips the member profiles behind the two average-level rows (about 50 API calls a
+ * clan, ~2.5 s each at the API's rate limit), so the page can show everything else first.
+ */
+export async function compare(kind: CompareKind, tags: string[], { levels = true }: { levels?: boolean } = {}): Promise<Comparison> {
   // Only well-formed tags cost an API call; anything else is reported as missing.
   const wanted = [...new Set(tags.map((t) => t.replace('#', '').toUpperCase().slice(0, 15)).filter(Boolean))].slice(0, MAX_COMPARE);
   const list = wanted.filter((t) => checkTag(t).kind === 'valid');
@@ -154,9 +162,8 @@ export async function compare(kind: CompareKind, tags: string[]): Promise<Compar
       sections: ps.length ? players(ps) : [],
     };
   }
-  // Compare needs member averages, so it waits for the member levels too.
   const got = await Promise.all(list.map(async (t) => {
-    const [c, lv] = await Promise.all([getClanProfile(t), getMemberLevels(t)]);
+    const [c, lv] = await Promise.all([getClanProfile(t), levels ? getMemberLevels(t) : {}]);
     return c && withLevels(c, lv);
   }));
   const cs = got.filter((c): c is ClanProfile => !!c);
@@ -165,5 +172,6 @@ export async function compare(kind: CompareKind, tags: string[]): Promise<Compar
     entities: cs.map((c) => ({ tag: c.tag, name: c.name, sub: c.location ?? `#${c.tag}`, badgeId: c.badgeId, warTrophies: c.clanWarTrophies })),
     missing: [...invalid, ...list.filter((_, i) => !got[i])],
     sections: cs.length ? clans(cs) : [],
+    pending: levels || !cs.length ? undefined : MEMBER_LEVEL_ROWS,
   };
 }

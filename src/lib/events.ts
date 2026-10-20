@@ -1,20 +1,20 @@
 import 'server-only';
 import { eq, inArray } from 'drizzle-orm';
 import { connection } from 'next/server';
-import { getEventLeaderboard, getEventLeaderboards, type ApiResult } from './cr/api';
+import { getEventLeaderboard, getEventLeaderboards, getEventRankIndex, type ApiResult } from './cr/api';
 import type { EventRanked, Paged } from './cr/types';
 import { enqueue, getDb, schema } from './db';
 
 /** A board counts as live while its standings moved in this window. */
 const LIVE_MS = 48 * 3600_000;
 /** A board seen for the first time gets this long to show it moves before it is hidden. */
-const GRACE_MS = 6 * 3600_000;
+const GRACE_MS = 2 * 3600_000;
 
 export type EventBoard = { id: number; name: string; data: ApiResult<Paged<EventRanked>> };
 
 /**
  * Whether a board is live, given what was stored at the last check (`prev`) and the top of the
- * board now. Live while it moved in the last 48 hours; a board never seen to move is given six
+ * board now. Live while it moved in the last 48 hours; a board never seen to move is given two
  * hours from when it was first seen.
  */
 export function boardState(prev: { sig: string; firstSeenAt: Date; changedAt: Date | null } | undefined, sig: string, now: number): { live: boolean; changed: boolean } {
@@ -64,4 +64,22 @@ export async function liveEventBoards(): Promise<EventBoard[]> {
       return boards;
     }
   });
+}
+
+/** A player's place on a live event leaderboard; rank null when they're past the ~10,000 the API lists. */
+export type EventRank = { id: number; name: string; rank: number | null; score: number | null; listed: number };
+
+/** Where a player stands on every event leaderboard that is live right now. */
+export async function eventRanksOf(tagRaw: string): Promise<EventRank[]> {
+  const tag = tagRaw.replace(/^#/, '').toUpperCase();
+  const live = await liveEventBoards();
+  const out = await Promise.all(
+    live.map(async (b): Promise<EventRank | null> => {
+      const idx = await getEventRankIndex(b.id);
+      if (!idx) return null;
+      const hit = idx[tag];
+      return { id: b.id, name: b.name, rank: hit?.[0] ?? null, score: hit?.[1] ?? null, listed: Object.keys(idx).length };
+    }),
+  );
+  return out.filter((x): x is EventRank => !!x);
 }

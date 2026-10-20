@@ -7,6 +7,7 @@ import { getPlayerProfile } from '@/lib/player/profile';
 import { getPlayerHistory } from '@/lib/history';
 import { trackPlayer } from '@/lib/history/snapshot';
 import { getRivals, saveBattles } from '@/lib/history/battles';
+import { eventRanksOf } from '@/lib/events';
 import { checkTag } from '@/lib/tags';
 import { recordBadgeArt } from '@/lib/badgeArt';
 import { indexPlayers } from '@/lib/directory';
@@ -39,7 +40,9 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   after(() => recordBadgeArt(p.badges));
   // Their 1v1 games are kept past the API's ~40, so head-to-head records keep growing.
   if (log.ok) after(() => saveBattles(c.tag, log.data));
-  return <PlayerView p={p} history={history} rivals={rivals} />;
+  // Live event ranks need each board's full listing; they stream into the Badges tab.
+  const eventRanks = eventRanksOf(c.tag).catch(() => []);
+  return <PlayerView p={p} history={history} rivals={rivals} eventRanks={eventRanks} />;
 }
 
 export default function PlayerPage({ params }: PageProps<'/player/[tag]'>) {

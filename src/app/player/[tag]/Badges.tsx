@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, use, useState } from 'react';
 import {
   BadgeIcon,
   CardsIcon,
@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/icons';
 import { CARDS } from '@/lib/cards';
 import { fmt } from '@/lib/format';
+import type { EventRank } from '@/lib/events';
+import { polLabel } from '@/lib/leagues';
 import type { Badge, BadgeGroup, PlayerProfile } from '@/lib/player/profile';
 import extraBadges from '../../../../data/badge-art.json';
 import savedBadges from '../../../../data/player-badges.json';
@@ -133,11 +135,77 @@ function AchievementIcon({ name }: { name: string }) {
   return <BadgeIcon size={size} />;
 }
 
-export function BadgesTab({ p }: { p: PlayerProfile }) {
+/**
+ * Badges that count leaderboard finishes ("Top 1,000", tournament and league ranks). Their level
+ * and progress are how many times the player finished in that bracket; the API never says which
+ * rank each time.
+ */
+const RANK_BADGE = /(Top1000|Rank(_vd+)?)$/;
+
+function EventRanks({ ranks }: { ranks: Promise<EventRank[]> }) {
+  const list = use(ranks);
+  if (!list.length) return <span className={s.rankNote}>No event leaderboards are live right now.</span>;
+  return (
+    <>
+      {list.map((e) => (
+        <div key={e.id} className={s.rankCard} data-on={e.rank != null}>
+          <span className={s.rankK}>{e.name} · live</span>
+          <b>{e.rank != null ? `#${fmt(e.rank)}` : '—'}</b>
+          <small>{e.rank != null ? `${fmt(e.score)} points` : `Not in the top ${fmt(e.listed)}`}</small>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/** Where the player ranks: Path of Legends seasons, live event boards, and rank-badge finishes. */
+function Rankings({ p, eventRanks }: { p: PlayerProfile; eventRanks: Promise<EventRank[]> }) {
+  const seasons = (
+    [
+      ['This season', p.pol.current],
+      ['Last season', p.pol.last],
+      ['Best season', p.pol.best],
+    ] as const
+  ).filter(([, x]) => x);
+  const finishes = p.badges.filter((b) => RANK_BADGE.test(b.id) && (b.progress ?? b.level));
+  return (
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <h3 className="heading">Rankings</h3>
+      <div className={s.ranks}>
+        {seasons.map(([k, x]) => (
+          <div key={k} className={s.rankCard} data-on={x!.rank != null}>
+            <span className={s.rankK}>Path of Legends · {k}</span>
+            <b>{x!.rank != null ? `#${fmt(x!.rank)}` : 'Unranked'}</b>
+            <small>{x!.league >= 7 && x!.rating ? `${polLabel(x!)} · ${fmt(x!.rating)}` : polLabel(x!)}</small>
+          </div>
+        ))}
+        <Suspense fallback={<div className={`${s.rankCard} skeleton`} style={{ minHeight: 86 }} />}>
+          <EventRanks ranks={eventRanks} />
+        </Suspense>
+      </div>
+      {finishes.length > 0 && (
+        <div className={s.finishes}>
+          {finishes.map((b) => (
+            <span key={b.id}>
+              <b>×{fmt(b.progress ?? b.level)}</b> {b.label}
+            </span>
+          ))}
+        </div>
+      )}
+      <span className={s.rankNote}>
+        Ranks come straight from the official API: Path of Legends ranks are global and only exist for top finishers; live events list about the top 10,000. Rank badges count how many
+        times a player finished in that bracket. The API doesn&apos;t say which rank each time.
+      </span>
+    </section>
+  );
+}
+
+export function BadgesTab({ p, eventRanks }: { p: PlayerProfile; eventRanks: Promise<EventRank[]> }) {
   const [showAll, setShowAll] = useState(false);
   const groups = GROUP_ORDER.map((g) => ({ g, items: p.badges.filter((b) => b.group === g) })).filter((x) => x.items.length);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+      <Rankings p={p} eventRanks={eventRanks} />
       {groups.map(({ g, items }) => {
         const sorted = g === 'Mastery' ? [...items].sort((a, b) => (b.level ?? 0) - (a.level ?? 0) || (b.progress ?? 0) - (a.progress ?? 0)) : items;
         const shown = g === 'Mastery' && !showAll ? sorted.slice(0, 16) : sorted;

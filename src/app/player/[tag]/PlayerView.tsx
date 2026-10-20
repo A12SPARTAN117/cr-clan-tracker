@@ -13,6 +13,7 @@ import { setPin, usePins } from '@/lib/pins';
 import type { PlayerProfile } from '@/lib/player/profile';
 import type { PlayerHistory } from '@/lib/history';
 import type { Rivals } from '@/lib/player/rivals';
+import type { EventRank } from '@/lib/events';
 import { refreshPlayer } from './actions';
 import { BadgesTab } from './Badges';
 import { BattlesTab } from './Battles';
@@ -23,7 +24,7 @@ import s from './player.module.css';
 
 type Tab = 'overview' | 'collection' | 'badges' | 'stats' | 'battles' | 'decks' | 'history';
 
-export function PlayerView({ p, history, rivals }: { p: PlayerProfile; history: PlayerHistory | null; rivals: Rivals }) {
+export function PlayerView({ p, history, rivals, eventRanks }: { p: PlayerProfile; history: PlayerHistory | null; rivals: Rivals; eventRanks: Promise<EventRank[]> }) {
   const [tab, setTab] = useState<Tab>('overview');
   const [toast, setToast] = useState('');
   const [syncing, startSync] = useTransition();
@@ -46,9 +47,13 @@ export function PlayerView({ p, history, rivals }: { p: PlayerProfile; history: 
       // Below Ultimate Champion the API reports progress, not a rating: show the league.
       v: !p.pol.current ? '—' : p.pol.current.league >= 7 ? fmt(p.pol.current.rating) : leagueName(p.pol.current.league),
       league: p.pol.current?.league ?? null,
+      // Global rank, when the API has one (top finishers only).
+      sub: p.pol.current?.rank ? `#${fmt(p.pol.current.rank)} GLOBAL` : undefined,
       icon: (p.pol.current?.league ?? 0) >= 7 ? <MedalIcon size={18} title="Ultimate Champion medals" /> : undefined,
     },
-    { k: 'STREAK', v: streak, fg: run.kind === 'win' ? 'var(--streak)' : run.kind === 'loss' ? 'var(--ember)' : 'var(--text-1)', icon: run.kind === 'win' ? <StreakIcon size={18} /> : undefined },
+    // From the battle log, every mode but friendlies and boat battles. The API's own streak field
+    // follows rules it doesn't document (it matched no combination of modes we tried), so it isn't used.
+    { k: 'STREAK · ALL MODES', v: streak, fg: run.kind === 'win' ? 'var(--streak)' : run.kind === 'loss' ? 'var(--ember)' : 'var(--text-1)', icon: run.kind === 'win' ? <StreakIcon size={18} /> : undefined },
   ];
 
   return (
@@ -180,7 +185,7 @@ export function PlayerView({ p, history, rivals }: { p: PlayerProfile; history: 
         />
         {tab === 'overview' && <OverviewTab p={p} rivals={rivals} onCopy={flash} />}
         {tab === 'collection' && <CollectionTab p={p} />}
-        {tab === 'badges' && <BadgesTab p={p} />}
+        {tab === 'badges' && <BadgesTab p={p} eventRanks={eventRanks} />}
         {tab === 'stats' && <StatsTab p={p} />}
         {tab === 'battles' && <BattlesTab p={p} />}
         {tab === 'decks' && <DecksTab p={p} />}
