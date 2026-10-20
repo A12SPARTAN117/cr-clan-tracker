@@ -15,8 +15,21 @@ async function Content({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const kind: CompareKind = one(sp.type) === 'clan' ? 'clan' : 'player';
   const tags = one(sp.tags).split(',').filter(Boolean);
-  const data = tags.length ? await compare(kind, tags) : { kind, entities: [], missing: [], sections: [] };
-  return <CompareView data={data} suggest={tags.length < 2 ? await suggestions() : null} />;
+  const suggest = tags.length < 2 ? await suggestions() : null;
+  if (!tags.length) return <CompareView data={{ kind, entities: [], missing: [], sections: [] }} suggest={suggest} />;
+  if (kind === 'player') return <CompareView data={await compare(kind, tags)} suggest={suggest} />;
+  // Clans: everything but the two member-level rows shows at once; those fill in when every
+  // member's profile has loaded.
+  const quick = await compare(kind, tags, { levels: false });
+  return (
+    <Suspense fallback={<CompareView data={quick} suggest={suggest} />}>
+      <FullClans tags={tags} suggest={suggest} />
+    </Suspense>
+  );
+}
+
+async function FullClans({ tags, suggest }: { tags: string[]; suggest: Awaited<ReturnType<typeof suggestions>> | null }) {
+  return <CompareView data={await compare('clan', tags)} suggest={suggest} />;
 }
 
 /** One-click showdowns from the live leaderboards: the top two players and the top two war clans. */

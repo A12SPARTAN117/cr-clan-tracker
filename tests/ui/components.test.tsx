@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CardTile } from '@/components/CardTile';
@@ -183,17 +183,22 @@ describe('TagSearch', () => {
 describe('BadgesTab', () => {
   // Supercell's CDN never published the 2026 year badge, so its official link fails.
   const year = (level: number): Badge => ({ id: '2026YearBadge', label: '2026', group: 'Seasonal', level, maxLevel: 6, progress: null, target: null, img: 'https://example.test/dead.png' });
-  const tab = (b: Badge) => render(<BadgesTab p={{ badges: [b], achievements: [] } as unknown as PlayerProfile} />).container;
+  // The Rankings section suspends on its (already resolved) promise; let it settle first.
+  const tab = async (b: Badge) => {
+    const r = render(<BadgesTab p={{ badges: [b], achievements: [], pol: { current: null, last: null, best: null } } as unknown as PlayerProfile} eventRanks={Promise.resolve([])} />);
+    await act(async () => {});
+    return r.container;
+  };
 
-  it('falls back to our saved copy of a badge level the CDN lacks', () => {
-    const c = tab(year(1));
+  it('falls back to our saved copy of a badge level the CDN lacks', async () => {
+    const c = await tab(year(1));
     expect(c.querySelector('img')).toHaveAttribute('src', 'https://example.test/dead.png');
     fireEvent.error(c.querySelector('img')!);
     expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.png');
   });
 
-  it('shows that art for other levels too instead of a stand-in', () => {
-    const c = tab(year(4));
+  it('shows that art for other levels too instead of a stand-in', async () => {
+    const c = await tab(year(4));
     fireEvent.error(c.querySelector('img')!);
     expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.png');
   });

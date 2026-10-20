@@ -144,6 +144,22 @@ export async function getEventLeaderboard(id: number, limit = 100) {
   return settle(await request<Paged<EventRanked>>(`/leaderboard/${id}?limit=${limit}`), 'cr');
 }
 
+/**
+ * Everyone on an event leaderboard (the API goes about 10,000 deep) as tag → [rank, score], so a
+ * player's place can be looked up. Cached in this compact form instead of the full listing.
+ */
+export async function getEventRankIndex(id: number): Promise<Record<string, [number, number]> | null> {
+  'use cache';
+  const r = await request<Paged<EventRanked>>(`/leaderboard/${id}?limit=10000`);
+  if (!r.ok) {
+    if (r.status === 404) cacheLife('cr');
+    else cacheLife('crError');
+    return null;
+  }
+  cacheLife('cr');
+  return Object.fromEntries(r.data.items.map((p) => [p.tag.replace(/^#/, '').toUpperCase(), [p.rank, p.score]]));
+}
+
 export async function getLocations() {
   'use cache';
   const r = await request<Paged<Location>>(`/locations?limit=300`);

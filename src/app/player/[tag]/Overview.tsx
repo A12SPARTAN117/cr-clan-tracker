@@ -55,7 +55,7 @@ function StreakPanel({ p }: { p: PlayerProfile }) {
           </span>
         ))}
       </div>
-      <span className="label-sm">Newest first · icon = game mode</span>
+      <span className="label-sm">Newest first · icon = game mode · the streak counts every mode except friendlies and boat battles</span>
     </section>
   );
 }

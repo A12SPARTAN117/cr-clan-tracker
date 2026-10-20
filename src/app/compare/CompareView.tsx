@@ -192,7 +192,11 @@ export function CompareView({ data: loaded, suggest }: { data: Comparison; sugge
                       </th>
                       {r.values.map((v, i) => (
                         <td key={i} data-lead={lead === i} style={{ ['--c' as string]: COLORS[i] }}>
-                          <span className={s.val}>{r.labels?.[i] ?? show(v, r)}</span>
+                          {data.pending?.includes(r.label) ? (
+                            <span className={`skeleton ${s.wait}`} aria-label="Loading" />
+                          ) : (
+                            <span className={s.val}>{r.labels?.[i] ?? show(v, r)}</span>
+                          )}
                           {typeof v === 'number' && r.better && n > 1 && (
                             <span className={s.bar}>
                               <span style={{ width: `${(Math.abs(v) / max) * 100}%` }} />

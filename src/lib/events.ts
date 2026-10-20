@@ -1,7 +1,7 @@
 import 'server-only';
 import { eq, inArray } from 'drizzle-orm';
 import { connection } from 'next/server';
-import { getEventLeaderboard, getEventLeaderboards, type ApiResult } from './cr/api';
+import { getEventLeaderboard, getEventLeaderboards, getEventRankIndex, type ApiResult } from './cr/api';
 import type { EventRanked, Paged } from './cr/types';
 import { enqueue, getDb, schema } from './db';
 
@@ -64,4 +64,22 @@ export async function liveEventBoards(): Promise<EventBoard[]> {
       return boards;
     }
   });
+}
+
+/** A player's place on a live event leaderboard; rank null when they're past the ~10,000 the API lists. */
+export type EventRank = { id: number; name: string; rank: number | null; score: number | null; listed: number };
+
+/** Where a player stands on every event leaderboard that is live right now. */
+export async function eventRanksOf(tagRaw: string): Promise<EventRank[]> {
+  const tag = tagRaw.replace(/^#/, '').toUpperCase();
+  const live = await liveEventBoards();
+  const out = await Promise.all(
+    live.map(async (b): Promise<EventRank | null> => {
+      const idx = await getEventRankIndex(b.id);
+      if (!idx) return null;
+      const hit = idx[tag];
+      return { id: b.id, name: b.name, rank: hit?.[0] ?? null, score: hit?.[1] ?? null, listed: Object.keys(idx).length };
+    }),
+  );
+  return out.filter((x): x is EventRank => !!x);
 }

@@ -490,3 +490,11 @@ td[data-lead='true'] .val::before {
     font-size: 10.5px;
   }
 }
+
+/* A row still loading (member levels need every member's profile). */
+.wait {
+  display: inline-block;
+  width: 56px;
+  height: 14px;
+  border-radius: 3px;
+}
