@@ -112,3 +112,18 @@ export const badgeArt = pgTable(
   },
   (t) => [primaryKey({ columns: [t.name, t.level] })],
 );
+
+/**
+ * Event leaderboards and when their standings last moved. The API lists boards from events that
+ * ended long ago next to live ones, with nothing to tell them apart, so a board counts as live
+ * while its standings keep changing (see src/lib/events.ts).
+ */
+export const eventBoards = pgTable('event_boards', {
+  id: integer('id').primaryKey(),
+  name: text('name').notNull(),
+  /** The top of the board (tag:score…) when last checked. */
+  sig: text('sig').notNull(),
+  firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
+  /** Null until the standings are seen to change. */
+  changedAt: timestamp('changed_at', { withTimezone: true }),
+});

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useMemo, useOptimistic, useTransition } from 'react';
 import { DeckBlock } from '@/components/DeckBlock';
 import { TagSearch } from '@/components/TagSearch';
 import { ClanBadge } from '@/components/ui/ClanBadge';
@@ -26,8 +26,8 @@ import {
   TrophyIcon,
   WinRateIcon,
 } from '@/components/ui/icons';
-import type { CompareIcon, CompareKind, CompareRow, Comparison } from '@/lib/compare';
-import { CompareArena, show } from './CompareArena';
+import type { CompareIcon, CompareKind, Comparison } from '@/lib/compare';
+import { CompareArena, leaderOf, show } from './CompareArena';
 import s from './compare.module.css';
 
 const MAX = 4;
@@ -52,32 +52,42 @@ const ICONS: Record<CompareIcon, (p: { size?: number }) => React.ReactNode> = {
 };
 const COLORS = ['#3aa0ff', '#e6b34a', '#c79bff', '#4ed17a'];
 
-/** Index of the leading value for rows with a direction (ties: no leader). */
-function leader(r: CompareRow): number | null {
-  if (!r.better) return null;
-  const nums = r.values.map((v) => (typeof v === 'number' ? v : null));
-  const ok = nums.filter((v): v is number => v != null);
-  if (ok.length < 2) return null;
-  const best = r.better === 'high' ? Math.max(...ok) : Math.min(...ok);
-  const idx = nums.flatMap((v, i) => (v === best ? [i] : []));
-  return idx.length === 1 ? idx[0] : null;
-}
-
 type Pair = { tag: string; name: string }[] | null;
 
-export function CompareView({ data, suggest }: { data: Comparison; suggest?: { players: Pair; clans: Pair } | null }) {
+/** The comparison with only `tags` left in it, so removing someone needs nothing new from the server. */
+function narrow(data: Comparison, kind: CompareKind, tags: string[]): Comparison {
+  if (kind !== data.kind) return { kind, entities: [], missing: [], sections: [] };
+  const keep = data.entities.flatMap((e, i) => (tags.includes(e.tag) ? [i] : []));
+  if (keep.length === data.entities.length) return data;
+  const pick = <T,>(xs: T[] | undefined) => xs && keep.map((i) => xs[i]);
+  return {
+    ...data,
+    entities: pick(data.entities)!,
+    sections: keep.length ? data.sections.map((sec) => ({ ...sec, rows: sec.rows.map((r) => ({ ...r, values: pick(r.values)!, labels: pick(r.labels) })) })) : [],
+  };
+}
+
+export function CompareView({ data: loaded, suggest }: { data: Comparison; suggest?: { players: Pair; clans: Pair } | null }) {
   const router = useRouter();
   const [pending, start] = useTransition();
+  // Removing someone or switching between players and clans shows at once; the server catches up.
+  const [want, setWant] = useOptimistic({ kind: loaded.kind, tags: loaded.entities.map((e) => e.tag) });
+  const data = useMemo(() => narrow(loaded, want.kind, want.tags), [loaded, want]);
   const tags = data.entities.map((e) => e.tag);
   const go = (kind: CompareKind, next: string[]) => {
     const p = new URLSearchParams({ type: kind });
     if (next.length) p.set('tags', next.join(','));
-    start(() => router.replace(`/compare?${p}`, { scroll: false }));
+    start(() => {
+      setWant({ kind, tags: next });
+      router.replace(`/compare?${p}`, { scroll: false });
+    });
   };
   const n = data.entities.length;
+  // Only an addition waits on the server; dim the page for that alone.
+  const adding = pending && want.tags.some((t) => !tags.includes(t));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 26, opacity: pending ? 0.6 : 1, transition: 'opacity .2s' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 26, opacity: adding ? 0.6 : 1, transition: 'opacity .2s' }}>
       <div className={s.toolbar}>
         <div className={s.kinds} role="radiogroup" aria-label="Compare players or clans">
           {(['player', 'clan'] as const).map((k) => (
@@ -168,7 +178,7 @@ export function CompareView({ data, suggest }: { data: Comparison; suggest?: { p
                   <th colSpan={n + 1}>{sec.title}</th>
                 </tr>
                 {sec.rows.map((r) => {
-                  const lead = leader(r);
+                  const lead = leaderOf(r);
                   const nums = r.values.map((v) => (typeof v === 'number' ? Math.abs(v) : 0));
                   const max = Math.max(1, ...nums);
                   const Icon = ICONS[r.icon];

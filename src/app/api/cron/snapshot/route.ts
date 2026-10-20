@@ -2,6 +2,7 @@ import { and, asc, gte, sql } from 'drizzle-orm';
 import { connection } from 'next/server';
 import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb, schema } from '@/lib/db';
+import { liveEventBoards } from '@/lib/events';
 import { snapshotClan, type SnapshotResult } from '@/lib/history/snapshot';
 
 export const maxDuration = 300;
@@ -27,6 +28,7 @@ export async function GET(req: Request) {
     .orderBy(asc(sql`coalesce(${schema.trackedClans.lastSnapshotAt}, 'epoch'::timestamptz)`))
     .limit(limit);
 
+  const events = await liveEventBoards().catch(() => []);
   const started = Date.now();
   const results: SnapshotResult[] = [];
   for (const c of clans) {
@@ -38,5 +40,5 @@ export async function GET(req: Request) {
       results.push({ tag: c.tag, ok: false, reason: e instanceof Error ? e.message : 'failed' });
     }
   }
-  return Response.json({ tracked: clans.length, snapshotted: results.filter((r) => r.ok).length, results });
+  return Response.json({ liveEvents: events.map((e) => e.name), tracked: clans.length, snapshotted: results.filter((r) => r.ok).length, results });
 }

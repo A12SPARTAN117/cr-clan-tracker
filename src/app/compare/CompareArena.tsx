@@ -24,23 +24,28 @@ export function show(v: number | string | null, r: CompareRow) {
   return `${v.toLocaleString('en-US', { maximumFractionDigits: r.digits ?? 0, minimumFractionDigits: r.digits ?? 0 })}${r.unit ?? ''}`;
 }
 
-/** Each value as a share of the best in its row (lower-is-better rows inverted), so heights are honest. */
+/**
+ * Each value as a share of the best in its row, so heights are honest. Lower-is-better rows are
+ * inverted, counting from zero: 0 inactive members is the best possible and gets a full bar.
+ */
 function scale(r: CompareRow): (number | null)[] {
   const nums = r.values.map((v) => (typeof v === 'number' ? Math.max(0, v) : null));
   const ok = nums.filter((v): v is number => v != null);
   if (r.better === 'low') {
-    const best = Math.min(...ok.filter((v) => v > 0));
-    return nums.map((v) => (v == null || v <= 0 ? null : best / v));
+    const best = Math.min(...ok);
+    return nums.map((v) => (v == null ? null : (best + 1) / (v + 1)));
   }
   const best = Math.max(...ok);
   return nums.map((v) => (v == null ? null : best > 0 ? v / best : 0));
 }
 
-function leaderOf(r: CompareRow): number | null {
+/** Who leads a row: the highest value, or the lowest where less is better (ties: nobody). */
+export function leaderOf(r: CompareRow): number | null {
+  if (!r.better) return null;
   const nums = r.values.map((v) => (typeof v === 'number' ? v : null));
   const ok = nums.filter((v): v is number => v != null);
   if (ok.length < 2) return null;
-  const best = r.better === 'high' ? Math.max(...ok) : Math.min(...ok.filter((v) => r.better !== 'low' || v > 0));
+  const best = r.better === 'high' ? Math.max(...ok) : Math.min(...ok);
   const idx = nums.flatMap((v, i) => (v === best ? [i] : []));
   return idx.length === 1 ? idx[0] : null;
 }
@@ -51,9 +56,11 @@ function leaderOf(r: CompareRow): number | null {
  */
 export function CompareArena({ data, colors }: { data: Comparison; colors: string[] }) {
   const host = useRef<HTMLDivElement>(null);
-  const rows = useMemo(() => statRows(data).slice(0, 12), [data]);
+  // The stage has room for 12 stats; the scoreboard counts every stat in the table.
+  const all = useMemo(() => statRows(data), [data]);
+  const rows = useMemo(() => all.slice(0, 12), [all]);
   const leads = useMemo(() => rows.map(leaderOf), [rows]);
-  const tally = data.entities.map((_, i) => leads.filter((l) => l === i).length);
+  const tally = data.entities.map((_, i) => all.filter((r) => leaderOf(r) === i).length);
   const top = Math.max(...tally);
   const champ = tally.filter((t) => t === top).length === 1 && top > 0 ? tally.indexOf(top) : null;
 
@@ -75,7 +82,7 @@ export function CompareArena({ data, colors }: { data: Comparison; colors: strin
   useLazyScene(host, () => import('@/components/fx/gl/showdown'), (m, el) => m.mountShowdown(el, { contenders, stats, names: data.entities.map((e) => e.name) }), [key]);
 
   if (data.entities.length < 2 || !rows.length) return null;
-  const label = data.entities.map((e, i) => `${e.name} leads ${tally[i]} of ${rows.length} stats`).join('; ');
+  const label = data.entities.map((e, i) => `${e.name} leads ${tally[i]} of ${all.length} stats`).join('; ');
 
   return (
     <section className={s.arena} aria-label="Showdown">
@@ -106,10 +113,10 @@ export function CompareArena({ data, colors }: { data: Comparison; colors: strin
             </span>
             <span className={s.seatScore}>
               <b>{tally[i]}</b>
-              <small>of {rows.length} led</small>
+              <small>of {all.length} led</small>
             </span>
             <span className={s.seatBar}>
-              <span style={{ width: `${rows.length ? (tally[i] / rows.length) * 100 : 0}%` }} />
+              <span style={{ width: `${all.length ? (tally[i] / all.length) * 100 : 0}%` }} />
             </span>
           </div>
         ))}
