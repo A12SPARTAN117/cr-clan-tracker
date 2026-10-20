@@ -304,7 +304,8 @@ export { leagueName, POL_LEAGUES } from '@/lib/leagues';
 
 /** Path of Legends league badge (game art). API league n uses the classic art for league n + 3. */
 export function LeagueIcon({ league, size = 22 }: { league: number | null | undefined; size?: number }) {
-  if (!league)
+  // League 0 and below are the old ladder's Challenger leagues (see leagueName), so only null means none.
+  if (league == null)
     return (
       <span
         title="No Path of Legends league"

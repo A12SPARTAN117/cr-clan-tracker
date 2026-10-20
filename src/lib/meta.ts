@@ -9,6 +9,7 @@ export type { DeckCard };
 import { parseApiDate } from './format';
 import { pool } from './pool';
 import { CORE_MODES, modesOfBattle, type ModeInfo, type ModeKind } from './modes';
+import { outcome } from './battle';
 
 /**
  * Meta decks and card stats. The official API has no meta endpoint, so this samples the
@@ -122,9 +123,9 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
   };
   let battles = 0;
 
-  const addSide = (m: Acc, side: BattleSide, opp: BattleSide | undefined, ranked: boolean, crowns: [number, number]) => {
+  const addSide = (m: Acc, side: BattleSide, opp: BattleSide | undefined, ranked: boolean, crowns: [number, number], result: -1 | 0 | 1) => {
     if (!side?.cards || side.cards.length !== 8) return;
-    const won = crowns[0] > crowns[1];
+    const won = result > 0;
     const diff = Math.max(-3, Math.min(3, crowns[0] - crowns[1]));
     const cards = side.cards.map(toDeckCard);
     const key = deckKey(cards);
@@ -133,7 +134,7 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
     const d = m.decks.get(key) ?? { cards, tower, games: 0, wins: 0, draws: 0, crowns: [0, 0, 0, 0, 0, 0, 0], vs: new Map(), players: new Map() };
     d.games++;
     if (won) d.wins++;
-    if (diff === 0) d.draws++;
+    if (result === 0) d.draws++;
     d.crowns[diff + 3]++;
     const pl = d.players.get(side.tag) ?? { tag: side.tag.replace('#', ''), name: side.name, rating: null, games: 0, wins: 0 };
     pl.games++;
@@ -184,8 +185,9 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
         counted = true;
         const ranked = b.type === 'pathOfLegend';
         const crowns: [number, number] = [b.team[0].crowns, b.opponent[0].crowns];
-        for (const side of b.team) addSide(m, side, b.opponent[0], ranked, crowns);
-        for (const side of b.opponent) addSide(m, side, b.team[0], ranked, [crowns[1], crowns[0]]);
+        const result = outcome(b);
+        for (const side of b.team) addSide(m, side, b.opponent[0], ranked, crowns, result);
+        for (const side of b.opponent) addSide(m, side, b.team[0], ranked, [crowns[1], crowns[0]], -result as -1 | 0 | 1);
       }
       if (counted) battles++;
     }

@@ -244,3 +244,100 @@
 .streak > :not([data-fx]) {
   position: relative;
 }
+
+/* Rivals: opponents met more than once, with the head-to-head record. */
+.rivals {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: var(--charcoal);
+}
+.rivalList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.rival {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--hair);
+  color: var(--text-1);
+}
+.rival:hover {
+  color: var(--text-1);
+  box-shadow: inset 2px 0 0 var(--blue);
+  padding-left: 10px;
+}
+.rivalWho {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.rivalWho b {
+  font: 600 15px/1.2 var(--sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rivalWho small {
+  font: 500 10px/1.3 var(--mono);
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rivalStrip {
+  display: flex;
+  gap: 3px;
+}
+.rivalStrip i {
+  width: 8px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--hair);
+}
+.rivalStrip i[data-r='win'] {
+  background: var(--blue);
+}
+.rivalStrip i[data-r='loss'] {
+  background: var(--ember);
+}
+.rivalRecord {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  min-width: 64px;
+  font: 800 20px/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.rivalRecord[data-lead='us'] {
+  color: var(--blue-hi);
+}
+.rivalRecord[data-lead='them'] {
+  color: var(--ember);
+}
+.rivalRecord small {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+@media (max-width: 560px) {
+  .rival {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .rivalStrip {
+    display: none;
+  }
+}

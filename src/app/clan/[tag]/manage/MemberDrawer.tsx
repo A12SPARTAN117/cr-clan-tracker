@@ -190,7 +190,7 @@ export function MemberDrawer({
               })
             ) : (
               <p className="body" style={{ fontSize: 14 }}>
-                No clan friendlies in the last ~30 battles.
+                No clan friendlies in the last ~40 battles.
               </p>
             )}
           </div>

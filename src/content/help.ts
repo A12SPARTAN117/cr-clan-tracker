@@ -23,7 +23,7 @@ export const QUICK_START: { title: string; text: string }[] = [
 ];
 
 export const FEATURES: Feature[] = [
-  { title: 'Player profiles', text: 'Stats, win streak, the last 30 battles, worst enemy, current deck, full collection, badges and history.', href: '/players', cta: 'Look up a player' },
+  { title: 'Player profiles', text: 'Stats, win streak, recent battles, worst enemy, current deck, full collection, badges and history.', href: '/players', cta: 'Look up a player' },
   { title: 'Clan profiles', text: 'Members, river race standing, war history and roster changes for any clan.', href: '/clans', cta: 'Find a clan' },
   { title: 'Clan dashboard', text: 'For leaders: an Asset Score for every member, activity, war decks, promotion picks and who has gone quiet.', href: '/my-clan', cta: 'Open My Clan' },
   { title: 'Meta decks', text: 'The most used and best performing decks in every game mode from the last 24 hours, with card stats.', href: '/decks', cta: 'See the meta' },
@@ -140,7 +140,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Why does a player\'s battle history stop after 30 games?',
-    a: 'The official API only returns each player\'s last 30 or so battles. Longer history is built from our own snapshots, which start the day a player or clan is first tracked.',
+    a: 'The official API only returns each player\'s last 40 or so battles. Longer history is built from our own snapshots, which start the day a player or clan is first tracked.',
   },
   {
     q: 'Why can\'t I find a player by name?',

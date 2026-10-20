@@ -115,7 +115,7 @@ export function BattlesTab({ p }: { p: PlayerProfile }) {
           </button>
         ))}
         <span className="label-sm" style={{ marginLeft: 'auto' }}>
-          Battle log holds the last ~30 battles
+          Battle log holds the last ~40 battles
         </span>
       </div>
       {list.map((b) => (

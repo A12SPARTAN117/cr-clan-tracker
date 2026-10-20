@@ -1,4 +1,5 @@
 import type { Player } from '../cr/types';
+import { seasonalOf } from '../player/trophies';
 
 /**
  * A tracked player's profile as one daily snapshot row, and what changed between snapshots.
@@ -18,13 +19,12 @@ export type PlayerDay = {
 };
 
 export function playerDayOf(p: Player, day: string): PlayerDay {
-  const seasonal = Object.entries(p.progress ?? {}).find(([k]) => k.startsWith('seasonal-trophy-road'))?.[1];
   const pol = p.currentPathOfLegendSeasonResult;
   return {
     day,
     trophies: p.trophies,
-    // Below the seasonal road the entry is missing or 0.
-    seasonalTrophies: seasonal?.trophies || null,
+    // Null below 14,000, where the API's seasonal entry is only a placeholder.
+    seasonalTrophies: seasonalOf(p)?.trophies ?? null,
     polLeague: pol?.leagueNumber ?? null,
     polRating: pol ? pol.trophies : null,
     polRank: pol?.rank ?? null,

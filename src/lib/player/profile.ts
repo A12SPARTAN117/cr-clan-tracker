@@ -4,6 +4,9 @@ import { anyFailed, getBattleLog, getClan, getPlayer, getRiverRaceLog, tags } fr
 import type { ApiBadge, ApiCard, Battle, Player, PolResult } from '../cr/types';
 import { CARDS, TOWER_TROOPS, cardById, realLevel, type Rarity } from '../cards';
 import { characterFor } from '../characters';
+import { outcome } from '../battle';
+import { polLeague } from '../leagues';
+import { seasonalOf } from './trophies';
 import { deckKey, deckLink, deckName, deckStats, toDeckCard, winConOf, type DeckCard } from '../decks';
 import { parseApiDate } from '../format';
 import { riverBattleKind, warWeekKey } from '../war';
@@ -70,7 +73,8 @@ export type Enemy = { slug: string; name: string; img: string | null; games: num
 
 export type PlayerDeck = { key: string; name: string; cards: LeveledCard[]; games: number; wins: number; lastHours: number; avgElixir: number; cycle: number };
 
-type Pol = { league: number; rating: number; rank: number | null } | null;
+/** A season on the live 1–7 league scale (see polLeague); `atLeast` when the API's number fits two leagues. */
+type Pol = { league: number; atLeast: boolean; rating: number; rank: number | null } | null;
 
 export type PlayerProfile = {
   generatedAt: string;
@@ -107,6 +111,7 @@ export type PlayerProfile = {
     donationsWeek: number;
     receivedWeek: number;
     warDayWins: number;
+    warWins: number | null;
     clanCardsCollected: number;
     starPoints: number | null;
     totalExp: number | null;
@@ -161,7 +166,7 @@ function masteryOf(b: ApiBadge): Mastery | null {
   return { slug, name: info.name, level: b.level ?? 0, maxLevel: b.maxLevel ?? 10, progress: b.progress ?? null, target: b.target ?? null, img: b.iconUrls?.large ?? null };
 }
 
-function battleKind(b: Battle): BattleKind {
+export function battleKind(b: Battle): BattleKind {
   if (b.type === 'boatBattle') return 'boat';
   if (b.type.startsWith('riverRace') && riverBattleKind(b.type, parseApiDate(b.battleTime)) === 'training') return 'training';
   if (b.type === 'friendly' || b.type === 'clanMate') return 'friendly';
@@ -188,22 +193,20 @@ function runOf(battles: BattleRow[]): PlayerProfile['streakRun'] {
 export function streakOf(battles: Battle[]): number {
   const counted = battles
     .filter((b) => !['friendly', 'boat'].includes(battleKind(b)))
-    .map((b) => Math.sign(b.team.reduce((a, t) => Math.max(a, t.crowns), 0) - b.opponent.reduce((a, t) => Math.max(a, t.crowns), 0)))
+    .map(outcome)
     .filter((r) => r !== 0);
   let n = 0;
   while (n < counted.length && counted[n] === counted[0]) n++;
   return n * (counted[0] ?? 0);
 }
 
-/** The seasonal trophy road entry of `progress` ("seasonal-trophy-road-YYYYMM"). */
-function seasonalOf(p: Player): PlayerProfile['seasonal'] {
-  const e = Object.entries(p.progress ?? {}).find(([k]) => k.startsWith('seasonal-trophy-road'))?.[1];
-  // The API sometimes sends 0 (or nothing) for the seasonal best; a best is never below the current count.
-  return e ? { arena: e.arena?.name ?? 'Seasonal arena', trophies: e.trophies, best: Math.max(e.bestTrophies ?? 0, e.trophies ?? 0) } : null;
-}
-
-function pol(r?: PolResult): Pol {
-  return r ? { league: r.leagueNumber, rating: r.trophies, rank: r.rank ?? null } : null;
+/** Path of Legends results put on the live league scale (see polLeague for the rules). */
+export function polOf(p: Pick<Player, 'currentPathOfLegendSeasonResult' | 'lastPathOfLegendSeasonResult' | 'bestPathOfLegendSeasonResult'>): PlayerProfile['pol'] {
+  const one = (r: PolResult | undefined, which: 'current' | 'last' | 'best', since: (number | null)[] = []): Pol =>
+    r ? { ...polLeague(r.leagueNumber, r.trophies, which, since), rating: r.trophies, rank: r.rank ?? null } : null;
+  const current = one(p.currentPathOfLegendSeasonResult, 'current');
+  const last = one(p.lastPathOfLegendSeasonResult, 'last');
+  return { current, last, best: one(p.bestPathOfLegendSeasonResult, 'best', [current?.league ?? null, last?.league ?? null]) };
 }
 
 function leveled(c: ApiCard): LeveledCard {
@@ -378,7 +381,7 @@ async function build(tag: string): Promise<{ data: PlayerProfile; failed: boolea
       kind: battleKind(b),
       time: parseApiDate(b.battleTime)?.toISOString() ?? '',
       hours: hoursAgo(b.battleTime),
-      result: us > them ? 'win' : us < them ? 'loss' : 'draw',
+      result: (['loss', 'draw', 'win'] as const)[outcome(b) + 1],
       crowns: [us, them],
       trophyChange: me?.trophyChange ?? null,
       opp: { name: b.opponent.map((o) => o.name).join(' & '), tag: opp ? bare(opp.tag) : '', clan: opp?.clan?.name ?? null },
@@ -446,7 +449,7 @@ async function build(tag: string): Promise<{ data: PlayerProfile; failed: boolea
     clan: p.clan ? { tag: bare(p.clan.tag), name: p.clan.name, badgeId: p.clan.badgeId, warTrophies: clan?.ok ? clan.data.clanWarTrophies : undefined } : null,
     lastSeenHours: seen ? Math.max(0, (now.getTime() - seen.getTime()) / 3600_000) : null,
     favourite: fav ? { slug: fav.slug, name: fav.name, render: characterFor(fav.slug) } : null,
-    pol: { current: pol(p.currentPathOfLegendSeasonResult), last: pol(p.lastPathOfLegendSeasonResult), best: pol(p.bestPathOfLegendSeasonResult) },
+    pol: polOf(p),
     totals: {
       wins: p.wins,
       losses: p.losses,
@@ -459,7 +462,10 @@ async function build(tag: string): Promise<{ data: PlayerProfile; failed: boolea
       totalDonations: p.totalDonations,
       donationsWeek: p.donations,
       receivedWeek: p.donationsReceived,
+      /** Clan Wars 1 war day wins: frozen since river races replaced it. */
       warDayWins: p.warDayWins,
+      /** River race battle wins, as the Clan War Wins badge counts them. */
+      warWins: p.badges.find((b) => b.name === 'ClanWarWins')?.progress ?? null,
       clanCardsCollected: p.clanCardsCollected,
       starPoints: p.starPoints ?? null,
       totalExp: p.totalExpPoints ?? null,

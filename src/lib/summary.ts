@@ -4,6 +4,7 @@ import { streakOf } from './player/profile';
 import { cardById, type Rarity } from './cards';
 import { parseApiDate } from './format';
 import type { ApiRole } from './cr/types';
+import { seasonalOf } from './player/trophies';
 
 export type PlayerSummary = {
   tag: string;
@@ -36,13 +37,15 @@ export async function playerSummary(tag: string): Promise<PlayerSummary | null> 
   return {
     tag: p.tag.replace('#', ''),
     name: p.name,
-    trophies: p.trophies,
+    // The seasonal road count once they are on it, as on the player page.
+    trophies: seasonalOf(p)?.trophies ?? p.trophies,
     role: p.role ?? null,
     clan: p.clan ? { tag: p.clan.tag.replace('#', ''), name: p.clan.name } : null,
     // Same count as the player page; the API's own currentWinLoseStreak lags behind the battle log.
     streak: log.ok ? streakOf(log.data) : (p.currentWinLoseStreak ?? 0),
     league: pol?.leagueNumber ?? null,
-    rating: pol?.trophies ?? null,
+    // Only Ultimate Champion has a rating; below it the API sends progress (usually 0).
+    rating: pol && pol.leagueNumber >= 7 ? pol.trophies : null,
     favourite: fav ? { slug: fav.slug, rarity: fav.rarity, img: fav.icons.normal } : null,
   };
 }

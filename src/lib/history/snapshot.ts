@@ -1,10 +1,11 @@
 import 'server-only';
 import { and, eq, isNull, sql } from 'drizzle-orm';
-import { getClan, getCurrentRiverRace, getPlayer } from '../cr/api';
+import { getBattleLog, getClan, getCurrentRiverRace, getPlayer } from '../cr/api';
 import type { ApiRole, Player } from '../cr/types';
 import { enqueue, getDb, schema } from '../db';
 import { warWeekKey } from '../war';
 import { indexClanMembers } from '../directory';
+import { saveBattles } from './battles';
 import { playerDayOf } from './playerDaily';
 
 const { trackedClans, clanMembers, rosterEvents, memberDaily, warDays, trackedPlayers, playerDaily } = schema;
@@ -155,13 +156,17 @@ async function savePlayerDay(p: Player, now: Date) {
   });
 }
 
-/** One daily snapshot of a tracked player's profile (trophies, Path of Legends, wins, battles…). */
+/**
+ * One daily snapshot of a tracked player's profile (trophies, Path of Legends, wins, battles…),
+ * and their 1v1 games from the battle log for Rivals.
+ */
 export async function snapshotPlayer(tagRaw: string): Promise<SnapshotResult> {
   const tag = bare(tagRaw);
   if (!(await getDb())) return { tag, ok: false, reason: 'no database' };
-  const r = await getPlayer(tag);
+  const [r, log] = await Promise.all([getPlayer(tag), getBattleLog(tag)]);
   if (!r.ok) return { tag, ok: false, reason: `player: ${r.status} ${r.reason}` };
   await savePlayerDay(r.data, new Date());
+  if (log.ok) await saveBattles(tag, log.data);
   return { tag, ok: true };
 }
 
