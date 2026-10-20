@@ -13,7 +13,8 @@ export const metadata: Metadata = {
 export default function HelpPage() {
   return (
     <>
-      <SceneHeader scene="/scenes/scrolls.jpg" status={<span>Help · guides · every feature</span>} height="clamp(320px, 42vh, 460px)">
+      {/* The rune gate keeps its blue glow, so it skips the usual greyscale. */}
+      <SceneHeader scene="/scenes/portal.jpg" sceneFilter="brightness(0.78) saturate(0.95)" scenePosition="center 22%" status={<span>Help · guides · every feature</span>} height="clamp(320px, 42vh, 460px)">
         <Reveal as="h1" className="display-l">
           HOW IT
           <br />
