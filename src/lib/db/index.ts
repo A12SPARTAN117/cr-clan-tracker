@@ -15,7 +15,7 @@ export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
 const g = globalThis as unknown as { __crDb?: Promise<Db | null> };
 
 export function getDb(): Promise<Db | null> {
-  const url = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL?.trim();
   if (!url) return Promise.resolve(null);
   if (!g.__crDb) {
     g.__crDb = open(url).catch((e) => {

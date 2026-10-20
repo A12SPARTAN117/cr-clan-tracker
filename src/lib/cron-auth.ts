@@ -8,7 +8,7 @@ const digest = (s: string) => createHash('sha256').update(s).digest();
  * (on hashes, so the length doesn't leak either). No secret configured means no access.
  */
 export function cronAuthorized(req: Request): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = process.env.CRON_SECRET?.trim();
   if (!secret) return false;
   return timingSafeEqual(digest(req.headers.get('authorization') ?? ''), digest(`Bearer ${secret}`));
 }

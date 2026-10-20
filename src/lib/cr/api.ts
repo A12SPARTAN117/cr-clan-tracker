@@ -25,7 +25,8 @@ import { limiter } from './limiter';
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; reason: string };
 
-const BASE = process.env.CR_API_BASE || 'https://proxy.royaleapi.dev/v1';
+// Settings are trimmed: a key pasted into a host's dashboard often brings a space or line break.
+const BASE = (process.env.CR_API_BASE?.trim() || 'https://proxy.royaleapi.dev/v1').replace(/\/+$/, '');
 
 export const enc = (tag: string) => encodeURIComponent('#' + tag.replace(/^#/, '').toUpperCase());
 
@@ -36,7 +37,7 @@ export const tags = {
 };
 
 async function request<T>(path: string): Promise<ApiResult<T>> {
-  const key = process.env.CR_API_KEY;
+  const key = process.env.CR_API_KEY?.trim();
   if (!key) return { ok: false, status: 0, reason: 'CR_API_KEY is not set' };
   // Every call goes through the shared gate (rate, concurrency, visitor-first, 429 back-off).
   const r = await limiter.run(async () => {
