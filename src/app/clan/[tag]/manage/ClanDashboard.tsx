@@ -139,12 +139,9 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
             <span>Last sync {lastSync}</span>
           </>
         }
-        extra={
-          <div style={{ ['--rune' as string]: syncing ? '.8s' : '4s' }}>
-            <div className={s.rune} />
-            <div className={s.runeCore} />
-          </div>
-        }
+        // P.E.K.K.A stands guard over the stronghold, lit like Home's golden knight; its glow
+        // pulses while a refresh is running.
+        extra={<div className={s.guard} data-figure="" data-syncing={syncing} aria-hidden />}
       >
         <div className={s.headRow}>
           <div className={s.ident}>

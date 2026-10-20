@@ -1,25 +1,49 @@
 /* ---------- header ---------- */
-.rune,
-.runeCore {
+.guard {
   position: absolute;
-  left: 62%;
-  top: 46%;
-  aspect-ratio: 2.4;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
+  right: clamp(12px, 9vw, 160px);
+  bottom: 0;
+  width: min(44vw, 560px);
+  height: 82%;
+  background: url('/characters/pekka.png') bottom center / contain no-repeat;
+  filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.75)) drop-shadow(0 0 30px rgba(var(--glow-rgb), 0.45));
   pointer-events: none;
-  animation: oaRune var(--rune, 4s) ease-in-out infinite;
+  /* The render is a bust: its cut-off base fades into the scene instead of ending in a hard edge. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 98%);
+  mask-image: linear-gradient(to bottom, #000 62%, transparent 98%);
+  animation: guardBreathe 6s ease-in-out infinite;
 }
-.rune {
-  width: min(46vw, 620px);
-  border: 1px solid rgba(var(--glow-hi-rgb), 0.5);
-  box-shadow:
-    0 0 30px rgba(var(--glow-rgb), 0.35),
-    inset 0 0 40px rgba(var(--glow-rgb), 0.25);
+/* Refreshing: the rim light pulses. */
+.guard[data-syncing='true'] {
+  animation:
+    guardBreathe 6s ease-in-out infinite,
+    guardPulse 0.8s ease-in-out infinite;
 }
-.runeCore {
-  width: min(18vw, 220px);
-  background: radial-gradient(closest-side, rgba(var(--glow-rgb), 0.55), rgba(var(--glow-rgb), 0));
+@keyframes guardBreathe {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes guardPulse {
+  50% {
+    filter: grayscale(1) brightness(1.05) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 1)) drop-shadow(0 0 46px rgba(var(--glow-rgb), 0.8));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .guard,
+  .guard[data-syncing='true'] {
+    animation: none;
+  }
+}
+/* Phones: the header stacks the clan's details, so the guard stands in the open space beside the badge. */
+@media (max-width: 759px) {
+  .guard {
+    right: 0;
+    top: 150px;
+    bottom: auto;
+    width: 58vw;
+    height: 150px;
+  }
 }
 .headRow {
   display: flex;
