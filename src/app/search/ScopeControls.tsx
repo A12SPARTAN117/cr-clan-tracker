@@ -49,7 +49,7 @@ export function ScopeSection({ kind, children }: { kind: SearchScope; children: 
 }
 
 /** The search box, following the scope picked below it. */
-export function ScopedSearch({ q, then }: { q: string; then?: 'manage' }) {
+export function ScopedSearch({ q, then }: { q: string; then?: 'manage' | 'rivals' }) {
   const scope = useScope();
   return <TagSearch key={`${q}|${scope}`} size="default" scope={scope} then={then} />;
 }

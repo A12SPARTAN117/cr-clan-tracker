@@ -65,6 +65,8 @@ async function Results({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const q = one(sp.q).trim().slice(0, 40);
   const manage = one(sp.then) === 'manage';
+  // Searches started from Rivals open each player's Rivals page.
+  const playerHref = (tag: string) => (one(sp.then) === 'rivals' ? `/player/${tag}/rivals` : `/player/${tag}`);
   if (!q) return <EmptyState text="Type a player or clan name, or a #tag." dashed />;
   // Players and clans together; the scope chips show one or the other without searching again.
   const r = await search(q, 'all', 30);
@@ -83,7 +85,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
             <div className="panel" style={{ overflow: 'hidden' }}>
               {r.tagPlayer && (
                 <ScopeSection kind="player">
-                  <Link href={`/player/${r.tagPlayer.tag}`} data-spot="" className="spot" style={row}>
+                  <Link href={playerHref(r.tagPlayer.tag)} data-spot="" className="spot" style={row}>
                     <Initial name={r.tagPlayer.name} />
                     <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
                       <span style={{ font: '600 15px/1.15 var(--sans)' }}>{r.tagPlayer.name}</span>
@@ -120,7 +122,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
           {r.players.length ? (
             <div className="panel" style={{ overflow: 'hidden' }}>
               {r.players.map((p) => (
-                <Link key={p.tag} href={`/player/${p.tag}`} data-spot="" className="spot" style={row}>
+                <Link key={p.tag} href={playerHref(p.tag)} data-spot="" className="spot" style={row}>
                   <Initial name={p.name} />
                   <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
                     <span style={{ font: '600 15px/1.15 var(--sans)', overflowWrap: 'anywhere' }}>{p.name}</span>
@@ -186,7 +188,7 @@ async function Heading({ searchParams }: { searchParams: SP }) {
         {q ? `“${q.toUpperCase()}”` : 'SEARCH'}
       </Reveal>
       <div style={{ maxWidth: 680 }}>
-        <ScopedSearch q={q} then={one(sp.then) === 'manage' ? 'manage' : undefined} />
+        <ScopedSearch q={q} then={one(sp.then) === 'manage' || one(sp.then) === 'rivals' ? (one(sp.then) as 'manage' | 'rivals') : undefined} />
       </div>
     </header>
   );
