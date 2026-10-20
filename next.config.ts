@@ -51,7 +51,12 @@ const nextConfig: NextConfig = {
   // Embedded Postgres ships WASM + data files; load it from node_modules at runtime.
   serverExternalPackages: ['@electric-sql/pglite'],
   // Migrations are read from disk on first database use.
-  outputFileTracingIncludes: { '/**': ['./drizzle/**/*'] },
+  // Recap images read their font and our own game art from disk.
+  outputFileTracingIncludes: {
+    '/**': ['./drizzle/**/*'],
+    '/player/*/recap': ['./assets/fonts/*.ttf', './public/characters/**/*', './public/cards/**/*'],
+    '/clan/*/recap': ['./assets/fonts/*.ttf', './public/badges/**/*'],
+  },
   // Custom cache lifetimes for Clash Royale API data (seconds).
   cacheLife: {
     // Player and clan snapshots: the dashboard promises a refresh at least every 10 minutes.

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useState, useTransition } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
+import { ShareRecap } from '@/components/ShareRecap';
 import { Decode, Reveal } from '@/components/fx/Reveal';
 import { LeagueIcon, leagueName, RoleIcon, ROLE_LABEL } from '@/components/ui/primitives';
 import { CardsIcon, MedalIcon, StreakIcon, TowerIcon, TrophyIcon } from '@/components/ui/icons';
@@ -152,6 +153,7 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
             <Link href={`/compare?type=player&tags=${p.tag}`} className="btn btn-scene">
               Compare ⇄
             </Link>
+            <ShareRecap src={`/player/${p.tag}/recap`} file={`recap-${p.tag}.png`} title={`${p.name} · season recap`} />
           </div>
         </div>
       </SceneHeader>
