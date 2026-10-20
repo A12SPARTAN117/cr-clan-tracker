@@ -14,6 +14,7 @@ const LINKS = [
   { href: '/my-clan', label: 'My Clan', match: ['/my-clan', '/manage'] },
   { href: '/decks', label: 'Decks', match: ['/decks'] },
   { href: '/compare', label: 'Compare', match: ['/compare'] },
+  { href: '/rivals', label: 'Rivals', match: ['/rivals'] },
   { href: '/leaderboards', label: 'Leaderboards', match: ['/leaderboards'] },
   ...(FEATURES.news ? [{ href: '/news', label: 'News', match: ['/news'] }] : []),
   { href: '/help', label: 'Help', match: ['/help'] },
@@ -23,9 +24,9 @@ const LINKS = [
 /** Every page, for the menu sheet on phones and tablets (the header links need a laptop's width). */
 const MENU = [
   { href: '/', label: 'Home', match: [] as string[] },
-  ...LINKS.slice(0, 6),
+  ...LINKS.slice(0, 7),
   { href: '/cards', label: 'Cards', match: ['/cards'] },
-  ...LINKS.slice(6),
+  ...LINKS.slice(7),
 ];
 
 const TABS = [
@@ -36,8 +37,9 @@ const TABS = [
 ];
 
 function isActive(pathname: string, match: string[]) {
-  // /clan/X/manage belongs to "My Clan", not "Clans"
+  // /clan/X/manage belongs to "My Clan", not "Clans"; /player/X/rivals to "Rivals", not "Players"
   if (pathname.endsWith('/manage')) return match.includes('/manage');
+  if (pathname.endsWith('/rivals')) return match.includes('/rivals');
   return match.some((m) => (m.endsWith('/') ? pathname.startsWith(m) : pathname === m || pathname.startsWith(m + '/')));
 }
 

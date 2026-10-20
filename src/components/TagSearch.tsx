@@ -25,7 +25,8 @@ type Item = { kind: 'player' | 'clan'; tag: string; name: string; sub: string; b
 /**
  * The search box: one field for player names and tags, clan names and tags. Suggests matches
  * while typing; Enter opens the highlighted match, a tag directly, or the full results page.
- * `scope` limits it to players or clans; `then="manage"` sends clans to their dashboard.
+ * `scope` limits it to players or clans; `then="manage"` sends clans to their dashboard and
+ * `then="rivals"` sends players to their Rivals page.
  */
 /** Suggestions seen in the last minute, shared by every search box on the page. */
 const suggestCache = createClientCache<Suggest>(60_000);
@@ -48,7 +49,7 @@ export function TagSearch({
   defaultHint?: string;
   autoFocus?: boolean;
   scope?: Scope;
-  then?: 'manage';
+  then?: 'manage' | 'rivals';
   /** Where Enter on a name goes; pages with their own results list pass themselves. */
   resultsPath?: string;
   /** Pick mode: hand the chosen player / clan to the caller instead of navigating. */
@@ -68,7 +69,8 @@ export function TagSearch({
   const typo = trimmed.startsWith('#') && c.kind === 'invalid';
 
   const clanHref = (tag: string) => (then === 'manage' ? `/clan/${tag}/manage` : `/clan/${tag}`);
-  const hrefOf = (it: Item) => (it.kind === 'player' ? `/player/${it.tag}` : clanHref(it.tag));
+  const playerHref = (tag: string) => (then === 'rivals' ? `/player/${tag}/rivals` : `/player/${tag}`);
+  const hrefOf = (it: Item) => (it.kind === 'player' ? playerHref(it.tag) : clanHref(it.tag));
 
   // Debounced suggestions.
   useEffect(() => {
@@ -115,7 +117,7 @@ export function TagSearch({
     if (it) return router.push(hrefOf(it));
     if (typo || !trimmed) return;
     if (surelyTag(trimmed) && c.kind === 'valid') {
-      return router.push(scope === 'player' ? `/player/${c.tag}` : scope === 'clan' ? clanHref(c.tag) : `/t/${c.tag}`);
+      return router.push(scope === 'player' ? playerHref(c.tag) : scope === 'clan' ? clanHref(c.tag) : `/t/${c.tag}`);
     }
     if (trimmed.replace(/^#/, '').length < 2) return;
     const params = new URLSearchParams({ q: trimmed });
