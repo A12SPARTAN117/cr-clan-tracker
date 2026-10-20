@@ -127,6 +127,16 @@
   background: linear-gradient(90deg, var(--blue) 0 2px, var(--slate) 2px);
   color: var(--text-1);
 }
+/* Phones: the title fills the top-left, so the crown hangs in the space to its right, a little
+   lower, clear of the letters. */
+@media (max-width: 599px) {
+  .crown {
+    left: 74%;
+    top: 9%;
+    width: 38vw;
+    height: 28%;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .crown {
     animation: none;
