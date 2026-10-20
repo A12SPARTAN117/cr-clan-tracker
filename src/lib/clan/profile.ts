@@ -34,10 +34,6 @@ async function build(tag: string): Promise<{ data: ClanProfile; failed: boolean 
   const clan = c.data;
   const ours = bare(clan.tag);
   const now = Date.now();
-  // Each member's own profile: the roster has no collection level (and now reports expLevel 0).
-  // The same cached profiles back the dashboard and player pages.
-  const profiles = await pool(clan.memberList, 16, (m) => getPlayer(bare(m.tag)));
-  const expOf = (i: number) => clan.memberList[i].expLevel || (profiles[i]?.ok ? profiles[i].data.expLevel : 0);
   let raceInfo: ClanProfile['race'] = null;
   if (race.ok) {
     const r = race.data;
@@ -76,13 +72,15 @@ async function build(tag: string): Promise<{ data: ClanProfile; failed: boolean 
     clanWarTrophies: clan.clanWarTrophies,
     requiredTrophies: clan.requiredTrophies,
     donationsPerWeek: clan.donationsPerWeek,
-    members: clan.memberList.map((m, i) => ({
+    members: clan.memberList.map((m) => ({
       tag: bare(m.tag),
       name: m.name,
       role: m.role,
       trophies: m.trophies,
-      expLevel: expOf(i),
-      collectionLevel: profiles[i]?.ok ? (profiles[i].data.collectionLevel ?? null) : null,
+      // The roster has no collection level (and now reports expLevel 0); getMemberLevels fills
+      // both in from each member's own profile, without holding up the page.
+      expLevel: m.expLevel,
+      collectionLevel: null,
       donations: m.donations,
       clanRank: m.clanRank,
       hours: Math.max(0, (now - (parseApiDate(m.lastSeen)?.getTime() ?? now)) / 3600_000),
@@ -91,7 +89,7 @@ async function build(tag: string): Promise<{ data: ClanProfile; failed: boolean 
     past,
     history: null,
   };
-  return { data, failed: anyFailed([race, log, ...profiles]) };
+  return { data, failed: anyFailed([race, log]) };
 }
 
 export async function getClanProfile(tag: string): Promise<ClanProfile | null> {
@@ -102,4 +100,37 @@ export async function getClanProfile(tag: string): Promise<ClanProfile | null> {
   if (b && !b.failed) cacheLife('cr');
   else cacheLife('crError');
   return b?.data ?? null;
+}
+
+/** Per member tag: king level and collection level, from each member's own (cached) profile. */
+export type MemberLevels = Record<string, { exp: number; coll: number | null }>;
+
+/**
+ * Member levels for a clan: one profile call per member (about 50), so pages stream this in
+ * after the roster instead of waiting for it. The same cached profiles back the dashboard and
+ * player pages.
+ */
+export async function getMemberLevels(tag: string): Promise<MemberLevels> {
+  'use cache';
+  cacheTag(tags.clan(tag));
+  const c = await getClan(bare(tag));
+  if (!c.ok) {
+    cacheLife('crError');
+    return {};
+  }
+  const list = c.data.memberList;
+  const profiles = await pool(list, 16, (m) => getPlayer(bare(m.tag)));
+  if (anyFailed(profiles)) cacheLife('crError');
+  else cacheLife('cr');
+  return Object.fromEntries(
+    list.map((m, i) => {
+      const p = profiles[i]?.ok ? profiles[i].data : null;
+      return [bare(m.tag), { exp: m.expLevel || (p?.expLevel ?? 0), coll: p?.collectionLevel ?? null }];
+    }),
+  );
+}
+
+/** The profile with member levels filled in (for pages that need them all at once, like Compare). */
+export function withLevels(c: ClanProfile, levels: MemberLevels): ClanProfile {
+  return { ...c, members: c.members.map((m) => ({ ...m, expLevel: levels[m.tag]?.exp || m.expLevel, collectionLevel: levels[m.tag]?.coll ?? m.collectionLevel })) };
 }

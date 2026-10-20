@@ -1,5 +1,5 @@
 import 'server-only';
-import { getClanProfile, type ClanProfile } from './clan/profile';
+import { getClanProfile, getMemberLevels, withLevels, type ClanProfile } from './clan/profile';
 import { leagueName } from './leagues';
 import { checkTag } from './tags';
 import { getPlayerProfile, type PlayerProfile } from './player/profile';
@@ -153,7 +153,11 @@ export async function compare(kind: CompareKind, tags: string[]): Promise<Compar
       sections: ps.length ? players(ps) : [],
     };
   }
-  const got = await Promise.all(list.map((t) => getClanProfile(t)));
+  // Compare needs member averages, so it waits for the member levels too.
+  const got = await Promise.all(list.map(async (t) => {
+    const [c, lv] = await Promise.all([getClanProfile(t), getMemberLevels(t)]);
+    return c && withLevels(c, lv);
+  }));
   const cs = got.filter((c): c is ClanProfile => !!c);
   return {
     kind,

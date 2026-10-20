@@ -1,76 +1,14 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { Reveal } from '@/components/fx/Reveal';
 import { EmptyState } from '@/components/EmptyState';
-import { ClanFrame } from '@/components/ui/ClanFrame';
 import { getClan, getClanWarRankings, getLocations, searchClans } from '@/lib/cr/api';
 import { pool } from '@/lib/pool';
-import type { Clan } from '@/lib/cr/types';
-import { fmt } from '@/lib/format';
-import { MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
+import { ClanCard, type ClanDetails, type ClanRow } from './ClanCard';
 import { ClanFilters } from './ClanFilters';
+import s from './clans.module.css';
 
 export const metadata: Metadata = { title: 'Find a clan' };
-
-type Row = { tag: string; name: string; badgeId: number; location?: { name: string }; members: number; clanWarTrophies?: number; requiredTrophies?: number; type?: Clan['type']; rank?: number };
-
-const TYPE_LABEL = { open: 'OPEN', inviteOnly: 'INVITE ONLY', closed: 'CLOSED' } as const;
-
-function ClanCard({ c }: { c: Row }) {
-  const tag = c.tag.replace('#', '');
-  return (
-    <Link
-      href={`/clan/${tag}`}
-      data-spot=""
-      className="panel"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-        padding: 20,
-        color: 'var(--text-1)',
-        background: 'radial-gradient(260px circle at var(--mx,-400px) var(--my,-400px),rgba(var(--glow-rgb), .12),transparent 70%),var(--charcoal)',
-      }}
-    >
-      <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-        <ClanFrame badgeId={c.badgeId} warTrophies={c.clanWarTrophies} size={44} name={c.name} label />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
-          <span style={{ font: '800 20px/1.05 var(--mono)', letterSpacing: '-.03em', overflowWrap: 'anywhere' }}>{c.name}</span>
-          <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.1em', color: 'var(--text-3)', textTransform: 'uppercase' }}>
-            #{tag}
-            {c.location ? ` · ${c.location.name}` : ''}
-          </span>
-        </div>
-        {c.rank != null && <span style={{ marginLeft: 'auto', font: '700 13px/1 var(--mono)', color: c.rank === 1 ? 'var(--gold)' : 'var(--text-3)' }}>#{c.rank}</span>}
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, paddingTop: 14, borderTop: '1px solid var(--hair)' }}>
-        {(
-          [
-            ['MEMBERS', `${c.members}/50`, <MembersIcon key="i" size={13} />],
-            ['WAR TR.', fmt(c.clanWarTrophies), <WarTrophyIcon key="i" size={13} />],
-            ['REQ.', c.requiredTrophies != null ? fmt(c.requiredTrophies) : '—', <TrophyIcon key="i" size={13} />],
-          ] as const
-        ).map(([k, v, icon]) => (
-          <span key={k} style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-            <span className="label-sm" style={{ letterSpacing: '.12em' }}>
-              {k}
-            </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, font: '700 15px/1 var(--mono)', whiteSpace: 'nowrap' }}>
-              {icon}
-              {v}
-            </span>
-          </span>
-        ))}
-      </div>
-      {c.type && (
-        <span style={{ font: '500 9px/1 var(--mono)', letterSpacing: '.14em', color: c.type === 'open' ? 'var(--blue)' : c.type === 'closed' ? 'var(--ember)' : 'var(--text-2)' }}>
-          {TYPE_LABEL[c.type]}
-        </span>
-      )}
-    </Link>
-  );
-}
 
 async function Results({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -81,51 +19,47 @@ async function Results({ searchParams }: { searchParams: Promise<Record<string, 
   const minW = Number(one('minW')) || 0;
   const type = one('type');
 
-  let rows: Row[] = [];
+  let rows: ClanRow[] = [];
+  // Ranking rows lack type and required trophies; each clan's own record (cached per clan) adds them.
+  let details: Promise<ClanDetails>[] | null = null;
   let title: string;
   let failed = false;
   if (q.length >= 3 || minM > 0) {
     const r = await searchClans({ name: q.length >= 3 ? q : undefined, locationId: loc, minMembers: minM || undefined, limit: 100 });
     failed = !r.ok;
-    rows = r.ok ? r.data.items : [];
+    rows = r.ok ? r.data.items.map((c) => ({ ...c, location: c.location?.name })) : [];
     title = q ? `Clans named "${q}"` : 'Search results';
   } else {
     const r = await getClanWarRankings(loc ?? 'global', 60);
     failed = !r.ok;
-    // The ranking has no clan type or required trophies, so each clan's own record fills them
-    // in (cached per clan); otherwise the type filter would have nothing to filter on.
-    const details = r.ok ? await pool(r.data.items, 12, (c) => getClan(c.tag.replace('#', ''))) : [];
-    rows = r.ok
-      ? r.data.items.map((c, i) => {
-          const d = details[i]?.ok ? details[i].data : null;
-          // In the clan-war ranking, clanScore holds the war trophies.
-          return {
-            ...c,
-            clanWarTrophies: c.clanScore ?? c.clanWarTrophies,
-            rank: c.rank,
-            members: d?.members ?? c.members,
-            type: d?.type,
-            requiredTrophies: d?.requiredTrophies,
-            location: d?.location ?? c.location,
-          };
-        })
-      : [];
+    // In the clan-war ranking, clanScore holds the war trophies.
+    rows = r.ok ? r.data.items.map((c) => ({ tag: c.tag, name: c.name, badgeId: c.badgeId, rank: c.rank, members: c.members, clanWarTrophies: c.clanScore ?? c.clanWarTrophies, location: c.location?.name })) : [];
+    const own = (c: ClanRow): Promise<ClanDetails> =>
+      getClan(c.tag.replace('#', '')).then((d) => (d.ok ? { members: d.data.members, type: d.data.type, requiredTrophies: d.data.requiredTrophies, location: d.data.location?.name } : null));
+    if (type && type !== 'all') {
+      // Filtering by type needs every clan's type first.
+      const got = await pool(rows, 12, own);
+      rows = rows.map((c, i) => ({ ...c, ...(got[i] ?? {}), location: got[i]?.location ?? c.location }));
+    } else {
+      // Otherwise the cards show at once and their details stream in.
+      details = rows.map(own);
+    }
     title = 'Top war clans';
   }
-  const list = rows.filter((c) => (c.clanWarTrophies ?? 0) >= minW && (!type || type === 'all' || c.type === type) && c.members >= minM);
+  const keep = rows.map((c, i) => ({ c, d: details?.[i] })).filter(({ c }) => (c.clanWarTrophies ?? 0) >= minW && (!type || type === 'all' || c.type === type) && c.members >= minM);
 
   return (
     <section data-results="" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
         <span className="label">{title}</span>
-        <span className="label">{list.length} results</span>
+        <span className="label">{keep.length} results</span>
       </div>
       {failed ? (
         <EmptyState text="The Clash Royale API did not answer. Try again in a minute." />
-      ) : list.length ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,300px),1fr))', gap: 14 }}>
-          {list.map((c) => (
-            <ClanCard key={c.tag} c={c} />
+      ) : keep.length ? (
+        <div className={s.grid}>
+          {keep.map(({ c, d }) => (
+            <ClanCard key={c.tag} c={c} details={d} />
           ))}
         </div>
       ) : (

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getClan } from '@/lib/cr/api';
-import { getClanProfile } from '@/lib/clan/profile';
+import { getClanProfile, getMemberLevels } from '@/lib/clan/profile';
 import { getClanHistory } from '@/lib/history';
 import { indexClanMembers } from '@/lib/directory';
 import { after, connection } from 'next/server';
@@ -28,7 +28,8 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   after(() => indexClanMembers(r.data));
   const [data, history] = await Promise.all([getClanProfile(c.tag), getClanHistory(c.tag)]);
   if (!data) return <LostScene variant="error" tag={c.tag} />;
-  return <ClanProfileView c={history ? { ...data, history: { trackedSince: history.trackedSince, events: history.rosterEvents } } : data} />;
+  // Member levels take ~50 profile calls on a cold cache: the page shows now and they stream in.
+  return <ClanProfileView c={history ? { ...data, history: { trackedSince: history.trackedSince, events: history.rosterEvents } } : data} levels={getMemberLevels(c.tag)} />;
 }
 
 export default function ClanPage({ params }: PageProps<'/clan/[tag]'>) {

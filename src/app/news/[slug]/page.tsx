@@ -10,7 +10,8 @@ import { FEATURES } from '@/lib/features';
 import { TAG_FG } from '../tags';
 
 export function generateStaticParams() {
-  return NEWS.map((n) => ({ slug: n.slug }));
+  // Hidden: nothing to prerender (Next needs one entry, which 404s).
+  return FEATURES.news ? NEWS.map((n) => ({ slug: n.slug })) : [{ slug: 'hidden' }];
 }
 
 export async function generateMetadata({ params }: PageProps<'/news/[slug]'>): Promise<Metadata> {

@@ -13,7 +13,10 @@ export const metadata: Metadata = {
 async function Content() {
   const meta = await getMeta();
   if (!meta) return <LostScene variant="error" />;
-  return <DecksView meta={meta} />;
+  // The list never shows matchups, players or crown splits (each deck's own page does), so they
+  // stay on the server: this cuts what the browser downloads by about two thirds.
+  const modes = Object.fromEntries(Object.entries(meta.modes).map(([k, m]) => [k, { ...m, decks: m.decks.map((d) => ({ ...d, matchups: [], players: [], crowns: [] })) }]));
+  return <DecksView meta={{ ...meta, modes }} />;
 }
 
 export default function DecksPage() {
