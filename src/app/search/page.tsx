@@ -5,11 +5,11 @@ import { EmptyState } from '@/components/EmptyState';
 import { TagFirst } from '@/components/TagFirst';
 import { Portal } from '@/components/fx/Portal';
 import { Reveal } from '@/components/fx/Reveal';
-import { TagSearch } from '@/components/TagSearch';
 import { ClanBadge } from '@/components/ui/ClanBadge';
 import { KingLevel, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { fmt } from '@/lib/format';
-import { search, type SearchClan, type SearchScope } from '@/lib/search';
+import { search, type SearchClan } from '@/lib/search';
+import { ScopeChips, ScopedSearch, ScopeSection } from './ScopeControls';
 
 export const metadata: Metadata = { title: 'Search' };
 
@@ -64,65 +64,57 @@ function ClanRow({ c, href }: { c: SearchClan; href: string }) {
 async function Results({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const q = one(sp.q).trim().slice(0, 40);
-  const t = one(sp.type);
-  const scope: SearchScope = t === 'player' || t === 'clan' ? t : 'all';
   const manage = one(sp.then) === 'manage';
   if (!q) return <EmptyState text="Type a player or clan name, or a #tag." dashed />;
-  const r = await search(q, scope, 30);
+  // Players and clans together; the scope chips show one or the other without searching again.
+  const r = await search(q, 'all', 30);
   const clanHref = (tag: string) => (manage ? `/clan/${tag}/manage` : `/clan/${tag}`);
-  const hits = (r.tagPlayer ? 1 : 0) + (r.tagClan ? 1 : 0) + r.players.length + r.clans.length;
-  const scopeHref = (s: SearchScope) => `/search?${new URLSearchParams({ q, ...(s !== 'all' ? { type: s } : {}), ...(manage ? { then: 'manage' } : {}) })}`;
+  const players = r.players.length + (r.tagPlayer ? 1 : 0);
+  const clans = r.clans.length + (r.tagClan ? 1 : 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-        {(
-          [
-            ['all', 'Everything'],
-            ['player', `Players ${r.players.length + (r.tagPlayer ? 1 : 0)}`],
-            ['clan', `Clans ${r.clans.length + (r.tagClan ? 1 : 0)}`],
-          ] as const
-        ).map(([k, l]) => (
-          <Link key={k} href={scopeHref(k)} className="chip" aria-pressed={scope === k} style={{ height: 30, display: 'inline-flex', alignItems: 'center' }}>
-            {scope === k || k === 'all' ? l : l.replace(/ \d+$/, '')}
-          </Link>
-        ))}
-        <span className="label" style={{ marginLeft: 'auto' }}>
-          {hits} results
-        </span>
-      </div>
+      <ScopeChips counts={{ all: players + clans, player: players, clan: clans }} />
 
       {(r.tagPlayer || r.tagClan) && (
-        <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <span className="label">Tag match · #{q.replace(/^#/, '').toUpperCase()}</span>
-          <div className="panel" style={{ overflow: 'hidden' }}>
-            {r.tagPlayer && (
-              <Link href={`/player/${r.tagPlayer.tag}`} data-spot="" className="spot" style={row}>
-                <Initial name={r.tagPlayer.name} />
-                <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-                  <span style={{ font: '600 15px/1.15 var(--sans)' }}>{r.tagPlayer.name}</span>
-                  <span className="label-sm" style={{ letterSpacing: '.1em' }}>
-                    Player · #{r.tagPlayer.tag}
-                    {r.tagPlayer.clanName ? ` · ${r.tagPlayer.clanName}` : ''}
-                  </span>
-                </span>
-                <span style={{ display: 'flex', gap: 14, font: '600 12px/1 var(--mono)', color: 'var(--text-2)' }}>
-                  {r.tagPlayer.expLevel != null && (
-                    <KingLevel level={r.tagPlayer.expLevel} size={24} />
-                  )}
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <TrophyIcon size={14} />
-                    {fmt(r.tagPlayer.trophies)}
-                  </span>
-                </span>
-              </Link>
-            )}
-            {r.tagClan && <ClanRow c={r.tagClan} href={clanHref(r.tagClan.tag)} />}
-          </div>
-        </section>
+        <ScopeSection kind={r.tagPlayer && r.tagClan ? 'all' : r.tagPlayer ? 'player' : 'clan'}>
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <span className="label">Tag match · #{q.replace(/^#/, '').toUpperCase()}</span>
+            <div className="panel" style={{ overflow: 'hidden' }}>
+              {r.tagPlayer && (
+                <ScopeSection kind="player">
+                  <Link href={`/player/${r.tagPlayer.tag}`} data-spot="" className="spot" style={row}>
+                    <Initial name={r.tagPlayer.name} />
+                    <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
+                      <span style={{ font: '600 15px/1.15 var(--sans)' }}>{r.tagPlayer.name}</span>
+                      <span className="label-sm" style={{ letterSpacing: '.1em' }}>
+                        Player · #{r.tagPlayer.tag}
+                        {r.tagPlayer.clanName ? ` · ${r.tagPlayer.clanName}` : ''}
+                      </span>
+                    </span>
+                    <span style={{ display: 'flex', gap: 14, font: '600 12px/1 var(--mono)', color: 'var(--text-2)' }}>
+                      {r.tagPlayer.expLevel != null && (
+                        <KingLevel level={r.tagPlayer.expLevel} size={24} />
+                      )}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <TrophyIcon size={14} />
+                        {fmt(r.tagPlayer.trophies)}
+                      </span>
+                    </span>
+                  </Link>
+                </ScopeSection>
+              )}
+              {r.tagClan && (
+                <ScopeSection kind="clan">
+                  <ClanRow c={r.tagClan} href={clanHref(r.tagClan.tag)} />
+                </ScopeSection>
+              )}
+            </div>
+          </section>
+        </ScopeSection>
       )}
 
-      {scope !== 'clan' && (
+      <ScopeSection kind="player">
         <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <span className="label">Players named &quot;{q}&quot;</span>
           {r.players.length ? (
@@ -155,9 +147,9 @@ async function Results({ searchParams }: { searchParams: SP }) {
           )}
           <TagFirst found={r.players.length > 0} />
         </section>
-      )}
+      </ScopeSection>
 
-      {scope !== 'player' && (
+      <ScopeSection kind="clan">
         <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <span className="label">Clans named &quot;{q}&quot;</span>
           {r.clanError ? (
@@ -179,7 +171,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
             </Link>
           )}
         </section>
-      )}
+      </ScopeSection>
     </div>
   );
 }
@@ -187,8 +179,6 @@ async function Results({ searchParams }: { searchParams: SP }) {
 async function Heading({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const q = one(sp.q).trim().slice(0, 40);
-  const t = one(sp.type);
-  const scope: SearchScope = t === 'player' || t === 'clan' ? t : 'all';
   return (
     <header style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <span className="label">Search · players and clans, by name or tag</span>
@@ -196,7 +186,7 @@ async function Heading({ searchParams }: { searchParams: SP }) {
         {q ? `“${q.toUpperCase()}”` : 'SEARCH'}
       </Reveal>
       <div style={{ maxWidth: 680 }}>
-        <TagSearch key={`${q}|${scope}`} size="default" scope={scope} then={one(sp.then) === 'manage' ? 'manage' : undefined} />
+        <ScopedSearch q={q} then={one(sp.then) === 'manage' ? 'manage' : undefined} />
       </div>
     </header>
   );

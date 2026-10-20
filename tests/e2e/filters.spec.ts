@@ -40,7 +40,7 @@ test.describe('filters refresh results immediately', () => {
 
   test('search page controls work after a full load', async ({ page }) => {
     await page.goto('/search?q=rosa');
-    await page.locator('a.chip:visible', { hasText: /^Clans/ }).click({ timeout: 60_000 });
+    await page.locator('button.chip:visible', { hasText: /^Clans/ }).click({ timeout: 60_000 });
     await expect(page).toHaveURL(/type=clan/);
   });
 });
