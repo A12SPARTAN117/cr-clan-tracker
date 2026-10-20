@@ -7,6 +7,8 @@ import { ModeFilter } from '@/components/ModeFilter';
 import { TagSearch } from '@/components/TagSearch';
 import { FitValue, LeagueIcon, PolRating } from '@/components/ui/primitives';
 import { toDeckCard } from '@/lib/decks';
+import type { Badge, PlayerProfile } from '@/lib/player/profile';
+import { BadgesTab } from '@/app/player/[tag]/Badges';
 import { cards, DECKS } from '../fixtures/battles';
 
 const push = vi.fn();
@@ -175,5 +177,24 @@ describe('TagSearch', () => {
     await waitFor(() => expect(within(list).getByText('Rosa')).toBeInTheDocument());
     fireEvent.mouseDown(within(list).getByText('Rosa'));
     expect(push).toHaveBeenCalledWith('/clan/GPY82CR9/manage');
+  });
+});
+
+describe('BadgesTab', () => {
+  // Supercell's CDN never published the 2026 year badge, so its official link fails.
+  const year = (level: number): Badge => ({ id: '2026YearBadge', label: '2026', group: 'Seasonal', level, maxLevel: 6, progress: null, target: null, img: 'https://example.test/dead.png' });
+  const tab = (b: Badge) => render(<BadgesTab p={{ badges: [b], achievements: [] } as unknown as PlayerProfile} />).container;
+
+  it('falls back to our saved copy of a badge level the CDN lacks', () => {
+    const c = tab(year(1));
+    expect(c.querySelector('img')).toHaveAttribute('src', 'https://example.test/dead.png');
+    fireEvent.error(c.querySelector('img')!);
+    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.png');
+  });
+
+  it('shows that art for other levels too instead of a stand-in', () => {
+    const c = tab(year(4));
+    fireEvent.error(c.querySelector('img')!);
+    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.png');
   });
 });
