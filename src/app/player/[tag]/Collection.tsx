@@ -47,12 +47,14 @@ function UpgradeBar({ c }: { c: CollectionCard }) {
   );
 }
 
-function CardCell({ c }: { c: CollectionCard }) {
-  const a = artOf(c);
+/** `form`: show the evo or hero form (greyed until that form is unlocked) instead of the best one. */
+function CardCell({ c, form }: { c: CollectionCard; form?: 'evo' | 'hero' }) {
+  const a = form === 'evo' ? { img: c.evoImg, evo: true, hero: false } : form === 'hero' ? { img: c.heroImg, evo: false, hero: true } : artOf(c);
+  const unlocked = form === 'evo' ? c.evoUnlocked : form === 'hero' ? c.heroUnlocked : c.owned;
   return (
     <div className={s.cell}>
       <div className={s.cellArt}>
-        <CardTile slug={c.slug} label={c.name} img={a.img} evo={a.evo} hero={a.hero} rarity={c.rarity} owned={c.owned} size="fluid" />
+        <CardTile slug={c.slug} label={c.name} img={a.img} evo={a.evo} hero={a.hero} rarity={c.rarity} owned={unlocked} size="fluid" />
         {c.level != null && (
           <span className={s.lvl} style={{ background: levelColor(c.level) }}>
             Lvl {c.level}
@@ -86,8 +88,22 @@ function Summary({ p }: { p: PlayerProfile }) {
     </section>
   );
 
+  const missing = all.filter((c) => !c.owned).sort((a, b) => RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) || a.name.localeCompare(b.name));
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+      {missing.length > 0 &&
+        strip(
+          'Missing cards',
+          missing.length,
+          all.length,
+          missing.map((c) => (
+            <span key={c.id} className={`${s.mini} ${s.missingCard}`} title={`${c.name} · ${c.rarity} · not found yet`}>
+              <CardTile slug={c.slug} label={c.name} img={c.img} rarity={c.rarity} owned={false} size="fluid" />
+              <span className={s.missingName}>{c.name}</span>
+            </span>
+          )),
+        )}
       {strip(
         'Tower card collection',
         p.towers.filter((t) => t.owned).length,
@@ -183,8 +199,16 @@ function Levels({ p }: { p: PlayerProfile }) {
   const [sort, setSort] = useState<'level' | 'elixir' | 'rarity' | 'name' | 'upgrade'>('level');
   const [rar, setRar] = useState<'all' | Rarity>('all');
   const [own, setOwn] = useState<'all' | 'owned' | 'missing'>('all');
+  const [kind, setKind] = useState<'all' | 'evo' | 'hero'>('all');
   const list = useMemo(() => {
-    const l = p.collection.filter((c) => (rar === 'all' || c.rarity === rar) && (own === 'all' || (own === 'owned' ? c.owned : !c.owned)));
+    // Evo / hero "owned" means that form is unlocked, not just the card.
+    const has = (c: CollectionCard) => (kind === 'evo' ? c.evoUnlocked : kind === 'hero' ? c.heroUnlocked : c.owned);
+    const l = p.collection.filter(
+      (c) =>
+        (kind === 'all' || (kind === 'evo' ? c.canEvo : c.canHero)) &&
+        (rar === 'all' || c.rarity === rar) &&
+        (own === 'all' || (own === 'owned' ? has(c) : !has(c))),
+    );
     const ready = (c: CollectionCard) => (c.next?.cards ? c.count / c.next.cards : -1);
     return l.sort((a, b) =>
       sort === 'level'
@@ -197,7 +221,7 @@ function Levels({ p }: { p: PlayerProfile }) {
               ? ready(b) - ready(a)
               : a.name.localeCompare(b.name),
     );
-  }, [p.collection, sort, rar, own]);
+  }, [p.collection, sort, rar, own, kind]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -212,6 +236,20 @@ function Levels({ p }: { p: PlayerProfile }) {
             <option value="name">Name</option>
           </select>
         </label>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span className="label-sm">TYPE</span>
+          {(
+            [
+              ['all', 'All cards'],
+              ['evo', 'Evos'],
+              ['hero', 'Heroes'],
+            ] as const
+          ).map(([k, l]) => (
+            <button key={k} type="button" className="chip" aria-pressed={kind === k} onClick={() => setKind(k)}>
+              {l}
+            </button>
+          ))}
+        </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
           <span className="label-sm">RARITY</span>
           {(['all', ...RARITY_ORDER] as const).map((r) => (
@@ -234,7 +272,7 @@ function Levels({ p }: { p: PlayerProfile }) {
       </div>
       <div className={s.grid}>
         {list.map((c) => (
-          <CardCell key={c.id} c={c} />
+          <CardCell key={c.id} c={c} form={kind === 'all' ? undefined : kind} />
         ))}
       </div>
       <h3 className={s.h3}>Tower troops</h3>

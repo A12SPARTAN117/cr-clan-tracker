@@ -10,6 +10,7 @@ import { CardsIcon, MedalIcon, StreakIcon, TowerIcon, TrophyIcon } from '@/compo
 import { Tabs } from '@/components/ui/Tabs';
 import { agoShort, fmt } from '@/lib/format';
 import { setPin, usePins } from '@/lib/pins';
+import { setRival, useMyRivals } from '@/lib/myRivals';
 import type { PlayerProfile } from '@/lib/player/profile';
 import type { PlayerHistory } from '@/lib/history';
 import type { Rivals } from '@/lib/player/rivals';
@@ -30,6 +31,9 @@ export function PlayerView({ p, history, rivals, eventRanks }: { p: PlayerProfil
   const [syncing, startSync] = useTransition();
   const pins = usePins();
   const pinned = pins.player === p.tag;
+  // Rivals are added to the pinned player ("you"); the list stays on this device, like pins.
+  const mine = useMyRivals(pins.player);
+  const isRival = mine.includes(p.tag);
   const flash = useCallback((t: string) => {
     setToast(t);
     window.setTimeout(() => setToast((c) => (c === t ? '' : c)), 1800);
@@ -162,6 +166,24 @@ export function PlayerView({ p, history, rivals, eventRanks }: { p: PlayerProfil
             <Link href={`/player/${p.tag}/rivals`} className="btn btn-scene">
               Rivals ⚔
             </Link>
+            {!pinned && (
+              <button
+                type="button"
+                className="btn btn-scene"
+                onClick={() => {
+                  if (!pins.player) return flash('Pin yourself first: Pin as me on your own profile');
+                  setRival(pins.player, p.tag, !isRival);
+                  flash(isRival ? 'Removed from your rivals' : 'Added to your rivals');
+                }}
+              >
+                {isRival ? '✓ Your rival' : '+ Add as rival'}
+              </button>
+            )}
+            {!pinned && isRival && pins.player && (
+              <Link href={`/player/${pins.player}/rivals/${p.tag}`} className="btn btn-scene">
+                Head to head →
+              </Link>
+            )}
             <ShareRecap src={`/player/${p.tag}/recap`} file={`recap-${p.tag}.png`} title={`${p.name} · season recap`} />
           </div>
         </div>

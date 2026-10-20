@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { cardBySlug, fixedArt, LOCAL_CARD_ART, type Rarity } from '@/lib/cards';
+import { cardBySlug, LOCAL_CARD_ART, type Rarity } from '@/lib/cards';
 
 export const CARD_SIZES = { S: 44, M: 68, L: 104, XL: 150 } as const;
 /** "fluid" fills its container's width (deck grids); the others are fixed widths in px. */
@@ -46,9 +46,7 @@ export function CardTile(p: CardTileProps) {
   const name = p.label ?? info?.name ?? p.slug.replace(/-/g, ' ');
   const img = p.img === undefined ? (evo ? info?.icons.evolution : hero ? info?.icons.hero : info?.icons.normal) : p.img;
 
-  // A local fix for broken official evo / hero art wins over the API URL.
-  const fix = evo ? fixedArt(p.slug, 'evolution') : hero ? fixedArt(p.slug, 'hero') : null;
-  const chain = uniq([fix, img, p.fallback, baseOf(img), info?.icons.normal, LOCAL_CARD_ART.has(p.slug) ? `/cards/${p.slug}.png` : null]);
+  const chain = uniq([img, p.fallback, baseOf(img), info?.icons.normal, LOCAL_CARD_ART.has(p.slug) ? `/cards/${p.slug}.png` : null]);
   const chain2 = uniq([p.img2, baseOf(p.img2)]);
   const key = chain.join('|') + '#' + chain2.join('|');
   const [fail, setFail] = useState({ key, a: 0, b: 0 });
