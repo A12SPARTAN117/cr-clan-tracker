@@ -56,6 +56,8 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
         scene="/scenes/player-knight.jpg"
         sceneFilter="contrast(1.05) brightness(0.8)"
         scenePosition="right top"
+        // The API has no profile banner; the favourite card stands in front of the scene instead.
+        character={p.favourite?.render}
         height="clamp(440px, 55vh, 600px)"
         fog={1.2}
         extra={
