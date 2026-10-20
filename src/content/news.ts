@@ -52,7 +52,7 @@ export const NEWS: NewsPost[] = [
     date: '2026-10-13',
     title: 'What the Asset Score means',
     summary: 'A 0–100 score per member built from war, donations, activity, war win rate and loyalty.',
-    scene: '/scenes/war-room.jpg',
+    scene: '/scenes/leaders-war-room.jpg',
     body: [
       'Every member gets a score from 0 to 100 for five factors. The Asset Score is their weighted average.',
       'War: decks used this week compared with the decks possible so far (60%), plus participation over the tracked races (40%). Donations: cards donated this week, maxing out at 750. Activity: 100 if seen in the last day, then falling with every hour away. War win rate: from tracked war battles, where 30% scores 0 and 75% scores 100. Loyalty: days in the clan, maxing out at one year.',

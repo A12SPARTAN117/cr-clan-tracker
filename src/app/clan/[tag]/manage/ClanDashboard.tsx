@@ -125,7 +125,10 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
   return (
     <>
       <SceneHeader
-        scene="/scenes/war-room.jpg"
+        // The same ruined tower as My Clan (which opens this dashboard once a clan is pinned).
+        scene="/scenes/tower.jpg"
+        sceneFilter="brightness(0.78) saturate(0.95)"
+        scenePosition="center 30%"
         status={
           <>
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-1)' }}>
