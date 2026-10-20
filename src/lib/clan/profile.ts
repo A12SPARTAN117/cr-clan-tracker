@@ -19,7 +19,7 @@ export type ClanProfile = {
   clanWarTrophies: number;
   requiredTrophies: number;
   donationsPerWeek: number;
-  members: { tag: string; name: string; role: ApiRole; trophies: number; expLevel: number; donations: number; hours: number; clanRank: number }[];
+  members: { tag: string; name: string; role: ApiRole; trophies: number; expLevel: number; collectionLevel: number | null; donations: number; hours: number; clanRank: number }[];
   race: { label: string; training: boolean; warStarts: string; clans: { tag: string; name: string; badgeId: number; fame: number; us: boolean }[] } | null;
   past: { label: string; rank: number | null; fame: number; decksUsed: number; participants: number }[];
   history: { trackedSince: string; events: RosterEvent[] } | null;
@@ -34,9 +34,9 @@ async function build(tag: string): Promise<{ data: ClanProfile; failed: boolean 
   const clan = c.data;
   const ours = bare(clan.tag);
   const now = Date.now();
-  // The roster endpoint now reports expLevel 0 for everyone; the player profiles have it.
-  const needExp = clan.memberList.some((m) => !m.expLevel);
-  const profiles = needExp ? await pool(clan.memberList, 16, (m) => getPlayer(bare(m.tag))) : [];
+  // Each member's own profile: the roster has no collection level (and now reports expLevel 0).
+  // The same cached profiles back the dashboard and player pages.
+  const profiles = await pool(clan.memberList, 16, (m) => getPlayer(bare(m.tag)));
   const expOf = (i: number) => clan.memberList[i].expLevel || (profiles[i]?.ok ? profiles[i].data.expLevel : 0);
   let raceInfo: ClanProfile['race'] = null;
   if (race.ok) {
@@ -82,6 +82,7 @@ async function build(tag: string): Promise<{ data: ClanProfile; failed: boolean 
       role: m.role,
       trophies: m.trophies,
       expLevel: expOf(i),
+      collectionLevel: profiles[i]?.ok ? (profiles[i].data.collectionLevel ?? null) : null,
       donations: m.donations,
       clanRank: m.clanRank,
       hours: Math.max(0, (now - (parseApiDate(m.lastSeen)?.getTime() ?? now)) / 3600_000),

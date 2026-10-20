@@ -52,11 +52,12 @@ describe.skipIf(!KEY)('live data accuracy', () => {
       }
     });
 
-    it('shows each member’s real King level (never the roster’s 0)', async () => {
+    it('shows each member’s real King level (never the roster’s 0) and collection level', async () => {
       for (const m of ours!.members.slice(0, 5)) {
         const p = await raw<Player>(`/players/${enc(m.tag)}`);
         expect(m.expLevel, m.name).toBe(p.expLevel);
         expect(m.expLevel).toBeGreaterThan(0);
+        expect(m.collectionLevel, m.name).toBe(p.collectionLevel ?? null);
       }
     });
   });

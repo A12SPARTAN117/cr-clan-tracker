@@ -60,7 +60,7 @@ const logs: Record<string, Battle[]> = {
   ],
   M2: [],
 };
-const players: Record<string, Partial<Player>> = { M1: { tag: '#M1', name: 'One', expLevel: 71 }, M2: { tag: '#M2', name: 'Two', expLevel: 64 } };
+const players: Record<string, Partial<Player>> = { M1: { tag: '#M1', name: 'One', expLevel: 71, collectionLevel: 2080 }, M2: { tag: '#M2', name: 'Two', expLevel: 64 } };
 
 vi.mock('@/lib/cr/api', () => ({
   tags: { clan: (t: string) => `clan:${t}`, player: (t: string) => `player:${t}` },
@@ -115,6 +115,13 @@ describe('clan profile', async () => {
     expect(c.members.map((m) => [m.tag, m.expLevel])).toEqual([
       ['M1', 71],
       ['M2', 64],
+    ]);
+  });
+
+  it('takes each member’s collection level from their profile (none when the profile lacks it)', () => {
+    expect(c.members.map((m) => [m.tag, m.collectionLevel])).toEqual([
+      ['M1', 2080],
+      ['M2', null],
     ]);
   });
 

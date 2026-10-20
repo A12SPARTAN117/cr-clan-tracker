@@ -121,6 +121,7 @@ function clans(cs: ClanProfile[]): Comparison['sections'] {
       rows: [
         row('Average trophies', 'trophy', (c) => avg(c.members.map((m) => m.trophies)), 'high', { digits: 0 }),
         row('Average king level', 'star', (c) => avg(c.members.map((m) => m.expLevel).filter(Boolean)), 'high', { digits: 1 }),
+        row('Average collection level', 'cards', (c) => avg(c.members.map((m) => m.collectionLevel ?? 0).filter(Boolean)), 'high', { digits: 0 }),
         row('Active in 24 h', 'clock', (c) => c.members.filter((m) => m.hours < 24).length),
         row('Inactive 3+ days', 'alert', (c) => c.members.filter((m) => m.hours >= 72).length, 'low'),
         row('Donations this week', 'donation', (c) => c.members.reduce((a, m) => a + m.donations, 0)),
