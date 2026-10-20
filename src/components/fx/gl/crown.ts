@@ -77,10 +77,13 @@ const fragment = /* glsl */ `
   varying float vHi;
   void main() {
     vec3 c = vHi > 0.5 ? vec3(140.0, 203.0, 255.0) / 255.0 : vec3(200.0 + vD * 40.0, 215.0 + vD * 30.0, 255.0) / 255.0;
-    // Marble Day: the crown is drawn in ink, slate dots with glowing blue highlights.
-    vec3 ink = vHi > 0.5 ? vec3(0.04, 0.4, 0.94) : vec3(0.16 - vD * 0.08, 0.24 - vD * 0.06, 0.38);
+    // Marble Day: the crown is drawn in near-black ink so it stands out on the pale daylight art,
+    // the way the glowing crown does at night. Highlights are pure black; the rest is charcoal,
+    // a touch lighter toward the back for depth.
+    vec3 ink = vHi > 0.5 ? vec3(0.0, 0.0, 0.015) : vec3(0.05 + vD * 0.07, 0.055 + vD * 0.07, 0.07 + vD * 0.07);
     c = mix(c, ink, uLight);
     float a = vHi > 0.5 ? vAlpha : vAlpha * 0.8;
+    a = min(1.0, a * (1.0 + uLight * 0.25));
     gl_FragColor = vec4(c * a, a);
   }
 `;
