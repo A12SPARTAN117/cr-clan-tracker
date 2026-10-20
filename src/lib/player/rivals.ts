@@ -18,9 +18,12 @@ export type Rival = {
   lastMet: string;
   /** Game kinds they met in, most common first (ladder, ranked, friendly…). */
   kinds: string[];
+  /** Every game against them, newest first. */
+  log: Pick<H2HGame, 'time' | 'kind' | 'result' | 'crowns' | 'oppCrowns'>[];
 };
 
-export type Rivals = { rivals: Rival[]; games: number; since: string | null };
+/** `games`: every 1v1 game on record; `opponents`: how many different players those were against. */
+export type Rivals = { rivals: Rival[]; games: number; opponents: number; since: string | null };
 
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
@@ -60,9 +63,10 @@ export function rivalsOf(games: H2HGame[], min = 2, limit = 8): Rivals {
         results: gs.map((g) => g.result),
         lastMet: gs[0].time,
         kinds: [...kinds.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k),
+        log: gs.map(({ time, kind, result, crowns, oppCrowns }) => ({ time, kind, result, crowns, oppCrowns })),
       };
     })
     .sort((a, b) => b.games - a.games || b.lastMet.localeCompare(a.lastMet))
     .slice(0, limit);
-  return { rivals, games: unique.length, since: unique.at(-1)?.time ?? null };
+  return { rivals, games: unique.length, opponents: by.size, since: unique.at(-1)?.time ?? null };
 }

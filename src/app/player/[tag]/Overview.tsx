@@ -5,8 +5,8 @@ import { DeckBlock } from '@/components/DeckBlock';
 import { EmberField } from '@/components/fx/EmberField';
 import { BadgeIcon, CardsIcon, ChestIcon, CrownIcon, DonationIcon, SwordsIcon, TrophyIcon, WinRateIcon, ClanWarIcon } from '@/components/ui/icons';
 import { FitValue } from '@/components/ui/primitives';
-import { agoShort, dstr, fmt } from '@/lib/format';
-import type { BattleKind, PlayerProfile } from '@/lib/player/profile';
+import { agoShort, fmt } from '@/lib/format';
+import type { PlayerProfile } from '@/lib/player/profile';
 import type { Rivals } from '@/lib/player/rivals';
 import Link from 'next/link';
 import { BattleKindIcon, KIND_LABEL } from './BattleKindIcon';
@@ -91,51 +91,33 @@ function Enemies({ p }: { p: PlayerProfile }) {
   );
 }
 
-/**
- * Opponents met more than once, with the head-to-head record. The API's log only holds ~40
- * battles; games are stored from the first time a profile is opened, so the record grows.
- */
-function RivalsPanel({ r, logSize, at }: { r: Rivals; logSize: number; /** When the data was fetched (ms). */ at: number }) {
-  const since = r.since ? dstr(new Date(r.since)) : null;
+/** A glance at the top rivals; the full head-to-head records are on the Rivals page. */
+function RivalsTeaser({ tag, r }: { tag: string; r: Rivals }) {
+  const top = r.rivals.slice(0, 3);
   return (
-    <section className={s.rivals} aria-label="Rivals">
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+    <Link href={`/player/${tag}/rivals`} className={s.rivalsTeaser} aria-label="Rivals: head-to-head records">
+      <span className={s.rivalsTeaserHead}>
         <span className="label">Rivals · head to head</span>
-        <span className="label-sm" style={{ letterSpacing: '.08em' }}>
-          {r.games} 1v1 games{since ? ` since ${since}` : ''}
-        </span>
-      </div>
-      {r.rivals.length ? (
-        <ol className={s.rivalList}>
-          {r.rivals.map((x) => (
-            <li key={x.tag}>
-              <Link href={`/player/${x.tag}`} className={s.rival}>
-                <span className={s.rivalWho}>
-                  <b>{x.name}</b>
-                  <small>
-                    {x.clan ?? 'No clan'} · {x.kinds.map((k) => KIND_LABEL[k as BattleKind] ?? k).join(', ')} · last {agoShort((at - Date.parse(x.lastMet)) / 3600_000)} ago
-                  </small>
-                </span>
-                <span className={s.rivalStrip} aria-label={`Results, newest first: ${x.results.map((v) => (v > 0 ? 'win' : v < 0 ? 'loss' : 'draw')).join(', ')}`}>
-                  {x.results.slice(0, 10).map((v, i) => (
-                    <i key={i} data-r={v > 0 ? 'win' : v < 0 ? 'loss' : 'draw'} />
-                  ))}
-                </span>
-                <span className={s.rivalRecord} data-lead={x.wins > x.losses ? 'us' : x.wins < x.losses ? 'them' : 'even'}>
-                  {x.wins}–{x.losses}
-                  {x.draws ? `–${x.draws}` : ''}
-                  <small>{x.draws ? 'W–L–D' : 'W–L'} · {x.games} games</small>
-                </span>
-              </Link>
-            </li>
+        <span className="link-mono">{r.rivals.length ? `All ${r.rivals.length} rivals →` : 'Open rivals →'}</span>
+      </span>
+      {top.length ? (
+        <span className={s.rivalsTeaserList}>
+          {top.map((x) => (
+            <span key={x.tag} className={s.rivalsTeaserItem}>
+              <b>{x.name}</b>
+              <span data-lead={x.wins > x.losses ? 'us' : x.wins < x.losses ? 'them' : 'even'}>
+                {x.wins}–{x.losses}
+                {x.draws ? `–${x.draws}` : ''}
+              </span>
+            </span>
           ))}
-        </ol>
+        </span>
       ) : (
-        <p className="body" style={{ fontSize: 14, margin: 0 }}>
-          Nobody shows up twice in their last {logSize} battles yet. From now on their 1v1 games are kept, so rivals appear as they meet the same players again.
-        </p>
+        <span style={{ font: '400 13px/1.4 var(--sans)', color: 'var(--text-2)' }}>
+          Nobody twice in the last {r.games} 1v1 games yet. Games are kept from now on, so rivals build up here.
+        </span>
       )}
-    </section>
+    </Link>
   );
 }
 
@@ -174,7 +156,7 @@ export function OverviewTab({ p, rivals, onCopy }: { p: PlayerProfile; rivals: R
         <Enemies p={p} />
       </div>
 
-      <RivalsPanel r={rivals} logSize={p.battles.length} at={Date.parse(p.generatedAt)} />
+      <RivalsTeaser tag={p.tag} r={rivals} />
 
       {p.deck && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 660 }}>

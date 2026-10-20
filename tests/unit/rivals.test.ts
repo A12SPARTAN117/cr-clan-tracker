@@ -49,5 +49,7 @@ describe('rivals', () => {
     expect(r.games).toBe(6);
     expect(r.rivals[0].games).toBe(3);
     expect(r.since).toBe('2026-10-17T09:00:00.000Z');
+    expect(r.opponents).toBe(3);
+    expect(r.rivals[0].log.map((x) => x.result)).toEqual([1, -1, 1]);
   });
 });
