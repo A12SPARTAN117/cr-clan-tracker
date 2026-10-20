@@ -139,9 +139,9 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
             <span>Last sync {lastSync}</span>
           </>
         }
-        // P.E.K.K.A stands guard over the stronghold, lit like Home's golden knight; its glow
-        // pulses while a refresh is running.
-        extra={<div className={s.guard} data-figure="" data-syncing={syncing} aria-hidden />}
+        // P.E.K.K.A stands guard over the stronghold, lit like Home's golden knight (colour on
+        // hover); its glow pulses while a refresh is running.
+        extra={<div className={s.guard} data-syncing={syncing} aria-hidden />}
       >
         <div className={s.headRow}>
           <div className={s.ident}>
