@@ -9,6 +9,7 @@ import type { Dashboard } from '@/lib/clan/dashboard';
 import { fmt, pad2 } from '@/lib/format';
 import { WAR_DAYS } from '@/lib/war';
 import type { Scored } from './shared';
+import { WarChart } from './WarChart';
 import s from './dashboard.module.css';
 
 function useCountdown(target: string | undefined) {
@@ -213,6 +214,8 @@ export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Sc
           </div>
         </div>
       </div>
+
+      <WarChart members={members} races={data.past.length} onOpen={onOpen} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <h3 className="heading">Past {data.past.length || 10} races</h3>
