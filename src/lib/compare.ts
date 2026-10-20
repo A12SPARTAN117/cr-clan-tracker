@@ -60,7 +60,7 @@ function players(ps: PlayerProfile[]): Comparison['sections'] {
         row('Win %', 'winrate', (p) => pct(p.totals.wins, p.totals.losses), 'high', { unit: '%', digits: 1 }),
         row('Three-crown wins', 'crown', (p) => p.totals.threeCrown),
         row('Battles', 'swords', (p) => p.totals.battleCount, null),
-        row('Win % · last 30', 'winrate', (p) => (last(p).length ? (last(p).filter((b) => b.result === 'win').length / last(p).length) * 100 : null), 'high', { unit: '%', digits: 0 }),
+        row('Win % · recent battles', 'winrate', (p) => (last(p).length ? (last(p).filter((b) => b.result === 'win').length / last(p).length) * 100 : null), 'high', { unit: '%', digits: 0 }),
         row('Current streak', 'streak', (p) => (p.streakRun.kind ? (p.streakRun.kind === 'win' ? p.streakRun.count : -p.streakRun.count) : 0)),
         row('Worst enemy', 'alert', (p) => (p.enemies[0] ? `${p.enemies[0].name} (${p.enemies[0].losses}/${p.enemies[0].games})` : null), null),
         row('Max challenge wins', 'chest', (p) => p.totals.challengeMaxWins),

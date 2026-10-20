@@ -88,7 +88,7 @@ export function StatsTab({ p }: { p: PlayerProfile }) {
         [<SwordsIcon key="i" size={16} />, 'Battle count', fmt(t.battleCount)],
         [<StreakIcon key="i" size={16} />, 'Current streak', p.streakRun.kind ? `${p.streakRun.count} ${p.streakRun.kind === 'win' ? 'wins' : 'losses'}` : '—'],
         [<WinRateIcon key="i" size={16} />, `Win % · last ${form.length} games`, form.length ? `${Math.round((formWins / form.length) * 100)}%` : '—'],
-        [<AlertIcon key="i" size={16} />, 'Worst enemy (last 30)', enemy ? `${enemy.name} · lost ${enemy.losses}/${enemy.games}` : '—'],
+        [<AlertIcon key="i" size={16} />, `Worst enemy (last ${p.battles.length})`, enemy ? `${enemy.name} · lost ${enemy.losses}/${enemy.games}` : '—'],
       ],
     },
     {

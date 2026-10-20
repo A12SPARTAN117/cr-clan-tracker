@@ -8,7 +8,7 @@ Tested against the live API through the RoyaleAPI proxy (`https://proxy.royaleap
 |---|---|
 | `GET /cards` | 123 cards in `items`, 4 tower troops in `supportItems` |
 | `GET /players/{tag}` | Full profile: stats, badges (~140+), achievements, cards, tower troops, current deck, Path of Legends results, game-mode `progress` |
-| `GET /players/{tag}/battlelog` | Last **~30 battles** only |
+| `GET /players/{tag}/battlelog` | Last **~40 battles** only (was ~30 before 2026) |
 | `GET /players/{tag}/upcomingchests` | Works |
 | `GET /clans/{tag}` | Clan info + `memberList` (role, lastSeen, trophies, donations, clanChestPoints) |
 | `GET /clans/{tag}/currentriverrace` | Per-participant `fame`, `repairPoints`, `boatAttacks`, `decksUsed`, `decksUsedToday` |
@@ -47,7 +47,7 @@ Icon URLs: `iconUrls.medium` (normal), `iconUrls.evolutionMedium`, `iconUrls.her
 
 ## Battle types relevant to clan tracking
 
-Battle log entries have a `type` (e.g. `pathOfLegend`, `PvP`, `clanMate`, `riverRacePvP`, `riverRaceDuel`, `boatBattle`). `clanMate` = friendly 1v1 inside the clan; `riverRace*` / `boatBattle` = war battles. Because the log only keeps ~30 battles, members must be polled regularly (every 30–60 min) to build complete stats.
+Battle log entries have a `type` (e.g. `pathOfLegend`, `PvP`, `clanMate`, `riverRacePvP`, `riverRaceDuel`, `boatBattle`). `clanMate` = friendly 1v1 inside the clan; `riverRace*` / `boatBattle` = war battles. Because the log only keeps ~40 battles, members must be polled regularly (every 30–60 min) to build complete stats.
 
 ## RoyaleAPI open-source resources
 

@@ -250,7 +250,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
         {tab === 'score' && <ScoreTab clanName={data.clan.name} members={all} weights={weights} onChange={(w) => saveWeights(tag, w)} />}
 
         <p className="label-sm" style={{ lineHeight: 1.7, letterSpacing: '.1em' }}>
-          Data cached, refreshed at least every 5 min · War and 1v1 win rates use each member&apos;s last ~30 battles ({data.logsRead}/{n} logs read)
+          Data cached, refreshed at least every 5 min · War and 1v1 win rates use each member&apos;s last ~40 battles ({data.logsRead}/{n} logs read)
         </p>
       </main>
 

@@ -102,7 +102,7 @@ export type Dashboard = {
   former: FormerMember[];
   members: DashMember[];
   history: { trackedSince: string; events: RosterEvent[] } | null;
-  /** Battle logs only hold ~30 battles; how many members' logs could be read. */
+  /** Battle logs only hold ~40 battles; how many members' logs could be read. */
   logsRead: number;
 };
 

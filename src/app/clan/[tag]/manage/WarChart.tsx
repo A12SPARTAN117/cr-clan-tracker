@@ -12,7 +12,7 @@ const METRICS: { k: Metric; label: string; note: string }[] = [
   { k: 'fame', label: 'Fame', note: 'Total fame earned' },
   { k: 'perDeck', label: 'Fame / deck', note: 'Fame per war deck: how much each battle is worth. Members with under 4 decks are left out.' },
   { k: 'decks', label: 'Decks used', note: 'War decks used out of 16 per race, for the races each member was in the clan.' },
-  { k: 'win', label: 'Win %', note: 'War battle win rate from recent battle logs (about the last 30 battles). Members with under 3 war battles are left out.' },
+  { k: 'win', label: 'Win %', note: 'War battle win rate from recent battle logs (up to the last 40 battles). Members with under 3 war battles are left out.' },
 ];
 /** Rows shown before "Show all". */
 const TOP = 15;

@@ -7,7 +7,7 @@ import { polLabel } from '../leagues';
 /**
  * A player's season recap, built only from what the API and our snapshots actually hold.
  * Pure (no server code), so tests can feed it a profile. Every partial number says what it
- * covers: the battle log holds about 30 battles and snapshots start when a profile is first opened.
+ * covers: the battle log holds about 40 battles and snapshots start when a profile is first opened.
  */
 
 /** `league` is null when it isn't on the live 1–7 ladder (an old Challenger league, or only a lower bound). */
