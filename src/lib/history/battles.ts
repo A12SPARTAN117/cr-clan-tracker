@@ -28,8 +28,8 @@ export function saveBattles(tagRaw: string, log: Battle[]) {
   });
 }
 
-/** Head-to-head records: every stored game plus the live battle log. */
-export async function getRivals(tagRaw: string): Promise<Rivals> {
+/** Head-to-head records: every stored game plus the live battle log. `limit`: how many rivals. */
+export async function getRivals(tagRaw: string, limit = 8): Promise<Rivals> {
   const tag = bare(tagRaw);
   const [log, db] = await Promise.all([getBattleLog(tag), getDb()]);
   const live = log.ok ? gamesOf(log.data) : [];
@@ -42,5 +42,5 @@ export async function getRivals(tagRaw: string): Promise<Rivals> {
       console.warn('[history] read battles failed (is migration 0006 applied?):', e instanceof Error ? e.message : e);
     }
   }
-  return rivalsOf([...live, ...stored]);
+  return rivalsOf([...live, ...stored], 2, limit);
 }

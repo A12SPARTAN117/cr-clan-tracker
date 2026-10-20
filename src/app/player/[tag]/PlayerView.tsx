@@ -154,6 +154,9 @@ export function PlayerView({ p, history, rivals }: { p: PlayerProfile; history: 
             <Link href={`/compare?type=player&tags=${p.tag}`} className="btn btn-scene">
               Compare ⇄
             </Link>
+            <Link href={`/player/${p.tag}/rivals`} className="btn btn-scene">
+              Rivals ⚔
+            </Link>
             <ShareRecap src={`/player/${p.tag}/recap`} file={`recap-${p.tag}.png`} title={`${p.name} · season recap`} />
           </div>
         </div>
