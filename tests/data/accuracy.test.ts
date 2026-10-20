@@ -114,6 +114,39 @@ describe.skipIf(!KEY)('live data accuracy', () => {
       expect(ours!.pol.current?.rating ?? null).toBe(cur?.trophies ?? null);
     });
 
+    it('shows the right trophies, best, war wins and totals for players above and below 14,000', async () => {
+      // The five highest and five lowest on the roster, so both sides of the seasonal road are covered.
+      const sorted = [...clan.memberList].sort((a, b) => b.trophies - a.trophies);
+      for (const m of [...sorted.slice(0, 5), ...sorted.slice(-5)]) {
+        const t = bare(m.tag);
+        const [a, o] = await Promise.all([raw<Player>(`/players/${enc(t)}`), getPlayerProfile(t)]);
+        const road = Object.entries(a.progress ?? {}).find(([k]) => k.startsWith('seasonal-trophy-road'))?.[1];
+        const shown = o!.seasonal?.trophies ?? o!.trophies;
+        const best = o!.seasonal?.best ?? o!.bestTrophies;
+        if (a.trophies < 14_000) {
+          // Below 14,000 the seasonal entry is a placeholder: Trophy Road is the real count.
+          expect(o!.seasonal, m.name).toBeNull();
+          expect(shown, m.name).toBe(a.trophies);
+          expect(best, m.name).toBe(a.bestTrophies);
+        } else if (road) {
+          expect(shown, m.name).toBe(road.trophies);
+          expect(best, m.name).toBe(Math.max(road.bestTrophies ?? 0, road.trophies));
+        }
+        expect(best, m.name).toBeGreaterThanOrEqual(shown);
+        expect(o!.totals.warWins, m.name).toBe(a.badges.find((b) => b.name === 'ClanWarWins')?.progress ?? null);
+        expect([o!.totals.wins, o!.totals.losses, o!.totals.battleCount, o!.totals.threeCrown, o!.totals.totalDonations, o!.totals.challengeMaxWins], m.name).toEqual([
+          a.wins,
+          a.losses,
+          a.battleCount,
+          a.threeCrownWins,
+          a.totalDonations,
+          a.challengeMaxWins,
+        ]);
+        expect(o!.collection.filter((c) => c.owned).length, m.name).toBe(a.cards.length);
+        expect(o!.collectionLevel, m.name).toBe(a.collectionLevel ?? null);
+      }
+    });
+
     it('shows the current deck in slot order with correct elixir stats', () => {
       expect(ours!.deck?.cards.map((c) => c.id)).toEqual(api.currentDeck.map((c) => c.id));
       const st = deckStats(api.currentDeck.map((c) => ({ elixir: cardById(c.id)?.elixir ?? c.elixirCost ?? null })));

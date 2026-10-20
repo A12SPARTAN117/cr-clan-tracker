@@ -100,11 +100,12 @@ export function OverviewTab({ p, onCopy }: { p: PlayerProfile; onCopy: (t: strin
     ['Battles', fmt(t.battleCount), '', <SwordsIcon key="i" />],
     ['Collection level', fmt(p.collectionLevel), '', <CardsIcon key="i" />],
     ['Cards found', String(owned.length), `/${p.collection.length}`, <CardsIcon key="i" />],
-    ['Best trophies', fmt(p.seasonal?.best ?? p.bestTrophies), '', <TrophyIcon key="i" />],
+    // The API only keeps this season's best on the seasonal road; below 14,000 it is the Trophy Road best.
+    [p.seasonal ? 'Season best' : 'Best trophies', fmt(p.seasonal?.best ?? p.bestTrophies), '', <TrophyIcon key="i" />],
     ['Star points', fmt(t.starPoints), '', <BadgeIcon key="i" />],
     ['Challenge best', fmt(t.challengeMaxWins), 'wins', <ChestIcon key="i" />],
     ['Donations', fmt(t.totalDonations), 'total', <DonationIcon key="i" />],
-    ['War day wins', fmt(t.warDayWins), '', <ClanWarIcon key="i" />],
+    ['War wins', fmt(t.warWins), '', <ClanWarIcon key="i" />],
   ];
 
   return (

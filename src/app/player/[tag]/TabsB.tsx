@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { LeagueIcon, leagueName, PolRating } from '@/components/ui/primitives';
+import { polLabel } from '@/lib/leagues';
 import {
   AlertIcon,
   BadgeIcon,
@@ -44,7 +45,9 @@ export function StatsTab({ p }: { p: PlayerProfile }) {
     x ? (
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
         <LeagueIcon league={x.league} size={18} />
-        {leagueName(x.league)} ·{x.league >= 7 ? <PolRating rating={x.rating} size={13} /> : fmt(x.rating)}
+        {polLabel(x)}
+        {/* Below Ultimate Champion the API's number is progress in the league, not a rating. */}
+        {x.league >= 7 && <>· <PolRating rating={x.rating} size={13} /></>}
       </span>
     ) : (
       '—'
@@ -68,11 +71,11 @@ export function StatsTab({ p }: { p: PlayerProfile }) {
     {
       title: 'TROPHY ROAD',
       rows: [
-        [<TrophyIcon key="i" size={16} />, 'Trophies', fmt(p.trophies)],
-        [<TrophyIcon key="i" size={16} />, 'Best trophies', fmt(p.bestTrophies)],
-        [<TrophyIcon key="i" size={16} />, p.seasonal ? `Seasonal road · ${p.seasonal.arena}` : 'Seasonal road', p.seasonal ? `${fmt(p.seasonal.trophies)} (best ${fmt(p.seasonal.best)})` : '—'],
+        [<TrophyIcon key="i" size={16} />, 'Trophy Road trophies', fmt(p.trophies)],
+        [<TrophyIcon key="i" size={16} />, 'Trophy Road best', fmt(p.bestTrophies)],
+        [<TrophyIcon key="i" size={16} />, p.seasonal ? `Seasonal road · ${p.seasonal.arena}` : 'Seasonal road', p.seasonal ? `${fmt(p.seasonal.trophies)} (season best ${fmt(p.seasonal.best)})` : 'Opens at 14,000'],
         [<TrophyIcon key="i" size={16} />, 'Legacy trophy road best', fmt(p.legacyHigh)],
-        [<TowerIcon key="i" size={16} />, 'Arena', p.arena ?? '—'],
+        [<TowerIcon key="i" size={16} />, 'Trophy Road arena', p.arena ?? '—'],
       ],
     },
     {
@@ -120,8 +123,8 @@ export function StatsTab({ p }: { p: PlayerProfile }) {
         [<DonationIcon key="i" size={16} />, 'Donations (total)', fmt(t.totalDonations)],
         [<DonationIcon key="i" size={16} />, 'Donated this week', fmt(t.donationsWeek)],
         [<ReceivedIcon key="i" size={16} />, 'Received this week', fmt(t.receivedWeek)],
-        [<ClanWarIcon key="i" size={16} />, 'War day wins', fmt(t.warDayWins)],
-        [<ClanWarIcon key="i" size={16} />, 'Clan war wins (badge)', fmt(badge('ClanWarWins')?.progress)],
+        [<ClanWarIcon key="i" size={16} />, 'War wins (river races)', fmt(t.warWins)],
+        [<ClanWarIcon key="i" size={16} />, 'Clan Wars 1 wins (retired mode)', fmt(t.warDayWins)],
         [<CardsIcon key="i" size={16} />, 'Clan cards collected', fmt(t.clanCardsCollected)],
       ],
     },
@@ -367,9 +370,9 @@ export function HistoryTab({ p, h: hist }: { p: PlayerProfile; h: PlayerHistory 
               label,
               <span key="l" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <LeagueIcon league={x!.league} size={20} />
-                {leagueName(x!.league)}
+                {polLabel(x!)}
               </span>,
-              x!.league >= 7 ? <PolRating key="r" rating={x!.rating} size={14} /> : fmt(x!.rating),
+              x!.league >= 7 ? <PolRating key="r" rating={x!.rating} size={14} /> : '—',
               x!.rank ? `#${fmt(x!.rank)}` : '—',
             ])}
             empty={seasons.length ? undefined : 'No Path of Legends seasons on record.'}

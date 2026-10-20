@@ -94,6 +94,8 @@ export type BattleSide = {
   supportCards?: ApiSupportCard[];
   globalRank?: number | null;
   elixirLeaked?: number;
+  /** War duels (best of three): crowns per round. */
+  rounds?: { crowns: number }[];
 };
 
 export type Battle = {

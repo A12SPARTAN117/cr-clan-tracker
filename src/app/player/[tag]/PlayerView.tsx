@@ -38,8 +38,8 @@ export function PlayerView({ p, history }: { p: PlayerProfile; history: PlayerHi
   const facts: { k: string; v: string; sub?: string; fg?: string; league?: number | null; icon?: React.ReactNode }[] = [
     { k: 'KING TOWER', v: p.kingTower != null ? String(p.kingTower) : '—', icon: <TowerIcon size={18} /> },
     { k: 'COLLECTION LVL', v: p.collectionLevel != null ? fmt(p.collectionLevel) : '—', icon: <CardsIcon size={18} /> },
-    { k: 'ARENA', v: p.arena ?? '—' },
-    { k: 'TROPHIES', v: fmt(p.seasonal?.trophies ?? p.trophies), sub: `BEST ${fmt(p.seasonal?.best ?? p.bestTrophies)}`, icon: <TrophyIcon size={18} /> },
+    { k: 'ARENA', v: p.seasonal?.arena ?? p.arena ?? '—' },
+    { k: 'TROPHIES', v: fmt(p.seasonal?.trophies ?? p.trophies), sub: `${p.seasonal ? 'SEASON BEST' : 'BEST'} ${fmt(p.seasonal?.best ?? p.bestTrophies)}`, icon: <TrophyIcon size={18} /> },
     {
       k: 'PATH OF LEGENDS',
       // Below Ultimate Champion the API reports progress, not a rating: show the league.

@@ -2,6 +2,7 @@ import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
 import { anyFailed, getBattleLog, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags } from '../cr/api';
 import type { ApiRole, Battle, Clan, CurrentRiverRace, RiverRaceLogEntry } from '../cr/types';
+import { outcome } from '../battle';
 import type { ClanHistory, RosterEvent } from '../history';
 import { parseApiDate } from '../format';
 import { pool } from '../pool';
@@ -126,7 +127,7 @@ function battleStats(log: Battle[] | null, selfTag: string) {
     const me = b.team.find((t) => bare(t.tag) === selfTag) ?? b.team[0];
     const opp = b.opponent[0];
     if (!me || !opp) continue;
-    const won = me.crowns > opp.crowns;
+    const won = outcome(b) > 0;
     // Boat battles are attacks on boats, not head-to-head games, so they stay out of win %.
     const river = b.type === 'boatBattle' ? null : riverBattleKind(b.type, parseApiDate(b.battleTime));
     if (river === 'war') {

@@ -2,7 +2,7 @@ import type { PlayerHistory } from '../history';
 import type { BattleRow, LeveledCard, PlayerProfile } from '../player/profile';
 import { cardBySlug } from '../cards';
 import { characterFor } from '../characters';
-import { leagueName } from '../leagues';
+import { polLabel } from '../leagues';
 
 /**
  * A player's season recap, built only from what the API and our snapshots actually hold.
@@ -10,7 +10,8 @@ import { leagueName } from '../leagues';
  * covers: the battle log holds about 30 battles and snapshots start when a profile is first opened.
  */
 
-export type RecapPol = { league: number; leagueName: string; rating: number | null; rank: number | null } | null;
+/** `league` is null when it isn't on the live 1–7 ladder (an old Challenger league, or only a lower bound). */
+export type RecapPol = { league: number | null; leagueName: string; rating: number | null; rank: number | null } | null;
 
 export type PlayerRecap = {
   tag: string;
@@ -40,7 +41,7 @@ export type PlayerRecap = {
 function recapPol(x: PlayerProfile['pol']['current']): RecapPol {
   if (!x) return null;
   // Below Ultimate Champion the API's number is progress in the league, not a rating.
-  return { league: x.league, leagueName: leagueName(x.league), rating: x.league >= 7 ? x.rating : null, rank: x.rank };
+  return { league: x.atLeast || x.league < 1 ? null : x.league, leagueName: polLabel(x), rating: x.league >= 7 ? x.rating : null, rank: x.rank };
 }
 
 /** The longest run of wins, skipping the games the page's streak skips. */

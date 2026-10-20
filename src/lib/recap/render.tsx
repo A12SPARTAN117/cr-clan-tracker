@@ -126,7 +126,7 @@ function Frame({ kicker, host, path, generatedAt, children }: { kicker: string; 
 function polText(x: RecapPol, none: string): { v: string; sub: string } {
   if (!x) return { v: '—', sub: none };
   if (x.rating != null) return { v: fmt(x.rating), sub: `${x.leagueName}${x.rank ? ` · #${fmt(x.rank)}` : ''}` };
-  return { v: x.leagueName, sub: x.rank ? `#${fmt(x.rank)}` : `LEAGUE ${x.league} OF 7` };
+  return { v: x.leagueName, sub: x.rank ? `#${fmt(x.rank)}` : x.league != null ? `LEAGUE ${x.league} OF 7` : 'PATH OF LEGENDS' };
 }
 
 const nameSize = (n: string) => (n.length <= 9 ? 104 : n.length <= 13 ? 84 : n.length <= 17 ? 66 : 54);
@@ -158,7 +158,7 @@ export async function playerRecapImage(r: PlayerRecap, host: string) {
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
-          <Tile k={r.trophies.seasonal ? 'Season trophies' : 'Trophies'} v={fmt(r.trophies.value)} sub={`BEST ${fmt(r.trophies.best)}`} style={{ width: 309 }} />
+          <Tile k={r.trophies.seasonal ? 'Season trophies' : 'Trophies'} v={fmt(r.trophies.value)} sub={`${r.trophies.seasonal ? 'SEASON BEST' : 'BEST'} ${fmt(r.trophies.best)}`} style={{ width: 309 }} />
           <Tile k="Path of Legends" v={cur.v} sub={cur.sub.toUpperCase()} style={{ width: 309 }} />
           <Tile k="Best PoL season" v={best.v} sub={best.sub.toUpperCase()} style={{ width: 309 }} />
           <Tile k="Wins · career" v={fmt(r.career.wins)} sub={r.career.winRate != null ? `${r.career.winRate.toFixed(1)}% WIN RATE` : undefined} style={{ width: 309 }} />

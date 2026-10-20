@@ -44,6 +44,7 @@ function players(ps: PlayerProfile[]): Comparison['sections'] {
         row('King tower', 'tower', (p) => p.kingTower),
         row('Collection level', 'cards', (p) => p.collectionLevel),
         row('Trophies', 'trophy', (p) => p.seasonal?.trophies ?? p.trophies),
+        // Seasonal road: this season's best (all the API keeps); below 14,000: the Trophy Road best.
         row('Best trophies', 'trophy', (p) => p.seasonal?.best ?? p.bestTrophies),
         row('Path of Legends league', 'medal', (p) => p.pol.current?.league ?? null, 'high', { labels: ps.map((p) => (p.pol.current ? leagueName(p.pol.current.league) : null)) }),
         row('Ultimate Champion medals', 'medal', (p) => (p.pol.current && p.pol.current.league >= 7 ? p.pol.current.rating : null)),
@@ -83,7 +84,7 @@ function players(ps: PlayerProfile[]): Comparison['sections'] {
         row('Clan', 'members', (p) => p.clan?.name ?? null, null),
         row('Donations (total)', 'donation', (p) => p.totals.totalDonations),
         row('Donated this week', 'donation', (p) => p.totals.donationsWeek),
-        row('War day wins', 'war', (p) => p.totals.warDayWins),
+        row('War wins', 'war', (p) => p.totals.warWins),
         row('Clan cards collected', 'cards', (p) => p.totals.clanCardsCollected),
       ],
     },
