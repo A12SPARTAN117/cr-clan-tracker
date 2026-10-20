@@ -20,13 +20,9 @@ Thumbs.db
 .idea/
 *.log
 
-# Card art downloaded by scripts/fetch-cards.mjs (large; the site uses API image URLs)
-design-kit/images/
-design-kit/*.zip
-design-kit/moodboard/
+# Local reference material: design kit, downloaded art and lookup data (scripts/fetch-*.mjs)
+design-kit/
 vendor/
-design-kit/royaleapi/
-design-kit/prompts/
 
 # Next.js / TypeScript
 next-env.d.ts
