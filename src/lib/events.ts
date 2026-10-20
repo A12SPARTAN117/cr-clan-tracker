@@ -8,13 +8,13 @@ import { enqueue, getDb, schema } from './db';
 /** A board counts as live while its standings moved in this window. */
 const LIVE_MS = 48 * 3600_000;
 /** A board seen for the first time gets this long to show it moves before it is hidden. */
-const GRACE_MS = 6 * 3600_000;
+const GRACE_MS = 2 * 3600_000;
 
 export type EventBoard = { id: number; name: string; data: ApiResult<Paged<EventRanked>> };
 
 /**
  * Whether a board is live, given what was stored at the last check (`prev`) and the top of the
- * board now. Live while it moved in the last 48 hours; a board never seen to move is given six
+ * board now. Live while it moved in the last 48 hours; a board never seen to move is given two
  * hours from when it was first seen.
  */
 export function boardState(prev: { sig: string; firstSeenAt: Date; changedAt: Date | null } | undefined, sig: string, now: number): { live: boolean; changed: boolean } {
