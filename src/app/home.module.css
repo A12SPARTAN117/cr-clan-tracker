@@ -106,6 +106,18 @@
   letter-spacing: -0.065em;
   text-wrap: balance;
 }
+/* On phones the status lines sit over the champion: give them a frosted plate so they stay legible. */
+@media (max-width: 760px) {
+  .status {
+    padding: 9px 16px;
+    border: 1px solid var(--hair);
+    border-radius: 6px;
+    background: rgba(var(--void-rgb), 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text-1);
+  }
+}
 .searchWrap {
   width: min(100%, 640px);
   pointer-events: auto;
