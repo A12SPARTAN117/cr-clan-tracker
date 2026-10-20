@@ -13,7 +13,7 @@ export default function NewsPage() {
   const posts = [...NEWS].sort((a, b) => b.date.localeCompare(a.date));
   return (
     <>
-      <SceneHeader scene="/scenes/scrolls.jpg" height="clamp(340px,42vh,460px)" fog={0.8} status={<span>Site updates · guides · balance notes</span>}>
+      <SceneHeader scene="/scenes/castle.jpg" height="clamp(340px,42vh,460px)" fog={0.8} status={<span>Site updates · guides · balance notes</span>}>
         <Reveal as="h1" style={{ margin: 0, font: '800 clamp(46px,8vw,124px)/.86 var(--mono)', letterSpacing: '-.06em' }}>
           NEWS
         </Reveal>
