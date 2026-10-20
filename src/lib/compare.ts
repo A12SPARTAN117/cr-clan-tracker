@@ -1,6 +1,5 @@
 import 'server-only';
 import { getClanProfile, type ClanProfile } from './clan/profile';
-import { cardBySlug } from './cards';
 import { leagueName } from './leagues';
 import { checkTag } from './tags';
 import { getPlayerProfile, type PlayerProfile } from './player/profile';
@@ -18,11 +17,9 @@ export type CompareEntity = {
   name: string;
   sub: string;
   badgeId?: number;
-  /** Clans: war trophies, for the league frame. */
+  /** War trophies of the clan (players: of their clan), for the league frame. */
   warTrophies?: number;
   deck?: PlayerProfile['deck'];
-  /** Art for the 3D showdown: the favourite card's troop render (local) or card art (official). */
-  art?: { src: string; kind: 'render' | 'card' } | null;
 };
 export type Comparison = { kind: CompareKind; entities: CompareEntity[]; missing: string[]; sections: { title: string; rows: CompareRow[] }[] };
 
@@ -140,12 +137,6 @@ function clans(cs: ClanProfile[]): Comparison['sections'] {
   ];
 }
 
-function artOf(p: PlayerProfile): CompareEntity['art'] {
-  if (p.favourite?.render) return { src: p.favourite.render, kind: 'render' };
-  const card = p.favourite ? cardBySlug(p.favourite.slug)?.icons.normal : p.deck?.cards[0]?.img;
-  return card ? { src: card, kind: 'card' } : null;
-}
-
 export async function compare(kind: CompareKind, tags: string[]): Promise<Comparison> {
   // Only well-formed tags cost an API call; anything else is reported as missing.
   const wanted = [...new Set(tags.map((t) => t.replace('#', '').toUpperCase().slice(0, 15)).filter(Boolean))].slice(0, MAX_COMPARE);
@@ -156,7 +147,8 @@ export async function compare(kind: CompareKind, tags: string[]): Promise<Compar
     const ps = got.filter((p): p is PlayerProfile => !!p);
     return {
       kind,
-      entities: ps.map((p) => ({ tag: p.tag, name: p.name, sub: p.clan?.name ?? 'No clan', deck: p.deck, art: artOf(p) })),
+      // A player's picture is their clan's badge, framed by the clan's league.
+      entities: ps.map((p) => ({ tag: p.tag, name: p.name, sub: p.clan?.name ?? 'No clan', badgeId: p.clan?.badgeId, warTrophies: p.clan?.warTrophies, deck: p.deck })),
       missing: [...invalid, ...list.filter((_, i) => !got[i])],
       sections: ps.length ? players(ps) : [],
     };

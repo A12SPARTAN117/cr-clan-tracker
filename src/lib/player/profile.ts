@@ -90,7 +90,7 @@ export type PlayerProfile = {
   /** The current streak from the battle log (friendlies, boat battles and draws skipped). */
   streakRun: { kind: 'win' | 'loss' | null; count: number; ids: string[] };
   role: Player['role'] | null;
-  clan: { tag: string; name: string; badgeId: number } | null;
+  clan: { tag: string; name: string; badgeId: number; /** For the league frame; absent when the clan didn't load. */ warTrophies?: number } | null;
   lastSeenHours: number | null;
   favourite: { slug: string; name: string; render: string | null } | null;
   pol: { current: Pol; last: Pol; best: Pol };
@@ -198,7 +198,8 @@ export function streakOf(battles: Battle[]): number {
 /** The seasonal trophy road entry of `progress` ("seasonal-trophy-road-YYYYMM"). */
 function seasonalOf(p: Player): PlayerProfile['seasonal'] {
   const e = Object.entries(p.progress ?? {}).find(([k]) => k.startsWith('seasonal-trophy-road'))?.[1];
-  return e ? { arena: e.arena?.name ?? 'Seasonal arena', trophies: e.trophies, best: e.bestTrophies } : null;
+  // The API sometimes sends 0 (or nothing) for the seasonal best; a best is never below the current count.
+  return e ? { arena: e.arena?.name ?? 'Seasonal arena', trophies: e.trophies, best: Math.max(e.bestTrophies ?? 0, e.trophies ?? 0) } : null;
 }
 
 function pol(r?: PolResult): Pol {
@@ -442,7 +443,7 @@ async function build(tag: string): Promise<{ data: PlayerProfile; failed: boolea
     streak: p.currentWinLoseStreak ?? 0,
     streakRun: runOf(battles),
     role: p.role ?? null,
-    clan: p.clan ? { tag: bare(p.clan.tag), name: p.clan.name, badgeId: p.clan.badgeId } : null,
+    clan: p.clan ? { tag: bare(p.clan.tag), name: p.clan.name, badgeId: p.clan.badgeId, warTrophies: clan?.ok ? clan.data.clanWarTrophies : undefined } : null,
     lastSeenHours: seen ? Math.max(0, (now.getTime() - seen.getTime()) / 3600_000) : null,
     favourite: fav ? { slug: fav.slug, name: fav.name, render: characterFor(fav.slug) } : null,
     pol: { current: pol(p.currentPathOfLegendSeasonResult), last: pol(p.lastPathOfLegendSeasonResult), best: pol(p.bestPathOfLegendSeasonResult) },

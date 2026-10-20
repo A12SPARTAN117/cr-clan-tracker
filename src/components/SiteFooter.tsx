@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { FEATURES } from '@/lib/features';
 import s from './SiteFooter.module.css';
 
 /** Global footer. The fan-content disclaimer is required, verbatim, on every page. */
@@ -16,7 +17,7 @@ export function SiteFooter() {
       <nav className={s.nav} aria-label="Footer">
         <Link href="/cards">Cards</Link>
         <Link href="/leaderboards">Leaderboards</Link>
-        <Link href="/news">News</Link>
+        {FEATURES.news && <Link href="/news">News</Link>}
         <Link href="/help">Help</Link>
         <Link href="/support">Support us</Link>
         <span className={s.muted}>CR Clan Tracker · Fan-made</span>

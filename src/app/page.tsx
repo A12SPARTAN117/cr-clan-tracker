@@ -6,6 +6,7 @@ import { EmberField } from '@/components/fx/EmberField';
 import { Fog } from '@/components/fx/Fog';
 import { LeagueIcon, PolRating } from '@/components/ui/primitives';
 import { NEWS } from '@/content/news';
+import { FEATURES } from '@/lib/features';
 import { getPolLeaderboard } from '@/lib/cr/api';
 import { dstr } from '@/lib/format';
 import { art } from '@/lib/art';
@@ -126,26 +127,28 @@ export default function Home() {
               <PolTop />
             </Suspense>
           </div>
-          <div className={s.section}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span className="label">04 · Latest news</span>
-              <Link href="/news" className="link-mono" style={{ fontSize: 10 }}>
-                All news →
-              </Link>
+          {FEATURES.news && (
+            <div className={s.section}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span className="label">04 · Latest news</span>
+                <Link href="/news" className="link-mono" style={{ fontSize: 10 }}>
+                  All news →
+                </Link>
+              </div>
+              {news.map((n) => (
+                <Link key={n.slug} href={`/news/${n.slug}`} className={s.newsRow}>
+                  <div className={s.newsThumb} style={{ backgroundImage: art(n.scene) }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <span style={{ display: 'flex', gap: 10, font: '500 9px/1 var(--mono)', letterSpacing: '.14em' }}>
+                      <span style={{ color: n.tag === 'GUIDE' ? 'var(--blue-hi)' : 'var(--text-2)' }}>{n.tag}</span>
+                      <span style={{ color: 'var(--text-3)' }}>{dstr(new Date(n.date)).toUpperCase()}</span>
+                    </span>
+                    <span style={{ font: '600 17px/1.25 var(--sans)', textWrap: 'pretty' }}>{n.title}</span>
+                  </div>
+                </Link>
+              ))}
             </div>
-            {news.map((n) => (
-              <Link key={n.slug} href={`/news/${n.slug}`} className={s.newsRow}>
-                <div className={s.newsThumb} style={{ backgroundImage: art(n.scene) }} />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <span style={{ display: 'flex', gap: 10, font: '500 9px/1 var(--mono)', letterSpacing: '.14em' }}>
-                    <span style={{ color: n.tag === 'GUIDE' ? 'var(--blue-hi)' : 'var(--text-2)' }}>{n.tag}</span>
-                    <span style={{ color: 'var(--text-3)' }}>{dstr(new Date(n.date)).toUpperCase()}</span>
-                  </span>
-                  <span style={{ font: '600 17px/1.25 var(--sans)', textWrap: 'pretty' }}>{n.title}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          )}
         </section>
 
         <section className={s.cta}>
@@ -156,7 +159,7 @@ export default function Home() {
           <div style={{ position: 'absolute', inset: 14, border: '1px solid rgba(var(--ink-rgb), .5)', borderRadius: 4, pointerEvents: 'none' }} />
           <div className={s.ctaCopy}>
             <span className="label" style={{ color: 'var(--blue-hi)' }}>
-              05 · For leaders and co-leaders
+              {FEATURES.news ? '05' : '04'} · For leaders and co-leaders
             </span>
             <Reveal as="h2" className="display-l" style={{ fontSize: 'clamp(38px,6vw,96px)' }}>
               MANAGE

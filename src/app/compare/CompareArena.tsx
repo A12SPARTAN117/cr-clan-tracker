@@ -2,7 +2,7 @@
 
 import { useMemo, useRef } from 'react';
 import { useLazyScene } from '@/components/fx/lazy';
-import type { Contender } from '@/components/fx/gl/showdown';
+import type { Contender, ShowdownStat } from '@/components/fx/gl/showdown';
 import { badgeSrc } from '@/components/ui/ClanBadge';
 import { ClanFrame } from '@/components/ui/ClanFrame';
 import { clanLeague } from '@/lib/clanLeague';
@@ -17,7 +17,14 @@ function statRows(data: Comparison): CompareRow[] {
     .filter((r) => r.better && r.values.filter((v) => typeof v === 'number').length >= 2);
 }
 
-/** Each value scaled 0–1 against the best in its row (lower-is-better rows inverted). */
+/** A cell as the table and the showdown print it. */
+export function show(v: number | string | null, r: CompareRow) {
+  if (v == null) return '—';
+  if (typeof v === 'string') return v;
+  return `${v.toLocaleString('en-US', { maximumFractionDigits: r.digits ?? 0, minimumFractionDigits: r.digits ?? 0 })}${r.unit ?? ''}`;
+}
+
+/** Each value as a share of the best in its row (lower-is-better rows inverted), so heights are honest. */
 function scale(r: CompareRow): (number | null)[] {
   const nums = r.values.map((v) => (typeof v === 'number' ? Math.max(0, v) : null));
   const ok = nums.filter((v): v is number => v != null);
@@ -54,17 +61,18 @@ export function CompareArena({ data, colors }: { data: Comparison; colors: strin
     const scaled = rows.map(scale);
     return data.entities.map((e, i) => ({
       color: colors[i],
-      art: e.art ?? (e.badgeId != null && badgeSrc(e.badgeId) ? { src: badgeSrc(e.badgeId)!, kind: 'badge' as const } : null),
+      badge: badgeSrc(e.badgeId),
       values: scaled.map((r) => r[i]),
       leads: leads.map((l) => l === i),
       champion: champ === i,
-      frame: e.badgeId != null ? (clanLeague(e.warTrophies)?.colors ?? null) : null,
+      frame: clanLeague(e.warTrophies)?.colors ?? null,
       tier: clanLeague(e.warTrophies)?.tier ?? 0,
     }));
   }, [data, rows, leads, champ, colors]);
+  const stats: ShowdownStat[] = useMemo(() => rows.map((r) => ({ title: r.label, values: r.values.map((v, i) => r.labels?.[i] ?? show(v, r)) })), [rows]);
 
-  const key = JSON.stringify(contenders) + rows.map((r) => r.label).join();
-  useLazyScene(host, () => import('@/components/fx/gl/showdown'), (m, el) => m.mountShowdown(el, { contenders, titles: rows.map((r) => r.label), names: data.entities.map((e) => e.name) }), [key]);
+  const key = JSON.stringify([contenders, stats]);
+  useLazyScene(host, () => import('@/components/fx/gl/showdown'), (m, el) => m.mountShowdown(el, { contenders, stats, names: data.entities.map((e) => e.name) }), [key]);
 
   if (data.entities.length < 2 || !rows.length) return null;
   const label = data.entities.map((e, i) => `${e.name} leads ${tally[i]} of ${rows.length} stats`).join('; ');
@@ -74,29 +82,31 @@ export function CompareArena({ data, colors }: { data: Comparison; colors: strin
       <div className={s.stage}>
         <div ref={host} className={s.canvas} role="img" aria-label={`3D showdown. ${label}.`} />
       </div>
-      <p className={s.legend}>
-        <span className="label-sm">Columns, front to back</span>
-        {rows.map((r, j) => (
-          <span key={r.label}>
-            <b>{j + 1}</b> {r.label}
-          </span>
+      {/* The same numbers as the plates on the stage, for screen readers. */}
+      <ul className="sr-only">
+        {stats.map((st) => (
+          <li key={st.title}>
+            {st.title}: {st.values.map((v, i) => `${data.entities[i].name} ${v}`).join(', ')}
+          </li>
         ))}
-      </p>
+      </ul>
 
       <div className={s.board}>
         {data.entities.map((e, i) => (
           <div key={e.tag} className={s.seat} data-champ={champ === i} style={{ ['--c' as string]: colors[i] }}>
-            {champ === i && (
-              <span className={s.champTag}>
-                <CrownIcon size={14} /> Leader
-              </span>
-            )}
-            {e.badgeId != null && <ClanFrame badgeId={e.badgeId} warTrophies={e.warTrophies} size={30} name={e.name} label />}
-            <span className={s.seatName}>{e.name}</span>
-            <span className={s.seatSub}>{e.sub}</span>
+            <ClanFrame badgeId={e.badgeId} warTrophies={e.warTrophies} size={30} name={e.name} />
+            <span className={s.seatWho}>
+              {champ === i && (
+                <span className={s.champTag}>
+                  <CrownIcon size={11} /> Leader
+                </span>
+              )}
+              <span className={s.seatName}>{e.name}</span>
+              <span className={s.seatSub}>{e.sub}</span>
+            </span>
             <span className={s.seatScore}>
               <b>{tally[i]}</b>
-              <small>/ {rows.length} stats led</small>
+              <small>of {rows.length} led</small>
             </span>
             <span className={s.seatBar}>
               <span style={{ width: `${rows.length ? (tally[i] / rows.length) * 100 : 0}%` }} />
