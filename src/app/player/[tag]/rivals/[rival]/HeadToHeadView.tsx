@@ -52,7 +52,7 @@ function EventLines({ ranks }: { ranks: Promise<EventRank[]> }) {
   if (!list.length) return <span className={s.muted}>No live event leaderboards.</span>;
   // Only the boards they're on; one line covers the rest.
   const on = list.filter((e) => e.rank != null);
-  if (!on.length) return <span className={s.muted}>Outside the top ~10,000 on all {list.length} live event leaderboards.</span>;
+  if (!on.length) return <span className={s.muted}>Outside the top ~10,000 {list.length === 1 ? 'on the live event leaderboard' : `on all ${list.length} live event leaderboards`}.</span>;
   return (
     <>
       {on.map((e) => (
