@@ -22,6 +22,7 @@ const profile = (extra: Partial<Player> = {}) =>
 
 const day = (d: string, x: Partial<PlayerDay> = {}): PlayerDay => ({
   day: d,
+  warWins: null,
   trophies: 14000,
   seasonalTrophies: null,
   polLeague: 5,
@@ -45,6 +46,7 @@ describe('tracked player snapshots', () => {
       wins: 3187,
       battleCount: 6298,
       collectionLevel: 1801,
+      warWins: null,
     });
   });
 

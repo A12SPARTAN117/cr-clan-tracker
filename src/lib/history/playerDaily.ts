@@ -16,6 +16,8 @@ export type PlayerDay = {
   wins: number;
   battleCount: number;
   collectionLevel: number | null;
+  /** River race battle wins (the Clan War Wins badge). */
+  warWins: number | null;
 };
 
 export function playerDayOf(p: Player, day: string): PlayerDay {
@@ -31,6 +33,7 @@ export function playerDayOf(p: Player, day: string): PlayerDay {
     wins: p.wins,
     battleCount: p.battleCount,
     collectionLevel: p.collectionLevel ?? null,
+    warWins: p.badges?.find((b) => b.name === 'ClanWarWins')?.progress ?? null,
   };
 }
 

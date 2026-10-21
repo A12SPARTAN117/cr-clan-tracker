@@ -57,6 +57,20 @@
       "when": 1792524170022,
       "tag": "0007_clear_placeholder_seasonal",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792616265831,
+      "tag": "0008_player_insights",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792617115093,
+      "tag": "0009_meta_trends_pros",
+      "breakpoints": true
     }
   ]
 }

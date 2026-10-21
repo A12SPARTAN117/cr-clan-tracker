@@ -65,8 +65,8 @@ async function Results({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const q = one(sp.q).trim().slice(0, 40);
   const manage = one(sp.then) === 'manage';
-  // Searches started from Rivals open each player's Rivals page.
-  const playerHref = (tag: string) => (one(sp.then) === 'rivals' ? `/player/${tag}/rivals` : `/player/${tag}`);
+  // Searches started from Rivals or Goals open each player's Rivals or Goals page.
+  const playerHref = (tag: string) => (one(sp.then) === 'rivals' || one(sp.then) === 'goals' ? `/player/${tag}/${one(sp.then)}` : `/player/${tag}`);
   if (!q) return <EmptyState text="Type a player or clan name, or a #tag." dashed />;
   // Players and clans together; the scope chips show one or the other without searching again.
   const r = await search(q, 'all', 30);
@@ -188,7 +188,7 @@ async function Heading({ searchParams }: { searchParams: SP }) {
         {q ? `“${q.toUpperCase()}”` : 'SEARCH'}
       </Reveal>
       <div style={{ maxWidth: 680 }}>
-        <ScopedSearch q={q} then={one(sp.then) === 'manage' || one(sp.then) === 'rivals' ? (one(sp.then) as 'manage' | 'rivals') : undefined} />
+        <ScopedSearch q={q} then={['manage', 'rivals', 'goals'].includes(one(sp.then)) ? (one(sp.then) as 'manage' | 'rivals' | 'goals') : undefined} />
       </div>
     </header>
   );

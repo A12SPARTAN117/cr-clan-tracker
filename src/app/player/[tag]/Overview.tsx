@@ -8,6 +8,8 @@ import { FitValue } from '@/components/ui/primitives';
 import { agoShort, fmt } from '@/lib/format';
 import type { PlayerProfile } from '@/lib/player/profile';
 import type { Rivals } from '@/lib/player/rivals';
+import type { Insights } from '@/lib/player/insights';
+import { InsightsStrip, TiltWarning } from './Insights';
 import Link from 'next/link';
 import { BattleKindIcon, KIND_LABEL } from './BattleKindIcon';
 import s from './overview.module.css';
@@ -121,7 +123,7 @@ function RivalsTeaser({ tag, r }: { tag: string; r: Rivals }) {
   );
 }
 
-export function OverviewTab({ p, rivals, onCopy }: { p: PlayerProfile; rivals: Rivals; onCopy: (t: string) => void }) {
+export function OverviewTab({ p, rivals, insights, onInsights, onCopy }: { p: PlayerProfile; rivals: Rivals; insights: Insights; onInsights: () => void; onCopy: (t: string) => void }) {
   const t = p.totals;
   const owned = p.collection.filter((c) => c.owned);
   const tiles: [string, string, string, React.ReactNode][] = [
@@ -150,6 +152,9 @@ export function OverviewTab({ p, rivals, onCopy }: { p: PlayerProfile; rivals: R
           </div>
         ))}
       </div>
+
+      <TiltWarning x={insights} />
+      <InsightsStrip x={insights} onOpen={onInsights} />
 
       <div className={s.split}>
         <StreakPanel p={p} />

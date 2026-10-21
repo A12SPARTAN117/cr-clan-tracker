@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getMeta } from '@/lib/meta';
+import { getMetaTrends } from '@/lib/metaHistory';
 import { DecksView } from './DecksView';
 
 export const metadata: Metadata = {
@@ -16,7 +17,8 @@ async function Content() {
   // The list never shows matchups, players or crown splits (each deck's own page does), so they
   // stay on the server: this cuts what the browser downloads by about two thirds.
   const modes = Object.fromEntries(Object.entries(meta.modes).map(([k, m]) => [k, { ...m, decks: m.decks.map((d) => ({ ...d, matchups: [], players: [], crowns: [] })) }]));
-  return <DecksView meta={{ ...meta, modes }} />;
+  // Trends come from stored daily snapshots (cached for an hour); they stream in under the mode picker.
+  return <DecksView meta={{ ...meta, modes }} trends={getMetaTrends()} />;
 }
 
 export default function DecksPage() {

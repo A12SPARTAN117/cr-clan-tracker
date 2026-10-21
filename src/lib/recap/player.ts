@@ -1,4 +1,5 @@
 import type { PlayerHistory } from '../history';
+import type { Playstyle } from '../player/insights';
 import type { BattleRow, LeveledCard, PlayerProfile } from '../player/profile';
 import { cardBySlug } from '../cards';
 import { characterFor } from '../characters';
@@ -27,6 +28,8 @@ export type PlayerRecap = {
   deck: { label: 'most' | 'current'; name: string; cards: { name: string; img: string | null }[]; games: number; wins: number } | null;
   mastery: { name: string; img: string | null; level: number; maxLevel: number } | null;
   badges: number;
+  /** Main playstyle from stored games (lean 0–1); null style when no decks are stored yet. */
+  style: { main: string | null; lean: number | null; games: number };
   /** Longest win run in the battle log, counted like the page's streak (friendlies, boats, draws skipped). */
   bestRun: number;
   /** Battles in the log: the window bestRun and deck cover. */
@@ -59,7 +62,7 @@ export function longestWinRun(battles: BattleRow[]): number {
 /** Card art for a slug: the API's own icon for the form the card was played in, else ours. */
 const cardImg = (c: Pick<LeveledCard, 'slug' | 'img'>) => c.img ?? cardBySlug(c.slug)?.icons.normal ?? null;
 
-export function playerRecap(p: PlayerProfile, h: PlayerHistory | null, season: string | null): PlayerRecap {
+export function playerRecap(p: PlayerProfile, h: PlayerHistory | null, season: string | null, style: Playstyle | null = null): PlayerRecap {
   const { wins, losses } = p.totals;
   const most = p.decks[0];
   let deck: PlayerRecap['deck'] = null;
@@ -89,6 +92,7 @@ export function playerRecap(p: PlayerProfile, h: PlayerHistory | null, season: s
     deck,
     mastery: top ? { name: top.name, img: cardBySlug(top.slug)?.icons.normal ?? null, level: top.level, maxLevel: top.maxLevel } : null,
     badges: p.badges.length,
+    style: { main: style?.main ?? null, lean: style?.main ? style.scores[style.main] : null, games: style?.games ?? 0 },
     bestRun: longestWinRun(p.battles),
     logBattles: p.battles.length,
     tracked,

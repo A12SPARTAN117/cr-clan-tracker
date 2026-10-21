@@ -1,0 +1,77 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.note {
+  font: 500 10px/1.4 var(--mono);
+  color: var(--text-3);
+}
+.cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: var(--charcoal);
+}
+.h {
+  margin: 0;
+  font: 600 10px/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 0 8px 10px;
+  border-top: 1px solid var(--hair);
+  color: var(--text-1);
+  box-shadow: inset 2px 0 0 var(--hair);
+}
+.item:hover {
+  color: var(--blue-hi);
+}
+.item[data-kind='rising'] {
+  box-shadow: inset 2px 0 0 var(--blue);
+}
+.item[data-kind='falling'] {
+  box-shadow: inset 2px 0 0 var(--ember);
+}
+.item[data-kind='new'] {
+  box-shadow: inset 2px 0 0 var(--gold);
+}
+.item b {
+  font: 600 13px/1.2 var(--sans);
+}
+.item span {
+  font: 500 10px/1.3 var(--mono);
+  color: var(--text-3);
+}
+.empty {
+  margin: 0;
+  font: 400 13px/1.5 var(--sans);
+  color: var(--text-3);
+}

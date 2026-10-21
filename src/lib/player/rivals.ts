@@ -1,9 +1,37 @@
 import type { Battle } from '../cr/types';
 import { outcome } from '../battle';
+import { cardById, playedAsEvo, playedAsHero, realLevel } from '../cards';
 import { parseApiDate } from '../format';
 
-/** One 1v1 game as Rivals counts it. */
-export type H2HGame = { time: string; oppTag: string; oppName: string; oppClan: string | null; kind: string; result: -1 | 0 | 1; crowns: number; oppCrowns: number };
+/**
+ * One 1v1 game as Rivals and Insights count it. The fields after `oppCrowns` are null for games
+ * stored before the site kept them.
+ */
+export type H2HGame = {
+  time: string;
+  oppTag: string;
+  oppName: string;
+  oppClan: string | null;
+  kind: string;
+  result: -1 | 0 | 1;
+  crowns: number;
+  oppCrowns: number;
+  /** Elixir wasted at full elixir. */
+  leak?: number | null;
+  /** Hit points left on each side's surviving towers, king first ("7728,4337,4629"); "" when none. */
+  towers?: string | null;
+  oppTowers?: string | null;
+  /** Card ids, "e" after an evo slot, "h" after a hero slot. */
+  deck?: string | null;
+  /** Opponent's card levels minus the player's, summed over the eight cards (+ = out-levelled). */
+  levelGap?: number | null;
+};
+
+type Side = Battle['team'][number];
+/** "7728,4337,4629": king then princess towers still standing ("" when every tower fell). */
+const towersOf = (s: Side) => (s.kingTowerHitPoints ? [s.kingTowerHitPoints, ...(s.princessTowersHitPoints ?? [])] : []).join(',');
+const levelSum = (s: Side) => s.cards.reduce((a, c) => a + (c.level && c.maxLevel ? realLevel(c.level, c.maxLevel) : 0), 0);
+const deckOf = (s: Side) => s.cards.map((c) => `${c.id}${playedAsEvo(c.evolutionLevel) ? 'e' : playedAsHero(c.evolutionLevel) ? 'h' : ''}`).join(',');
 
 export type Rival = {
   tag: string;
@@ -36,7 +64,24 @@ export function h2hGame(b: Battle, kind: string): H2HGame | null {
   const opp = b.opponent[0];
   const time = parseApiDate(b.battleTime);
   if (!opp?.tag || !time) return null;
-  return { time: time.toISOString(), oppTag: bare(opp.tag), oppName: opp.name, oppClan: opp.clan?.name ?? null, kind, result: outcome(b), crowns: b.team[0].crowns, oppCrowns: opp.crowns };
+  const me = b.team[0];
+  const full = me.cards?.length === 8 && opp.cards?.length === 8;
+  return {
+    time: time.toISOString(),
+    oppTag: bare(opp.tag),
+    oppName: opp.name,
+    oppClan: opp.clan?.name ?? null,
+    kind,
+    result: outcome(b),
+    crowns: me.crowns,
+    oppCrowns: opp.crowns,
+    leak: me.elixirLeaked ?? null,
+    towers: towersOf(me),
+    oppTowers: towersOf(opp),
+    deck: me.cards?.length ? deckOf(me) : null,
+    // Only when both decks are complete and every level is known.
+    levelGap: full && me.cards.every((c) => c.level) && opp.cards.every((c) => c.level) && cardById(me.cards[0].id) ? levelSum(opp) - levelSum(me) : null,
+  };
 }
 
 /**

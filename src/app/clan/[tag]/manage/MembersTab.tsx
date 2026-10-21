@@ -5,7 +5,7 @@ import { CardsIcon, ClanWarIcon, ClockIcon, DonationIcon, FameIcon, MedalIcon, R
 import { HeatCell, LastSeen, LeagueIcon, PolRating, RoleChip, ROLE_LABEL, ScoreGauge, ActivityDot, activityOf } from '@/components/ui/primitives';
 import { FACTORS, FACTOR_INFO, weightSum, type Weights } from '@/lib/clan/score';
 import { agoShort, fmt } from '@/lib/format';
-import { tenureText, type Scored } from './shared';
+import { tenureText, type Scored, type Mvp } from './shared';
 import s from './dashboard.module.css';
 
 export type SortKey =
@@ -121,7 +121,18 @@ function Trend({ m }: { m: Scored }) {
   );
 }
 
+/** War MVP pill: most fame in a finished river race, with how many times. */
+function MvpBadge({ x }: { x?: Mvp }) {
+  if (!x) return null;
+  return (
+    <span className={s.mvp} title={`War MVP ${x.count} time${x.count === 1 ? '' : 's'} in the last races · latest ${x.last} with ${x.fame.toLocaleString('en-US')} fame`}>
+      ★ MVP{x.count > 1 ? ` ×${x.count}` : ''}
+    </span>
+  );
+}
+
 export function MembersTab({
+  mvp,
   all,
   rows,
   filters,
@@ -138,6 +149,8 @@ export function MembersTab({
   onExport,
   onCopyNames,
 }: {
+  /** War MVP awards by member tag. */
+  mvp: Map<string, Mvp>;
   all: Scored[];
   rows: Scored[];
   filters: Filters;
@@ -305,6 +318,7 @@ export function MembersTab({
                 <td className={STICKY.name} style={{ minWidth: 170 }}>
                   <div className={s.memberName}>
                     {m.name}
+                    <MvpBadge x={mvp.get(m.tag)} />
                     {m.isNew && <span className={s.newChip}>NEW</span>}
                   </div>
                   <div className={s.memberTag}>#{m.tag}</div>
@@ -386,6 +400,7 @@ export function MembersTab({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
               <span style={{ font: '600 15px/1.1 var(--sans)' }}>
                 {String(m.rank).padStart(2, '0')} · {m.name}
+                <MvpBadge x={mvp.get(m.tag)} />
                 {m.isNew && (
                   <span className={s.newChip} style={{ marginLeft: 6 }}>
                     NEW

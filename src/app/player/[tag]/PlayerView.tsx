@@ -19,13 +19,32 @@ import { refreshPlayer } from './actions';
 import { BadgesTab } from './Badges';
 import { BattlesTab } from './Battles';
 import { CollectionTab } from './Collection';
+import { InsightsTab } from './Insights';
 import { OverviewTab } from './Overview';
+import type { Insights } from '@/lib/player/insights';
 import { DecksTab, HistoryTab, StatsTab } from './TabsB';
 import s from './player.module.css';
 
-type Tab = 'overview' | 'collection' | 'badges' | 'stats' | 'battles' | 'decks' | 'history';
+type Tab = 'overview' | 'collection' | 'badges' | 'stats' | 'insights' | 'battles' | 'decks' | 'history';
 
-export function PlayerView({ p, history, rivals, eventRanks }: { p: PlayerProfile; history: PlayerHistory | null; rivals: Rivals; eventRanks: Promise<EventRank[]> }) {
+/** A player's names and clans over time (null without a database). */
+export type NameHistory = { name: string; clanTag: string | null; clanName: string | null; from: string; to: string }[] | null;
+
+export function PlayerView({
+  p,
+  history,
+  rivals,
+  eventRanks,
+  insights,
+  names,
+}: {
+  p: PlayerProfile;
+  history: PlayerHistory | null;
+  rivals: Rivals;
+  eventRanks: Promise<EventRank[]>;
+  insights: Insights;
+  names: NameHistory;
+}) {
   const [tab, setTab] = useState<Tab>('overview');
   const [toast, setToast] = useState('');
   const [syncing, startSync] = useTransition();
@@ -166,6 +185,11 @@ export function PlayerView({ p, history, rivals, eventRanks }: { p: PlayerProfil
             <Link href={`/player/${p.tag}/rivals`} className="btn btn-scene">
               Rivals ⚔
             </Link>
+            {pinned && (
+              <Link href={`/player/${p.tag}/goals`} className="btn btn-scene">
+                Goals ◎
+              </Link>
+            )}
             {!pinned && (
               <button
                 type="button"
@@ -200,18 +224,20 @@ export function PlayerView({ p, history, rivals, eventRanks }: { p: PlayerProfil
             { key: 'collection', label: 'Collection' },
             { key: 'badges', label: 'Badges' },
             { key: 'stats', label: 'Stats' },
+            { key: 'insights', label: 'Insights' },
             { key: 'battles', label: 'Battles' },
             { key: 'decks', label: 'Decks' },
             { key: 'history', label: 'History' },
           ]}
         />
-        {tab === 'overview' && <OverviewTab p={p} rivals={rivals} onCopy={flash} />}
+        {tab === 'overview' && <OverviewTab p={p} rivals={rivals} insights={insights} onInsights={() => setTab('insights')} onCopy={flash} />}
+        {tab === 'insights' && <InsightsTab x={insights} />}
         {tab === 'collection' && <CollectionTab p={p} />}
         {tab === 'badges' && <BadgesTab p={p} eventRanks={eventRanks} />}
         {tab === 'stats' && <StatsTab p={p} />}
         {tab === 'battles' && <BattlesTab p={p} />}
         {tab === 'decks' && <DecksTab p={p} />}
-        {tab === 'history' && <HistoryTab p={p} h={history} />}
+        {tab === 'history' && <HistoryTab p={p} h={history} names={names} />}
       </main>
 
       {toast && (

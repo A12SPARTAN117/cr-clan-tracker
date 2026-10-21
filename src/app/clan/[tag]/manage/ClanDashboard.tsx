@@ -19,7 +19,7 @@ import { MemberDrawer } from './MemberDrawer';
 import { RosterTab } from './RosterTab';
 import { ScoreTab } from './ScoreTab';
 import { WarTab } from './WarTab';
-import { downloadCsv, saveWeights, scoreMembers, tenureText, useWeights } from './shared';
+import { downloadCsv, saveWeights, scoreMembers, tenureText, useWeights, mvpOf } from './shared';
 import s from './dashboard.module.css';
 
 type Tab = 'members' | 'war' | 'roster' | 'score';
@@ -55,6 +55,8 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
   const war = data.war;
   const decksPossible = war && war.kind !== 'training' ? war.day * 4 : 0;
   const all = useMemo(() => scoreMembers(data.members, weights), [data.members, weights]);
+  // War MVPs from the finished races in the log (most fame each race).
+  const mvp = useMemo(() => mvpOf(data.past), [data.past]);
   const rows = useMemo(() => applyFilters(all, filters, sort, decksPossible), [all, filters, sort, decksPossible]);
   const open = openTag ? all.find((m) => m.tag === openTag) : undefined;
 
@@ -219,6 +221,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
 
         {tab === 'members' && (
           <MembersTab
+            mvp={mvp}
             all={all}
             rows={rows}
             filters={filters}
