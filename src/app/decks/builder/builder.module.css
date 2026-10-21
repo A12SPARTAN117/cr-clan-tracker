@@ -36,6 +36,40 @@
   justify-content: space-between;
   gap: 10px;
 }
+.deckMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+/* Clear deck: always visible once the deck has a card, in the warning colour. */
+.clearDeck {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(var(--ember-rgb), 0.55);
+  border-radius: 4px;
+  background: rgba(var(--ember-rgb), 0.1);
+  color: var(--ember);
+  font: 600 10px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.clearDeck:hover {
+  background: rgba(var(--ember-rgb), 0.2);
+}
+.undo {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--blue-hi);
+  font: 600 11px/1.5 var(--mono);
+  text-decoration: underline;
+  cursor: pointer;
+}
 .deckName {
   min-width: 0;
   font: 600 18px/1.2 var(--sans);
@@ -231,10 +265,66 @@
   color: var(--text-1);
   font: 500 11px/1 var(--mono);
 }
+.select[data-on='true'] {
+  border-color: rgba(var(--glow-rgb), 0.7);
+  background: rgba(var(--glow-rgb), 0.12);
+}
+/* Filter chips: an ✕ on the active ones says a second tap turns them off. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chipX {
+  font-size: 9px;
+  line-height: 1;
+  color: var(--text-2);
+}
+.chip:hover .chipX {
+  color: var(--ember);
+}
+.fieldX {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--well);
+  color: var(--text-2);
+  font: 600 10px/1 var(--mono);
+  cursor: pointer;
+}
+.fieldX:hover {
+  color: var(--ember);
+}
+.clearFilters {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 10px;
+  padding: 4px 8px;
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+  background: none;
+  color: var(--text-1);
+  font: 600 10px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.clearFilters:hover {
+  border-color: var(--ember);
+  color: var(--ember);
+}
 .select:disabled {
   opacity: 0.45;
 }
 .count {
+  display: inline-flex;
+  align-items: center;
   margin-left: auto;
   font: 500 10px/1 var(--mono);
   letter-spacing: 0.12em;
@@ -258,9 +348,6 @@
   background: none;
   cursor: pointer;
 }
-.pick[data-in='true'] > :first-child {
-  opacity: 0.35;
-}
 .pick:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
@@ -279,15 +366,6 @@
   color: #fff;
   font: 700 10px/1 var(--mono);
   box-shadow: 0 1px 3px rgba(var(--shade-rgb), 0.5);
-}
-.check {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font: 800 24px/1 var(--mono);
-  color: var(--blue-hi);
-  text-shadow: 0 0 10px rgba(var(--glow-rgb), 0.8);
 }
 
 /* Analysis */
@@ -335,6 +413,26 @@
 .vs b {
   color: var(--blue-hi);
   font-size: 14px;
+}
+.basis {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font: 600 9px/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  background: rgba(var(--glow-rgb), 0.16);
+  color: var(--blue-hi);
+}
+.basis[data-basis='winCon'] {
+  background: rgba(var(--gold-rgb), 0.16);
+  color: var(--gold);
+}
+.basis[data-basis='cards'] {
+  background: var(--well);
+  color: var(--text-2);
 }
 .note {
   font: 500 10px/1.5 var(--mono);
@@ -389,6 +487,11 @@
 @media (pointer: coarse) {
   .select {
     height: 40px;
+  }
+  .clearDeck,
+  .fieldX {
+    min-height: 32px;
+    min-width: 32px;
   }
   .load {
     height: 32px;

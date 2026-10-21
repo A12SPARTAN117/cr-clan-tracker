@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  COUNTER_CARDS,
   counterReport,
   decodeSlots,
   deckSlots,
   defaultForm,
   encodeSlots,
   fixForms,
+  poolDecks,
   slotCards,
   slotFor,
   wilson,
@@ -167,5 +169,58 @@ describe('counter ranking', () => {
     const decks = [DECKS.golem, DECKS.pekka, DECKS.knight].map((d, i) => metaDeck(d, 30, 15, { 'hog-rider': [8 + i, 6 + i] }));
     expect(counterReport(decks, hog, { minGames: 10 }).counters).toHaveLength(1);
     expect(counterReport(decks, hog, { limit: 2 }).counters).toHaveLength(2);
+  });
+});
+
+describe('counter suggestions', () => {
+  const hog = built(DECKS.hog);
+  const xbow = ['x-bow', 'tesla', 'archers', 'the-log', 'fireball', 'skeletons', 'ice-spirit', 'knight'];
+
+  it('sums a win condition across decks when no single deck has enough games', () => {
+    // Three Golem decks with 3 games each vs Hog: none passes the floor alone, together 7 of 9.
+    const golems = [0, 1, 2].map((i) => metaDeck([...DECKS.golem.slice(0, 7), ['zap', 'arrows', 'tornado'][i]], 20 + i, 11, { 'hog-rider': [3, i === 0 ? 3 : 2] }));
+    const r = counterReport(golems, hog);
+    expect(r.counters).toEqual([]);
+    expect(r.suggestions[0]).toMatchObject({ basis: 'winCon', vs: { games: 9, wins: 7 }, decks: 3 });
+    // The representative is one deck, not all three.
+    expect(r.suggestions.filter((x) => x.basis === 'winCon')).toHaveLength(1);
+  });
+
+  it('puts decks with their own record first, then falls back to counter cards', () => {
+    const proven = metaDeck(DECKS.golem, 40, 22, { 'hog-rider': [20, 14] });
+    // No games against Hog, but Tesla and the Log... only Tesla counters Hog; Cannon + Tesla does.
+    const buildings = metaDeck(['x-bow', 'tesla', 'cannon', 'the-log', 'fireball', 'skeletons', 'ice-spirit', 'archers'], 30, 18);
+    const oneCard = metaDeck(xbow, 50, 30);
+    const r = counterReport([oneCard, buildings, proven], hog);
+    expect(r.suggestions.map((x) => [x.deck.key, x.basis])).toEqual([
+      [proven.key, 'deck'],
+      [buildings.key, 'cards'],
+    ]);
+    expect(r.suggestions[1].counterCards.sort()).toEqual(['Cannon', 'Tesla']);
+  });
+
+  it('never suggests a mirror or a variant of the built deck', () => {
+    const otherHog = metaDeck(['hog-rider', 'cannon', 'tesla', 'tornado', 'mini-pekka', 'the-log', 'zap', 'skeletons'], 40, 30, { 'hog-rider': [20, 15] });
+    expect(counterReport([otherHog], hog).suggestions).toEqual([]);
+  });
+
+  it('pools modes: the same deck adds up its games and matchups', () => {
+    const a = metaDeck(DECKS.golem, 10, 6, { 'hog-rider': [3, 2] });
+    const b = metaDeck(DECKS.golem, 5, 2, { 'hog-rider': [2, 2], pekka: [1, 0] });
+    const [p] = poolDecks([[a], [b]]);
+    expect(p).toMatchObject({ games: 15, wins: 8 });
+    expect(p.matchups).toEqual([
+      { vs: 'Hog Rider', vsSlug: 'hog-rider', games: 5, wins: 4 },
+      { vs: 'P.E.K.K.A', vsSlug: 'pekka', games: 1, wins: 0 },
+    ]);
+    // The inputs are left alone.
+    expect(a.matchups[0].games).toBe(3);
+  });
+
+  it('names only real cards and win conditions in the counter table', () => {
+    for (const [wc, list] of Object.entries(COUNTER_CARDS)) {
+      expect(cardBySlug(wc), wc).toBeTruthy();
+      for (const c of list) expect(cardBySlug(c), `${wc} → ${c}`).toBeTruthy();
+    }
   });
 });

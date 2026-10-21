@@ -176,6 +176,8 @@ export type CounterReport = {
   /** Win conditions decks like yours lost to most, summed over the close decks' matchups. */
   tough: ToughMatchup[];
   counters: Counter[];
+  /** Counter decks to try, strongest evidence first (see suggestCounters). */
+  suggestions: Suggestion[];
 };
 
 /**
@@ -187,7 +189,7 @@ export type CounterReport = {
  * show which win conditions beat this style of deck, and annotate each counter with how decks
  * like yours did against its win condition.
  */
-export function counterReport(decks: DeckStat[], built: DeckCard[], opts: { minGames?: number; limit?: number } = {}): CounterReport {
+export function counterReport(decks: DeckStat[], built: DeckCard[], opts: { minGames?: number; limit?: number; suggest?: number } = {}): CounterReport {
   const minGames = opts.minGames ?? MIN_MATCHUP_GAMES;
   const limit = opts.limit ?? 12;
   const wc = winConOf(built);
@@ -220,7 +222,8 @@ export function counterReport(decks: DeckStat[], built: DeckCard[], opts: { minG
   const counters: Counter[] = [];
   if (wc)
     for (const d of decks) {
-      if (closeKeys.has(d.key)) continue;
+      // A mirror match says how good the deck is, not that it counters this one.
+      if (closeKeys.has(d.key) || d.winCon === wc.slug) continue;
       const m: Matchup | undefined = d.matchups.find((x) => x.vsSlug === wc.slug);
       if (!m || m.games < minGames) continue;
       const theirs = winConOf(d.cards);
@@ -235,13 +238,172 @@ export function counterReport(decks: DeckStat[], built: DeckCard[], opts: { minG
     }
   counters.sort((a, b) => wilson(b.vs.wins, b.vs.games) - wilson(a.vs.wins, a.vs.games) || b.vs.games - a.vs.games || b.deck.games - a.deck.games);
 
+  const proven = counters.filter((c) => c.win > 50).slice(0, limit);
   return {
     winCon: wc ? { slug: wc.slug, name: wc.name } : null,
     close,
     exact: close.find((c) => c.exact)?.deck ?? null,
     tough,
-    counters: counters.filter((c) => c.win > 50).slice(0, limit),
+    counters: proven,
+    suggestions: wc ? suggestCounters(decks, wc.slug, proven, closeKeys, { minGames, limit: opts.suggest ?? 9 }) : [],
   };
+}
+
+/**
+ * Cards that beat each win condition head on: tank killers against beatdown, buildings against
+ * hog-style pushes, splash against swarms, spells against siege. Game knowledge, not sample data;
+ * used only when the sample has too few games to name counters on its own.
+ */
+export const COUNTER_CARDS: Record<string, string[]> = {
+  golem: ['inferno-tower', 'inferno-dragon', 'mini-pekka', 'pekka', 'hunter', 'mighty-miner', 'skeleton-army', 'barbarians'],
+  'lava-hound': ['inferno-tower', 'inferno-dragon', 'executioner', 'wizard', 'musketeer', 'mega-minion', 'minion-horde', 'archer-queen', 'arrows'],
+  'electro-giant': ['pekka', 'mini-pekka', 'inferno-tower', 'inferno-dragon', 'skeleton-army', 'barbarians', 'guards'],
+  giant: ['inferno-tower', 'inferno-dragon', 'mini-pekka', 'pekka', 'hunter', 'skeleton-army', 'barbarians', 'cannon'],
+  'royal-giant': ['inferno-tower', 'inferno-dragon', 'mini-pekka', 'hunter', 'cannon', 'pekka', 'fisherman', 'tombstone'],
+  'goblin-giant': ['inferno-tower', 'inferno-dragon', 'mini-pekka', 'pekka', 'executioner', 'wizard', 'valkyrie'],
+  pekka: ['skeleton-army', 'guards', 'minion-horde', 'inferno-tower', 'tombstone', 'goblin-gang'],
+  'mega-knight': ['inferno-tower', 'inferno-dragon', 'pekka', 'mini-pekka', 'minion-horde', 'mega-minion'],
+  'elixir-golem': ['inferno-tower', 'inferno-dragon', 'mini-pekka', 'pekka', 'hunter', 'electro-wizard'],
+  'hog-rider': ['cannon', 'tesla', 'tornado', 'inferno-tower', 'bomb-tower', 'mini-pekka', 'goblin-cage', 'tombstone', 'skeleton-army'],
+  'ram-rider': ['cannon', 'tesla', 'inferno-tower', 'mini-pekka', 'goblin-cage', 'tombstone', 'bomb-tower'],
+  'battle-ram': ['cannon', 'tesla', 'tombstone', 'goblin-cage', 'mini-pekka', 'barbarians', 'the-log'],
+  'royal-hogs': ['valkyrie', 'bomb-tower', 'tornado', 'executioner', 'dark-prince', 'bowler', 'mega-knight'],
+  balloon: ['musketeer', 'inferno-dragon', 'inferno-tower', 'mega-minion', 'minion-horde', 'tesla', 'hunter', 'archer-queen'],
+  graveyard: ['poison', 'valkyrie', 'the-log', 'barbarian-barrel', 'arrows', 'bowler', 'dark-prince', 'mega-knight'],
+  'x-bow': ['earthquake', 'rocket', 'lightning', 'royal-giant', 'pekka', 'giant', 'golem'],
+  mortar: ['earthquake', 'rocket', 'lightning', 'royal-giant', 'giant', 'pekka', 'miner'],
+  miner: ['knight', 'valkyrie', 'mini-pekka', 'minions', 'bats', 'poison'],
+  'goblin-barrel': ['the-log', 'arrows', 'barbarian-barrel', 'zap', 'valkyrie', 'bowler', 'executioner', 'firecracker'],
+  'goblin-drill': ['valkyrie', 'bomber', 'knight', 'executioner', 'dark-prince', 'bowler'],
+  'wall-breakers': ['the-log', 'barbarian-barrel', 'arrows', 'zap', 'giant-snowball', 'firecracker', 'valkyrie', 'tornado'],
+  'three-musketeers': ['lightning', 'fireball', 'poison', 'valkyrie', 'mega-knight', 'wizard'],
+  'skeleton-barrel': ['arrows', 'the-log', 'firecracker', 'musketeer', 'wizard', 'executioner', 'mega-minion'],
+  sparky: ['electro-wizard', 'zap', 'electro-spirit', 'lightning', 'rocket', 'minion-horde', 'mini-pekka'],
+  'goblin-machine': ['inferno-tower', 'mini-pekka', 'pekka', 'cannon'],
+  'royal-recruits': ['valkyrie', 'bowler', 'executioner', 'dark-prince', 'mega-knight', 'wizard'],
+  monk: ['pekka', 'mini-pekka', 'skeleton-army', 'inferno-dragon'],
+  'boss-bandit': ['skeleton-army', 'guards', 'mini-pekka', 'pekka', 'tornado'],
+  goblinstein: ['inferno-tower', 'inferno-dragon', 'mini-pekka', 'pekka'],
+  'rune-giant': ['inferno-tower', 'inferno-dragon', 'mini-pekka', 'pekka', 'hunter'],
+  'suspicious-bush': ['valkyrie', 'bomber', 'the-log', 'arrows', 'executioner'],
+  'skeleton-king': ['valkyrie', 'mini-pekka', 'pekka', 'bowler', 'executioner'],
+  'mighty-miner': ['pekka', 'skeleton-army', 'guards', 'mini-pekka'],
+  'archer-queen': ['fireball', 'lightning', 'mini-pekka', 'mega-knight'],
+  'golden-knight': ['pekka', 'mini-pekka', 'skeleton-army', 'guards', 'valkyrie'],
+  'little-prince': ['valkyrie', 'fireball', 'mini-pekka'],
+  'giant-skeleton': ['inferno-tower', 'pekka', 'mini-pekka', 'minion-horde', 'skeleton-army'],
+  'cannon-cart': ['mini-pekka', 'pekka', 'inferno-tower', 'valkyrie'],
+  phoenix: ['musketeer', 'hunter', 'mega-minion', 'minion-horde'],
+  'electro-dragon': ['musketeer', 'mega-minion', 'hunter', 'fireball'],
+  prince: ['skeleton-army', 'guards', 'tombstone', 'cannon', 'inferno-tower', 'goblin-gang'],
+  'dark-prince': ['skeleton-army', 'guards', 'mini-pekka', 'minion-horde'],
+};
+
+/**
+ * One suggested counter deck and why: `deck`, its own record against the built deck's win
+ * condition; `winCon`, its win condition's combined record across the sample; `cards`, it holds
+ * cards that beat the built deck's win condition (no sample record yet).
+ */
+export type Suggestion = {
+  deck: DeckStat;
+  basis: 'deck' | 'winCon' | 'cards';
+  /** The record behind the suggestion (the deck's own, or its win condition's), if any. */
+  vs: WinLoss | null;
+  /** For 'winCon': how many sample decks with this win condition met the built deck's. */
+  decks: number;
+  /** Cards in it that counter the built deck's win condition. */
+  counterCards: string[];
+};
+
+/** A deck's overall record, discounted for small samples. */
+const overall = (d: DeckStat) => wilson(d.wins, d.games);
+
+/**
+ * Counter decks to suggest, strongest evidence first: decks with their own winning record against
+ * the built deck's win condition, then the best deck of each win condition that beats it when
+ * summed across the sample, then well-performing decks built around its counter cards.
+ */
+export function suggestCounters(
+  decks: DeckStat[],
+  wcSlug: string,
+  proven: Counter[],
+  skip: Set<string>,
+  opts: { minGames?: number; limit?: number } = {},
+): Suggestion[] {
+  const minGames = opts.minGames ?? MIN_MATCHUP_GAMES;
+  const limit = opts.limit ?? 9;
+  const answer = new Set(COUNTER_CARDS[wcSlug] ?? []);
+  const counterCards = (d: DeckStat) => d.cards.filter((c) => answer.has(c.slug)).map((c) => c.name);
+  const out: Suggestion[] = proven.map((c) => ({ deck: c.deck, basis: 'deck', vs: c.vs, decks: 1, counterCards: counterCards(c.deck) }));
+  const used = new Set([...skip, ...out.map((x) => x.deck.key)]);
+  // Mirror matches say nothing about countering, and variants of the built deck aren't counters.
+  const pool = decks.filter((d) => !skip.has(d.key) && d.winCon !== wcSlug);
+
+  // Win conditions that beat this one, summed over every deck that has them.
+  const groups = new Map<string, { games: number; wins: number; decks: { d: DeckStat; m: Matchup }[] }>();
+  for (const d of pool) {
+    const m = d.matchups.find((x) => x.vsSlug === wcSlug);
+    if (!m || !d.winCon) continue;
+    const g = groups.get(d.winCon) ?? { games: 0, wins: 0, decks: [] };
+    g.games += m.games;
+    g.wins += m.wins;
+    g.decks.push({ d, m });
+    groups.set(d.winCon, g);
+  }
+  const strong = [...groups.values()]
+    .filter((g) => g.games >= minGames && g.wins / g.games > 0.5)
+    .sort((a, b) => wilson(b.wins, b.games) - wilson(a.wins, a.games) || b.games - a.games);
+  for (const g of strong) {
+    // Its representative: the deck with the most games against this win condition, then the best overall.
+    const best = g.decks
+      .filter(({ d }) => !used.has(d.key))
+      .sort((a, b) => b.m.games - a.m.games || overall(b.d) - overall(a.d))[0];
+    if (!best) continue;
+    used.add(best.d.key);
+    out.push({ deck: best.d, basis: 'winCon', vs: { games: g.games, wins: g.wins }, decks: g.decks.length, counterCards: counterCards(best.d) });
+  }
+
+  // Decks carrying two or more counter cards, best overall record first.
+  if (answer.size)
+    for (const d of pool
+      .filter((d) => !used.has(d.key))
+      .map((d) => ({ d, n: counterCards(d).length }))
+      .filter((x) => x.n >= 2)
+      .sort((a, b) => b.n - a.n || overall(b.d) - overall(a.d))
+      .map((x) => x.d)) {
+      if (out.length >= limit) break;
+      used.add(d.key);
+      out.push({ deck: d, basis: 'cards', vs: null, decks: 1, counterCards: counterCards(d) });
+    }
+  return out.slice(0, limit);
+}
+
+/**
+ * One deck list from several modes (the same deck sums its games, wins and matchups), so counters
+ * can draw on every 1v1 mode's games instead of one mode's thin sample.
+ */
+export function poolDecks(lists: DeckStat[][]): DeckStat[] {
+  const by = new Map<string, DeckStat>();
+  for (const list of lists)
+    for (const d of list) {
+      const cur = by.get(d.key);
+      if (!cur) {
+        by.set(d.key, { ...d, matchups: d.matchups.map((m) => ({ ...m })) });
+        continue;
+      }
+      cur.games += d.games;
+      cur.wins += d.wins;
+      cur.draws += d.draws;
+      cur.win = cur.games ? (cur.wins / cur.games) * 100 : 0;
+      for (const m of d.matchups) {
+        const x = cur.matchups.find((y) => y.vsSlug === m.vsSlug);
+        if (x) {
+          x.games += m.games;
+          x.wins += m.wins;
+        } else cur.matchups.push({ ...m });
+      }
+    }
+  return [...by.values()];
 }
 
 // --- A player's collection -------------------------------------------------------------------
