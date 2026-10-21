@@ -93,11 +93,9 @@ export function paceOf(m: Pick<Metric, 'current' | 'series'>, target: number, to
   return { perDay, days, eta, done: false, why: null };
 }
 
-/** How far along a goal is, 0–1, measured from where the stored history starts. */
+/** How far along a goal is, 0–1: where the player is now against the target. */
 export function progressOf(m: Pick<Metric, 'current' | 'series'>, target: number): number {
   const cur = m.current ?? m.series.at(-1)?.[1] ?? null;
-  if (cur == null) return 0;
-  if (cur >= target) return 1;
-  const start = Math.min(cur, m.series[0]?.[1] ?? 0);
-  return target > start ? Math.max(0, Math.min(1, (cur - start) / (target - start))) : 0;
+  if (cur == null || target <= 0) return 0;
+  return Math.max(0, Math.min(1, cur / target));
 }

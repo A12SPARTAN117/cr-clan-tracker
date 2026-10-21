@@ -1,4 +1,5 @@
 import 'server-only';
+import { connection } from 'next/server';
 import { getClanProfile, getMemberLevels, withLevels, type ClanProfile } from './clan/profile';
 import { leagueName } from './leagues';
 import { checkTag } from './tags';
@@ -169,6 +170,8 @@ export async function compare(kind: CompareKind, tags: string[], { levels = true
   const list = wanted.filter((t) => checkTag(t).kind === 'valid');
   const invalid = wanted.filter((t) => !list.includes(t));
   if (kind === 'player') {
+    // Stored games come from the database, which is only read at request time.
+    await connection();
     const [got, games] = await Promise.all([Promise.all(list.map((t) => getPlayerProfile(t))), Promise.all(list.map((t) => getGames(t)))]);
     const ps = got.filter((p): p is PlayerProfile => !!p);
     const played = list.flatMap((_, i) => (got[i] ? [{ style: playstyle(games[i]), elixir: elixirStats(games[i]) }] : []));

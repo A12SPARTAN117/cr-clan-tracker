@@ -30,7 +30,7 @@ function useCountdown(target: string | undefined) {
  * Who still has war decks today. Members who told the clan they can't play can be ticked off
  * (kept on this device, per war day); the roll call to paste into clan chat leaves them out.
  */
-function RollCall({ data, members, onOpen }: { data: Dashboard; members: Scored[]; onOpen: (tag: string) => void }) {
+export function RollCall({ data, members, onOpen }: { data: Dashboard; members: Scored[]; onOpen: (tag: string) => void }) {
   const war = data.war;
   const key = war && war.kind !== 'training' ? `${data.clan.tag}:${war.warStarts.slice(0, 10)}:${war.day}` : null;
   const excused = useExcused(key);

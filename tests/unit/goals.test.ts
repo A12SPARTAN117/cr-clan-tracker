@@ -23,8 +23,8 @@ describe('season goals', () => {
     expect(paceOf(m, 160, '2026-10-11').perDay).toBe(3);
   });
 
-  it('measures progress from where the history starts', () => {
-    expect(progressOf({ current: 150, series: [['2026-10-01', 100]] }, 200)).toBe(0.5);
+  it('measures progress as where the player is now against the target', () => {
+    expect(progressOf({ current: 311, series: [['2026-10-21', 311]] }, 500)).toBeCloseTo(0.622);
     expect(progressOf({ current: 250, series: [] }, 200)).toBe(1);
   });
 

@@ -72,7 +72,7 @@ function Radar({ scores }: { scores: Record<string, number> }) {
     return { st, a, x: c + Math.cos(a) * R * scores[st], y: c + Math.sin(a) * R * scores[st], lx: c + Math.cos(a) * (R + 20), ly: c + Math.sin(a) * (R + 20) };
   });
   return (
-    <svg viewBox="0 0 240 240" className={s.radar} role="img" aria-label={`Playstyle: ${STYLES.map((st) => `${st} ${pct(scores[st])}`).join(', ')}`}>
+    <svg viewBox="-72 -4 384 248" className={s.radar} role="img" aria-label={`Playstyle: ${STYLES.map((st) => `${st} ${pct(scores[st])}`).join(', ')}`}>
       {[0.25, 0.5, 0.75, 1].map((r) => (
         <polygon key={r} points={pts.map((p) => `${c + Math.cos(p.a) * R * r},${c + Math.sin(p.a) * R * r}`).join(' ')} className={s.ring} />
       ))}
@@ -84,7 +84,8 @@ function Radar({ scores }: { scores: Record<string, number> }) {
         <circle key={p.st} cx={p.x} cy={p.y} r={4} className={s.dot} />
       ))}
       {pts.map((p) => (
-        <text key={p.st} x={p.lx} y={p.ly} textAnchor="middle" dominantBaseline="middle" className={s.axis}>
+        // Side labels sit outside the chart, anchored away from it, so they never cover the shape.
+        <text key={p.st} x={p.lx} y={p.ly} textAnchor={Math.abs(Math.cos(p.a)) < 0.1 ? 'middle' : Math.cos(p.a) > 0 ? 'start' : 'end'} dominantBaseline="middle" className={s.axis}>
           {p.st} {pct(scores[p.st])}
         </text>
       ))}
