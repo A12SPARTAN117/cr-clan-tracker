@@ -318,3 +318,16 @@
     height: 40px;
   }
 }
+
+.missingName {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 500 10px/1.2 var(--sans);
+  color: var(--text-3);
+  text-align: center;
+}
+.missingCard {
+  width: 64px;
+}

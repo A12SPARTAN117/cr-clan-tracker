@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Reveal } from '@/components/fx/Reveal';
+import { TagSearch } from '@/components/TagSearch';
+import { setRival, useMyRivals } from '@/lib/myRivals';
 import { agoShort, dstr } from '@/lib/format';
 import type { BattleKind } from '@/lib/player/profile';
 import type { Rival, Rivals } from '@/lib/player/rivals';
@@ -71,6 +73,47 @@ function RivalRow({ x, me, at, open, onToggle }: { x: Rival; me: string; at: num
   );
 }
 
+/** Rivals added by hand (stored on this device), each opening the head-to-head page. */
+function Added({ me, name, found }: { me: string; name: string; found: Rival[] }) {
+  const mine = useMyRivals(me);
+  const byTag = new Map(found.map((x) => [x.tag, x]));
+  return (
+    <section className={s.added}>
+      <div className={s.addedHead}>
+        <h2 className="heading">{name}&apos;s rivals</h2>
+        <span className="label-sm">Saved on this device</span>
+      </div>
+      {mine.length > 0 && (
+        <ul className={s.addedList}>
+          {mine.map((t) => {
+            const x = byTag.get(t);
+            return (
+              <li key={t}>
+                <Link href={`/player/${me}/rivals/${t}`} className={s.addedItem}>
+                  <b>{x?.name ?? `#${t}`}</b>
+                  <span>{x ? `${x.wins}–${x.losses}${x.draws ? `–${x.draws}` : ''} · ${x.games} games` : 'Head to head →'}</span>
+                </Link>
+                <button type="button" className={s.remove} aria-label={`Remove #${t} from rivals`} onClick={() => setRival(me, t, false)}>
+                  ✕
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <div style={{ maxWidth: 560 }}>
+        <TagSearch
+          size="default"
+          scope="player"
+          placeholder="Add a rival: name or #tag"
+          defaultHint="Pick a player to add them to these rivals and see the head to head."
+          onPick={(it) => it.kind === 'player' && it.tag !== me && setRival(me, it.tag, true)}
+        />
+      </div>
+    </section>
+  );
+}
+
 /**
  * Rivals: every opponent a player has met more than once, with the head-to-head record. The API's
  * battle log only holds ~40 battles, so games are stored from the first time a profile is opened.
@@ -132,6 +175,8 @@ export function RivalsView({ name, tag, character, rivals, logSize, at }: { name
       </SceneHeader>
 
       <main className={s.main}>
+        <Added me={tag} name={name} found={r} />
+        <h2 className="heading">Met more than once</h2>
         {r.length ? (
           <ol className={s.list} aria-label="Rivals, most games first">
             {r.map((x) => (

@@ -193,3 +193,62 @@
     display: none;
   }
 }
+
+/* Rivals added by hand. */
+.added {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.addedHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.addedList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.addedList li {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid rgba(var(--glow-rgb), 0.45);
+  border-radius: 8px;
+  background: var(--charcoal);
+  overflow: hidden;
+}
+.addedItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  color: var(--text-1);
+}
+.addedItem:hover {
+  color: var(--blue-hi);
+}
+.addedItem b {
+  font: 600 15px/1.2 var(--sans);
+}
+.addedItem span {
+  font: 500 10px/1.2 var(--mono);
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.remove {
+  padding: 0 12px;
+  background: none;
+  border: 0;
+  border-left: 1px solid var(--hair);
+  color: var(--text-3);
+  cursor: pointer;
+}
+.remove:hover {
+  color: var(--ember);
+}

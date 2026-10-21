@@ -19,16 +19,10 @@ type RawTower = { id: number; name: string; slug: string; maxLevel: number; icon
 type Raw = { cards: CardInfo[]; towerTroops?: RawTower[] };
 const raw = data as unknown as Raw;
 
-/** Local copies of art the official CDN no longer serves (from RoyaleAPI's card set). */
-const ART_FIX: Record<string, Partial<CardInfo['icons']>> = {
-  'electro-giant': { evolution: '/cards/electro-giant-ev1.png' },
-  'electro-wizard': { hero: '/cards/electro-wizard-hero.png' },
-};
-
-export const CARDS: CardInfo[] = raw.cards.map((c) => (ART_FIX[c.slug] ? { ...c, icons: { ...c.icons, ...ART_FIX[c.slug] } } : c));
-
-/** True for official art URLs we know are broken; callers use the local copy instead. */
-export const fixedArt = (slug: string, kind: 'evolution' | 'hero') => ART_FIX[slug]?.[kind] ?? null;
+// Every card uses the official art, so all of them share one style and shape. (Electro Giant's
+// evolution and Electro Wizard's hero art were missing from the CDN for a while and borrowed
+// RoyaleAPI's differently drawn copies; the official images are back.)
+export const CARDS: CardInfo[] = raw.cards;
 export const TOWER_TROOPS: CardInfo[] = (raw.towerTroops ?? []).map((t) => ({
   id: t.id,
   name: t.name,

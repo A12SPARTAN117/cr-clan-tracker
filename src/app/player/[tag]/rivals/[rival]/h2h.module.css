@@ -1,0 +1,234 @@
+.title {
+  margin: 0;
+  font: 800 clamp(34px, 6vw, 88px) / 0.9 var(--mono);
+  letter-spacing: -0.05em;
+  word-break: break-word;
+}
+.title span {
+  color: var(--text-3);
+  font-size: 0.5em;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+.score {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.score b {
+  font: 800 clamp(34px, 5vw, 56px) / 1 var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.score[data-lead='us'] b {
+  color: var(--blue-hi);
+}
+.score[data-lead='them'] b {
+  color: var(--ember);
+}
+.score span {
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.main {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 28px var(--gutter) 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.sides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 16px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: var(--charcoal);
+  min-width: 0;
+}
+.card[data-us='true'] {
+  border-color: rgba(var(--glow-rgb), 0.45);
+}
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-1);
+  padding-bottom: 6px;
+}
+.who:hover {
+  color: var(--blue-hi);
+}
+.who b {
+  font: 700 22px/1.1 var(--sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.who small {
+  font: 500 10px/1.2 var(--mono);
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+}
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 1px solid var(--hair);
+}
+.statK {
+  font: 500 11px/1.3 var(--sans);
+  color: var(--text-2);
+  min-width: 0;
+}
+.statV {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 14px/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.statV small {
+  font: 500 10px/1 var(--mono);
+  color: var(--text-3);
+}
+.rank {
+  color: var(--blue-hi);
+}
+.sub {
+  margin-top: 8px;
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.muted {
+  font: 500 12px/1.4 var(--sans);
+  color: var(--text-3);
+}
+.wait {
+  height: 28px;
+  border-radius: 4px;
+}
+.recent {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.recent li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 40px 34px;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0 6px 8px;
+  border-top: 1px solid var(--hair);
+  box-shadow: inset 2px 0 0 var(--hair);
+  font: 500 12px/1.2 var(--mono);
+  color: var(--text-2);
+}
+.recent li[data-r='win'] {
+  box-shadow: inset 2px 0 0 var(--blue);
+}
+.recent li[data-r='loss'] {
+  box-shadow: inset 2px 0 0 var(--ember);
+}
+.recentOpp {
+  font-family: var(--sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recentScore {
+  text-align: right;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.recentAgo {
+  text-align: right;
+  color: var(--text-3);
+}
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.games {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: var(--charcoal);
+  overflow: hidden;
+}
+.games li {
+  display: grid;
+  grid-template-columns: 18px minmax(120px, 200px) minmax(0, 1fr) 52px auto;
+  gap: 14px;
+  align-items: center;
+  padding: 11px 16px;
+  border-top: 1px solid var(--hair);
+  font: 500 12px/1.2 var(--mono);
+  color: var(--text-2);
+}
+.games li:first-child {
+  border-top: 0;
+}
+.when {
+  color: var(--text-3);
+}
+.mode {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gscore {
+  text-align: right;
+  font-weight: 700;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.res {
+  text-align: right;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.games li[data-r='win'] .res {
+  color: var(--blue-hi);
+}
+.games li[data-r='loss'] .res {
+  color: var(--ember);
+}
+.note {
+  margin: 0;
+  max-width: 760px;
+  font: 500 10px/1.6 var(--mono);
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+@media (max-width: 560px) {
+  .games li {
+    grid-template-columns: 18px minmax(0, 1fr) 40px;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .mode,
+  .res {
+    display: none;
+  }
+}
