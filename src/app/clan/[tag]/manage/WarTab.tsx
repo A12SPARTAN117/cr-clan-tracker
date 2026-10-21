@@ -8,7 +8,7 @@ import { ClanBadge } from '@/components/ui/ClanBadge';
 import type { Dashboard } from '@/lib/clan/dashboard';
 import { fmt, pad2 } from '@/lib/format';
 import { WAR_DAYS } from '@/lib/war';
-import type { Scored } from './shared';
+import { setExcused, useExcused, type Scored } from './shared';
 import { WarChart } from './WarChart';
 import s from './dashboard.module.css';
 
@@ -24,6 +24,76 @@ function useCountdown(target: string | undefined) {
   }, [target]);
   if (left == null) return '--:--:--';
   return [Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60].map(pad2).join(':');
+}
+
+/**
+ * Who still has war decks today. Members who told the clan they can't play can be ticked off
+ * (kept on this device, per war day); the roll call to paste into clan chat leaves them out.
+ */
+function RollCall({ data, members, onOpen }: { data: Dashboard; members: Scored[]; onOpen: (tag: string) => void }) {
+  const war = data.war;
+  const key = war && war.kind !== 'training' ? `${data.clan.tag}:${war.warStarts.slice(0, 10)}:${war.day}` : null;
+  const excused = useExcused(key);
+  const [copied, setCopied] = useState(false);
+  if (!war) return null;
+  if (war.kind === 'training') return <div className="data-since">Roll call opens on war day 1: then it lists everyone who still has decks to play each day.</div>;
+  const left = members
+    .map((m) => ({ m, left: Math.max(0, 4 - m.decksToday) }))
+    .filter((x) => x.left > 0)
+    .sort((a, b) => b.left - a.left || a.m.name.localeCompare(b.m.name));
+  const playing = left.filter((x) => !excused.includes(x.m.tag));
+  const out = left.filter((x) => excused.includes(x.m.tag));
+  const text = `War day ${war.day}: still to play\n${playing.map((x) => `• ${x.m.name} (${x.left} deck${x.left === 1 ? '' : 's'} left)`).join('\n')}`;
+  const row = (x: { m: Scored; left: number }, off: boolean) => (
+    <li key={x.m.tag} className={s.rollRow} data-off={off}>
+      <button type="button" className={s.rollName} onClick={() => onOpen(x.m.tag)}>
+        {x.m.name}
+      </button>
+      <span className={s.rollLeft}>
+        {x.left} deck{x.left === 1 ? '' : 's'} left
+      </span>
+      <label className={s.rollCant}>
+        <input type="checkbox" checked={off} onChange={(e) => key && setExcused(key, x.m.tag, e.target.checked)} style={{ accentColor: 'var(--ember)' }} />
+        Can&apos;t play today
+      </label>
+    </li>
+  );
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+        <h3 className="heading">
+          Still to play today{' '}
+          <span style={{ font: '500 12px/1 var(--mono)', color: 'var(--text-3)' }}>
+            {playing.length} members · {playing.reduce((a, x) => a + x.left, 0)} decks
+          </span>
+        </h3>
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          disabled={!playing.length}
+          onClick={() => {
+            navigator.clipboard?.writeText(text).catch(() => {});
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1600);
+          }}
+        >
+          {copied ? 'Copied' : 'Copy roll call'}
+        </button>
+      </div>
+      {left.length ? (
+        <ul className={s.roll}>
+          {playing.map((x) => row(x, false))}
+          {out.length > 0 && <li className={s.rollSplit}>Told the clan they can&apos;t play · {out.length}</li>}
+          {out.map((x) => row(x, true))}
+        </ul>
+      ) : (
+        <p className="body">Everyone has played all four decks today.</p>
+      )}
+      <span className="label-sm" style={{ lineHeight: 1.6 }}>
+        Four war decks a member a day. Ticks for &quot;can&apos;t play&quot; stay on this device and reset each war day. The roll call leaves those members out.
+      </span>
+    </div>
+  );
 }
 
 export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Scored[]; onOpen: (tag: string) => void }) {
@@ -157,6 +227,8 @@ export function WarTab({ data, members, onOpen }: { data: Dashboard; members: Sc
           ))}
         </div>
       </div>
+
+      <RollCall data={data} members={members} onOpen={onOpen} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>

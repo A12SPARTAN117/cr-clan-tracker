@@ -785,3 +785,86 @@
     left: 32px;
   }
 }
+
+/* War roll call: who still has decks today. */
+.roll {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: var(--charcoal);
+  overflow: hidden;
+}
+.rollRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 9px 16px;
+  border-top: 1px solid var(--hair);
+}
+.rollRow:first-child {
+  border-top: 0;
+}
+.rollRow[data-off='true'] {
+  opacity: 0.55;
+}
+.rollName {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--text-1);
+  font: 600 14px/1.2 var(--sans);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rollRow[data-off='true'] .rollName {
+  text-decoration: line-through;
+}
+.rollLeft {
+  font: 600 12px/1 var(--mono);
+  color: var(--ember);
+}
+.rollCant {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 11px/1 var(--mono);
+  color: var(--text-2);
+  cursor: pointer;
+}
+.rollSplit {
+  padding: 8px 16px;
+  border-top: 1px solid var(--hair);
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: var(--glass);
+}
+.mvp {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--gold-rgb), 0.6);
+  background: rgba(var(--gold-rgb), 0.12);
+  color: var(--gold);
+  font: 700 9px/1 var(--mono);
+  letter-spacing: 0.1em;
+  vertical-align: middle;
+}
+@media (max-width: 560px) {
+  .rollRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .rollCant {
+    grid-column: 1 / -1;
+  }
+}
