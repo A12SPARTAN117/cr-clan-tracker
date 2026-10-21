@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { getBattleLog, getClan, getCurrentRiverRace, getPlayer } from '../cr/api';
 import type { ApiRole, Player } from '../cr/types';
 import { enqueue, getDb, schema } from '../db';
@@ -8,13 +8,54 @@ import { indexClanMembers } from '../directory';
 import { saveBattles } from './battles';
 import { playerDayOf } from './playerDaily';
 
-const { trackedClans, clanMembers, rosterEvents, memberDaily, warDays, trackedPlayers, playerDaily } = schema;
+const { trackedClans, clanMembers, rosterEvents, memberDaily, warDays, trackedPlayers, playerDaily, playerIdentity } = schema;
 
 const RANK: Record<ApiRole, number> = { member: 0, elder: 1, coLeader: 2, leader: 3 };
 const LABEL: Record<ApiRole, string> = { member: 'Member', elder: 'Elder', coLeader: 'Co-Leader', leader: 'Leader' };
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
 export type SnapshotResult = { tag: string; ok: boolean; reason?: string; joined?: number; left?: number; roleChanges?: number; warRows?: number };
+
+/**
+ * Name and clan history: extends the player's latest stretch while name and clan stay the same,
+ * and starts a new one when either changes. Best-effort; callers already run in the write queue.
+ */
+async function recordIdentities(people: { tag: string; name: string; clanTag: string | null; clanName: string | null }[], now = new Date()) {
+  const db = await getDb();
+  if (!db || !people.length) return;
+  try {
+    const tags = people.map((p) => bare(p.tag));
+    const rows = await db.select().from(playerIdentity).where(inArray(playerIdentity.tag, tags)).orderBy(desc(playerIdentity.lastSeenAt));
+    const latest = new Map<string, (typeof rows)[number]>();
+    for (const r of rows) if (!latest.has(r.tag)) latest.set(r.tag, r);
+    for (const p of people) {
+      const tag = bare(p.tag);
+      const clanTag = p.clanTag ? bare(p.clanTag) : null;
+      const cur = latest.get(tag);
+      if (cur && cur.name === p.name && cur.clanTag === clanTag) await db.update(playerIdentity).set({ lastSeenAt: now, clanName: p.clanName }).where(eq(playerIdentity.id, cur.id));
+      else await db.insert(playerIdentity).values({ tag, name: p.name, clanTag, clanName: p.clanName, firstSeenAt: now, lastSeenAt: now });
+    }
+  } catch (e) {
+    console.warn('[history] identity record failed (is migration 0008 applied?):', e instanceof Error ? e.message : e);
+  }
+}
+
+/** A player's names and clans over time, newest first. */
+export async function getIdentityHistory(tagRaw: string) {
+  const db = await getDb();
+  if (!db) return null;
+  try {
+    return (await db.select().from(playerIdentity).where(eq(playerIdentity.tag, bare(tagRaw))).orderBy(desc(playerIdentity.lastSeenAt)).limit(200)).map((r) => ({
+      name: r.name,
+      clanTag: r.clanTag,
+      clanName: r.clanName,
+      from: r.firstSeenAt.toISOString(),
+      to: r.lastSeenAt.toISOString(),
+    }));
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Records one snapshot of a clan: roster diff (joins, leaves, promotions, demotions),
@@ -29,6 +70,7 @@ export async function snapshotClan(tagRaw: string): Promise<SnapshotResult> {
   if (!clanR.ok) return { tag, ok: false, reason: `clan: ${clanR.status} ${clanR.reason}` };
   const clan = clanR.data;
   await indexClanMembers(clan);
+  await recordIdentities(clan.memberList.map((m) => ({ tag: m.tag, name: m.name, clanTag: clan.tag, clanName: clan.name })));
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
 
@@ -145,6 +187,7 @@ export async function trackClan(tagRaw: string): Promise<void> {
 async function savePlayerDay(p: Player, now: Date) {
   const db = await getDb();
   if (!db) return;
+  await recordIdentities([{ tag: p.tag, name: p.name, clanTag: p.clan?.tag ?? null, clanName: p.clan?.name ?? null }], now);
   const tag = bare(p.tag);
   const { day, ...row } = playerDayOf(p, now.toISOString().slice(0, 10));
   await db.transaction(async (tx) => {

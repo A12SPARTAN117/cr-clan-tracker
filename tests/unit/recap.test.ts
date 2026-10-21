@@ -30,7 +30,7 @@ const profile = (extra: Partial<PlayerProfile> = {}) =>
     ...extra,
   }) as unknown as PlayerProfile;
 
-const day = (d: string, x: Partial<PlayerDay> = {}): PlayerDay => ({ day: d, trophies: 14000, seasonalTrophies: null, polLeague: 5, polRating: 0, polRank: null, wins: 2950, battleCount: 4100, collectionLevel: 1800, ...x });
+const day = (d: string, x: Partial<PlayerDay> = {}): PlayerDay => ({ day: d, trophies: 14000, seasonalTrophies: null, polLeague: 5, polRating: 0, polRank: null, wins: 2950, battleCount: 4100, collectionLevel: 1800, warWins: null, ...x });
 const history = (days: PlayerDay[]) => ({ trackedSince: `${days[0]?.day ?? '2026-10-20'}T10:00:00.000Z`, clans: [], trophies: [], war: [], days }) as PlayerHistory;
 
 describe('player recap', () => {

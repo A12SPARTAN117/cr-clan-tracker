@@ -1,4 +1,4 @@
-import { date, index, integer, pgTable, primaryKey, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { date, index, integer, pgTable, primaryKey, real, serial, text, timestamp } from 'drizzle-orm/pg-core';
 
 /**
  * History the official API cannot give us, built from our own snapshots.
@@ -86,6 +86,8 @@ export const playerDaily = pgTable(
     wins: integer('wins').notNull(),
     battleCount: integer('battle_count').notNull(),
     collectionLevel: integer('collection_level'),
+    /** River race battle wins (the Clan War Wins badge), for war-win goals. Null on older rows. */
+    warWins: integer('war_wins'),
   },
   (t) => [primaryKey({ columns: [t.playerTag, t.day] })],
 );
@@ -177,6 +179,34 @@ export const playerBattles = pgTable(
     result: integer('result').notNull(),
     crowns: integer('crowns').notNull(),
     oppCrowns: integer('opp_crowns').notNull(),
+    // The rest is null on games stored before these were kept.
+    /** Elixir the player wasted at full elixir. */
+    elixirLeaked: real('elixir_leaked'),
+    /** Hit points left on each side's surviving towers, king first ("7728,4337,4629"); "" when none. */
+    towers: text('towers'),
+    oppTowers: text('opp_towers'),
+    /** The player's deck: card ids, "e" after an evo slot, "h" after a hero slot. */
+    deck: text('deck'),
+    /** Opponent's average card level minus the player's (in-game levels; + means out-levelled). */
+    levelGap: real('level_gap'),
   },
   (t) => [primaryKey({ columns: [t.playerTag, t.battleTime] }), index('player_battles_opp').on(t.playerTag, t.oppTag)],
+);
+
+/**
+ * A player's names and clans over time: one row per stretch with the same name and clan, from
+ * every profile, daily snapshot and tracked-clan roster the site sees.
+ */
+export const playerIdentity = pgTable(
+  'player_identity',
+  {
+    id: serial('id').primaryKey(),
+    tag: text('tag').notNull(),
+    name: text('name').notNull(),
+    clanTag: text('clan_tag'),
+    clanName: text('clan_name'),
+    firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('player_identity_tag').on(t.tag, t.lastSeenAt)],
 );

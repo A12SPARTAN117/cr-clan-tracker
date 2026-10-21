@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { LeagueIcon, leagueName, PolRating } from '@/components/ui/primitives';
 import { polLabel } from '@/lib/leagues';
@@ -33,6 +34,7 @@ import type { PlayerHistory } from '@/lib/history';
 import { polChanges, withChanges } from '@/lib/history/playerDaily';
 import { reconstructFromBadges } from '@/lib/player/reconstruct';
 import s from './player.module.css';
+import type { NameHistory } from './PlayerView';
 
 /* ---------------- Stats ---------------- */
 type Row = [React.ReactNode, string, React.ReactNode];
@@ -306,7 +308,44 @@ const polCell = (league: number | null, rating: number | null) =>
     </span>
   );
 
-export function HistoryTab({ p, h: hist }: { p: PlayerProfile; h: PlayerHistory | null }) {
+/** Names and clans over time, newest first, from every time the site saw this player. */
+function NamesTimeline({ names }: { names: NameHistory }) {
+  if (!names?.length) return null;
+  const changes = names.length - 1;
+  return (
+    <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <h3 className="heading">
+        Names and clans{' '}
+        <span style={{ font: '500 11px/1 var(--mono)', color: 'var(--text-3)' }}>
+          {changes ? `${changes} change${changes === 1 ? '' : 's'}` : 'no changes seen yet'}
+        </span>
+      </h3>
+      <ol style={{ margin: 0, padding: 0, listStyle: 'none', borderLeft: '2px solid var(--hair)' }}>
+        {names.map((n, i) => (
+          <li key={n.from} style={{ position: 'relative', padding: '0 0 14px 18px' }}>
+            <span aria-hidden style={{ position: 'absolute', left: -6, top: 4, width: 10, height: 10, borderRadius: '50%', background: i === 0 ? 'var(--blue)' : 'var(--slate)', border: '2px solid var(--void)' }} />
+            <span style={{ display: 'block', font: '600 15px/1.3 var(--sans)' }}>
+              {n.name}
+              <span style={{ font: '500 12px/1 var(--sans)', color: 'var(--text-2)' }}>
+                {' · '}
+                {n.clanTag ? <Link href={`/clan/${n.clanTag}`}>{n.clanName ?? `#${n.clanTag}`}</Link> : 'No clan'}
+              </span>
+            </span>
+            <span style={{ font: '500 10px/1.4 var(--mono)', letterSpacing: '.06em', color: 'var(--text-3)' }}>
+              {dstr(new Date(n.from))}
+              {n.to.slice(0, 10) !== n.from.slice(0, 10) ? ` – ${i === 0 ? 'now' : dstr(new Date(n.to))}` : i === 0 ? ' – now' : ''}
+            </span>
+          </li>
+        ))}
+      </ol>
+      <span className="label-sm" style={{ lineHeight: 1.6 }}>
+        Seen on this site from profile visits, daily snapshots and tracked clans&apos; rosters. The API has no name history, so earlier names don&apos;t show.
+      </span>
+    </section>
+  );
+}
+
+export function HistoryTab({ p, h: hist, names }: { p: PlayerProfile; h: PlayerHistory | null; names: NameHistory }) {
   const [h, setH] = useState<'trophy' | 'clan' | 'pol' | 'war' | 'before'>(hist?.trophies.length || hist?.days.length ? 'trophy' : 'pol');
   const seasons = (
     [
@@ -336,6 +375,7 @@ export function HistoryTab({ p, h: hist }: { p: PlayerProfile; h: PlayerHistory 
   }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+      <NamesTimeline names={names} />
       <div className="data-since">
         {since
           ? `Tracking since ${dstr(new Date(since))}. Daily snapshots build history from then; anything earlier is reconstructed from what the profile and the clan’s race log still show.`

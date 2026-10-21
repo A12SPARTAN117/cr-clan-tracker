@@ -6,7 +6,10 @@ import { getBattleLog, getPlayer } from '@/lib/cr/api';
 import { getPlayerProfile } from '@/lib/player/profile';
 import { getPlayerHistory } from '@/lib/history';
 import { trackPlayer } from '@/lib/history/snapshot';
-import { getRivals, saveBattles } from '@/lib/history/battles';
+import { getGames, saveBattles } from '@/lib/history/battles';
+import { getIdentityHistory } from '@/lib/history/snapshot';
+import { insightsOf } from '@/lib/player/insights';
+import { rivalsOf } from '@/lib/player/rivals';
 import { eventRanksOf } from '@/lib/events';
 import { checkTag } from '@/lib/tags';
 import { recordBadgeArt } from '@/lib/badgeArt';
@@ -32,8 +35,11 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   after(() => indexPlayers([{ tag: r.data.tag, name: r.data.name, clanTag: r.data.clan?.tag, clanName: r.data.clan?.name, trophies: r.data.trophies }]));
   // Opening a profile starts (or keeps up) its daily snapshots, so history builds from here on.
   after(() => trackPlayer(r.data));
-  const [p, history, rivals, log] = await Promise.all([getPlayerProfile(c.tag), getPlayerHistory(c.tag), getRivals(c.tag), getBattleLog(c.tag)]);
+  const [p, history, games, log, names] = await Promise.all([getPlayerProfile(c.tag), getPlayerHistory(c.tag), getGames(c.tag), getBattleLog(c.tag), getIdentityHistory(c.tag)]);
   if (!p) return <LostScene variant="error" tag={c.tag} />;
+  // Rivals, elixir, close games, playstyle, tilt and achievements all come from the same games.
+  const rivals = rivalsOf(games);
+  const insights = insightsOf(games, p.war);
   // Everyone they played against goes into the name-search directory too.
   after(() => indexPlayers(p.battles.flatMap((b) => (b.them.tag ? [{ tag: b.them.tag, name: b.them.name, clanName: b.them.clan }] : []))));
   // Each badge level's art, for the asset checklist (the API only shows the level they own).
@@ -42,7 +48,7 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (log.ok) after(() => saveBattles(c.tag, log.data));
   // Live event ranks need each board's full listing; they stream into the Badges tab.
   const eventRanks = eventRanksOf(c.tag).catch(() => []);
-  return <PlayerView p={p} history={history} rivals={rivals} eventRanks={eventRanks} />;
+  return <PlayerView p={p} history={history} rivals={rivals} eventRanks={eventRanks} insights={insights} names={names} />;
 }
 
 export default function PlayerPage({ params }: PageProps<'/player/[tag]'>) {
