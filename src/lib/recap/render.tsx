@@ -169,7 +169,12 @@ export async function playerRecapImage(r: PlayerRecap, host: string) {
             sub={r.logBattles ? `IN LAST ${r.logBattles} BATTLES` : 'BATTLE LOG UNAVAILABLE'}
             style={{ width: 309 }}
           />
-          <Tile k="Badges earned" v={fmt(r.badges)} sub={`${fmt(r.career.threeCrown)} 3-CROWN WINS`} style={{ width: 309 }} />
+          <Tile
+            k="Playstyle"
+            v={r.style.main ?? '—'}
+            sub={r.style.main && r.style.lean != null ? `${Math.round(r.style.lean * 100)}% LEAN · ${fmt(r.style.games)} GAMES` : 'NOT ENOUGH GAMES STORED YET'}
+            style={{ width: 309 }}
+          />
         </div>
 
         <div style={{ display: 'flex', gap: 16 }}>

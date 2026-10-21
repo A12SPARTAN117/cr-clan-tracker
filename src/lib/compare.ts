@@ -2,6 +2,8 @@ import 'server-only';
 import { getClanProfile, getMemberLevels, withLevels, type ClanProfile } from './clan/profile';
 import { leagueName } from './leagues';
 import { checkTag } from './tags';
+import { getGames } from './history/battles';
+import { elixirStats, playstyle, type ElixirStats, type Playstyle } from './player/insights';
 import { getPlayerProfile, type PlayerProfile } from './player/profile';
 
 /**
@@ -28,7 +30,9 @@ export const MAX_COMPARE = 4;
 
 const pct = (a: number, b: number) => (a + b ? (a / (a + b)) * 100 : null);
 
-function players(ps: PlayerProfile[]): Comparison['sections'] {
+type Played = { style: Playstyle; elixir: ElixirStats };
+
+function players(ps: PlayerProfile[], played: Played[]): Comparison['sections'] {
   const row = (label: string, icon: CompareIcon, f: (p: PlayerProfile) => number | string | null, better: CompareRow['better'] = 'high', extra: Partial<CompareRow> = {}): CompareRow => ({
     label,
     icon,
@@ -65,6 +69,19 @@ function players(ps: PlayerProfile[]): Comparison['sections'] {
         row('Current streak', 'streak', (p) => (p.streakRun.kind ? (p.streakRun.kind === 'win' ? p.streakRun.count : -p.streakRun.count) : 0)),
         row('Worst enemy', 'alert', (p) => (p.enemies[0] ? `${p.enemies[0].name} (${p.enemies[0].losses}/${p.enemies[0].games})` : null), null),
         row('Max challenge wins', 'chest', (p) => p.totals.challengeMaxWins),
+      ],
+    },
+    {
+      // From each player's stored 1v1 games (kept from the first time their profile is opened).
+      title: 'Playstyle',
+      rows: [
+        { label: 'Main playstyle', icon: 'cards', values: played.map((x) => x.style.main), better: null },
+        ...(['Beatdown', 'Cycle', 'Bait', 'Control'] as const).map(
+          (st): CompareRow => ({ label: `${st} lean`, icon: 'cards', values: played.map((x) => (x.style.games ? x.style.scores[st] * 100 : null)), better: null, unit: '%', digits: 0 }),
+        ),
+        { label: 'Elixir leaked a game', icon: 'alert', values: played.map((x) => x.elixir.leak), better: 'low', digits: 2 },
+        { label: 'Close games won', icon: 'winrate', values: played.map((x) => (x.elixir.close.rate == null ? null : x.elixir.close.rate * 100)), better: 'high', unit: '%', digits: 0 },
+        { label: 'Stored 1v1 games', icon: 'swords', values: played.map((x) => x.style.games), better: null },
       ],
     },
     {
@@ -152,14 +169,15 @@ export async function compare(kind: CompareKind, tags: string[], { levels = true
   const list = wanted.filter((t) => checkTag(t).kind === 'valid');
   const invalid = wanted.filter((t) => !list.includes(t));
   if (kind === 'player') {
-    const got = await Promise.all(list.map((t) => getPlayerProfile(t)));
+    const [got, games] = await Promise.all([Promise.all(list.map((t) => getPlayerProfile(t))), Promise.all(list.map((t) => getGames(t)))]);
     const ps = got.filter((p): p is PlayerProfile => !!p);
+    const played = list.flatMap((_, i) => (got[i] ? [{ style: playstyle(games[i]), elixir: elixirStats(games[i]) }] : []));
     return {
       kind,
       // A player's picture is their clan's badge, framed by the clan's league.
       entities: ps.map((p) => ({ tag: p.tag, name: p.name, sub: p.clan?.name ?? 'No clan', badgeId: p.clan?.badgeId, warTrophies: p.clan?.warTrophies, deck: p.deck })),
       missing: [...invalid, ...list.filter((_, i) => !got[i])],
-      sections: ps.length ? players(ps) : [],
+      sections: ps.length ? players(ps, played) : [],
     };
   }
   const got = await Promise.all(list.map(async (t) => {
