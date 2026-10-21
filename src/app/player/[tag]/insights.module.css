@@ -154,7 +154,7 @@
   stroke-width: 2;
 }
 .axis {
-  font: 600 10px var(--mono);
+  font: 600 13px var(--mono);
   fill: var(--text-2);
 }
 .styleText {
