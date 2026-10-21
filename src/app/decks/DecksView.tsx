@@ -168,8 +168,11 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
                   ))}
                 </div>
               )}
-              <span style={{ marginLeft: 'auto', font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: 'var(--text-3)' }}>
-                {view === 'decks' ? `${decks.length} DECKS` : `${m.cards.length} CARDS`}
+              <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 14 }}>
+                <Link href={`/decks/builder${mode === 'pol' ? '' : `?mode=${mode}`}`} className="btn btn-secondary btn-sm">
+                  Deck builder ▸
+                </Link>
+                <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: 'var(--text-3)' }}>{view === 'decks' ? `${decks.length} DECKS` : `${m.cards.length} CARDS`}</span>
               </span>
             </div>
 

@@ -12,7 +12,7 @@ const LINKS = [
   { href: '/players', label: 'Players', match: ['/players', '/player/'] },
   { href: '/clans', label: 'Clans', match: ['/clans', '/clan/'] },
   { href: '/my-clan', label: 'My Clan', match: ['/my-clan', '/manage'] },
-  { href: '/decks', label: 'Decks', match: ['/decks'] },
+  { href: '/decks', label: 'Decks', match: ['/decks', '/decks/builder'] },
   { href: '/compare', label: 'Compare', match: ['/compare'] },
   { href: '/rivals', label: 'Rivals', match: ['/rivals'] },
   { href: '/leaderboards', label: 'Leaderboards', match: ['/leaderboards'] },
@@ -24,7 +24,10 @@ const LINKS = [
 /** Every page, for the menu sheet on phones and tablets (the header links need a laptop's width). */
 const MENU = [
   { href: '/', label: 'Home', match: [] as string[] },
-  ...LINKS.slice(0, 7),
+  ...LINKS.slice(0, 3),
+  { href: '/decks', label: 'Decks', match: ['/decks'] },
+  { href: '/decks/builder', label: 'Deck builder', match: ['/decks/builder'] },
+  ...LINKS.slice(4, 7),
   { href: '/cards', label: 'Cards', match: ['/cards'] },
   { href: '/goals', label: 'Goals', match: ['/goals'] },
   ...LINKS.slice(7),
@@ -34,7 +37,7 @@ const TABS = [
   { href: '/', label: 'HOME', match: [], icon: { width: 16, height: 2, border: 0, background: 'currentColor' } },
   { href: '/clans', label: 'CLANS', match: ['/clans', '/clan/'], icon: { borderRadius: '50%' } },
   { href: '/my-clan', label: 'MY CLAN', match: ['/my-clan', '/manage'], icon: { transform: 'rotate(45deg)' } },
-  { href: '/decks', label: 'DECKS', match: ['/decks'], icon: { width: 10, height: 14, borderRadius: 2 } },
+  { href: '/decks', label: 'DECKS', match: ['/decks', '/decks/builder'], icon: { width: 10, height: 14, borderRadius: 2 } },
 ];
 
 function isActive(pathname: string, match: string[]) {
@@ -42,6 +45,8 @@ function isActive(pathname: string, match: string[]) {
   if (pathname.endsWith('/manage')) return match.includes('/manage');
   if (/\/rivals(\/|$)/.test(pathname)) return match.includes('/rivals');
   if (/\/goals$/.test(pathname)) return match.includes('/goals');
+  // The builder lights "Decks" in the header and tab bar, and only "Deck builder" in the menu.
+  if (pathname === '/decks/builder') return match.includes('/decks/builder');
   return match.some((m) => (m.endsWith('/') ? pathname.startsWith(m) : pathname === m || pathname.startsWith(m + '/')));
 }
 
