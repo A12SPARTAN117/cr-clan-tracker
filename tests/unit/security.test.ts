@@ -149,20 +149,25 @@ describe('cron secret (lib/cron-auth)', () => {
   });
 });
 
-describe('donate link (lib/donate)', () => {
+describe('donate links (lib/donate)', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.resetModules();
   });
-  const load = async (v: string) => {
+  const KEYS = ['NEXT_PUBLIC_DONATE_PAYPAL_URL', 'NEXT_PUBLIC_DONATE_PAYFAST_URL', 'NEXT_PUBLIC_DONATE_YOCO_URL', 'NEXT_PUBLIC_DONATE_URL'];
+  const load = async (env: Record<string, string>) => {
     vi.resetModules();
-    vi.stubEnv('NEXT_PUBLIC_DONATE_URL', v);
-    return (await import('@/lib/donate')).DONATE_URL;
+    for (const k of KEYS) vi.stubEnv(k, env[k] ?? '');
+    return (await import('@/lib/donate')).DONATE_LINKS;
   };
   it('accepts https links only', async () => {
-    expect(await load('https://ko-fi.com/crclan')).toBe('https://ko-fi.com/crclan');
+    expect(await load({ NEXT_PUBLIC_DONATE_URL: 'https://ko-fi.com/crclan' })).toEqual([{ id: 'other', label: 'Donate', url: 'https://ko-fi.com/crclan' }]);
     for (const bad of ['http://ko-fi.com/x', 'javascript:alert(1)', 'https://x.com/"onmouseover="alert(1)', 'https://x.com/ <script>', ' https://x.com', 'data:text/html,hi'])
-      expect(await load(bad), bad).toBe('');
+      for (const k of KEYS) expect(await load({ [k]: bad }), `${k}=${bad}`).toEqual([]);
+  });
+  it('gives one button per link that is set, PayPal first', async () => {
+    const links = await load({ NEXT_PUBLIC_DONATE_YOCO_URL: 'https://pay.yoco.com/r/abc', NEXT_PUBLIC_DONATE_PAYPAL_URL: 'https://paypal.me/crclan' });
+    expect(links.map((l) => l.id)).toEqual(['paypal', 'yoco']);
   });
 });
 
