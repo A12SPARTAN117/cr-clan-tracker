@@ -50,12 +50,18 @@ function PolLine({ k, x }: { k: string; x: Pol }) {
 function EventLines({ ranks }: { ranks: Promise<EventRank[]> }) {
   const list = use(ranks);
   if (!list.length) return <span className={s.muted}>No live event leaderboards.</span>;
+  // Only the boards they're on; one line covers the rest.
+  const on = list.filter((e) => e.rank != null);
+  if (!on.length) return <span className={s.muted}>Outside the top ~10,000 on all {list.length} live event leaderboards.</span>;
   return (
     <>
-      {list.map((e) => (
+      {on.map((e) => (
         <div key={e.id} className={s.stat}>
           <span className={s.statK}>{e.name}</span>
-          <span className={s.statV}>{e.rank != null ? <b className={s.rank}>#{fmt(e.rank)}</b> : <span className={s.muted}>Not in top {fmt(e.listed)}</span>}</span>
+          <span className={s.statV}>
+            <b className={s.rank}>#{fmt(e.rank)}</b>
+            <small>{fmt(e.score)} pts</small>
+          </span>
         </div>
       ))}
     </>

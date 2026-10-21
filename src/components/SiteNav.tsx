@@ -37,9 +37,9 @@ const TABS = [
 ];
 
 function isActive(pathname: string, match: string[]) {
-  // /clan/X/manage belongs to "My Clan", not "Clans"; /player/X/rivals to "Rivals", not "Players"
+  // /clan/X/manage belongs to "My Clan", not "Clans"; /player/X/rivals(/Y) to "Rivals", not "Players"
   if (pathname.endsWith('/manage')) return match.includes('/manage');
-  if (pathname.endsWith('/rivals')) return match.includes('/rivals');
+  if (/\/rivals(\/|$)/.test(pathname)) return match.includes('/rivals');
   return match.some((m) => (m.endsWith('/') ? pathname.startsWith(m) : pathname === m || pathname.startsWith(m + '/')));
 }
 
