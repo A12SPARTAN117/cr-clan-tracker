@@ -459,10 +459,16 @@ td[data-lead='true'] .val::before {
   gap: 2px 8px;
 }
 .stage :global(.sd-stat-v i) {
+  /* One line each: a wrapped value made the plate tall enough to cover the tile behind it. */
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font: 700 11px/1.1 var(--mono);
   font-style: normal;
   color: color-mix(in srgb, var(--c) 80%, var(--text-1));
-  text-align: center; /* numbers have no spaces, so only text values (league names) wrap */
+  text-align: center;
 }
 .stage :global(.sd-stat-v i[data-lead='true']) {
   color: var(--gold-hi);

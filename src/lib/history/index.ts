@@ -32,6 +32,8 @@ export type ClanHistory = {
   firstSeen: Record<string, string>;
   /** Members already in the clan at the first snapshot (join date unknown). */
   baseline: string[];
+  /** Member tag → name, for everyone on the stored roster (to name leavers not yet snapshotted). */
+  names?: Record<string, string>;
   rosterEvents: RosterEvent[];
   /** Race week (YYYY-MM-DD of its Thursday) → member tag → decks per war day (null = no snapshot). */
   dailyDecks: Record<string, Record<string, (number | null)[]>>;
@@ -62,7 +64,9 @@ export async function getClanHistory(tagRaw: string): Promise<ClanHistory | null
 
     const firstSeen: Record<string, string> = {};
     const baseline: string[] = [];
+    const names: Record<string, string> = {};
     for (const m of members) {
+      names[m.playerTag] = m.name;
       if (m.baseline) baseline.push(m.playerTag);
       else firstSeen[m.playerTag] = m.firstSeenAt.toISOString();
     }
@@ -81,6 +85,7 @@ export async function getClanHistory(tagRaw: string): Promise<ClanHistory | null
       trackedSince: tracked.trackedSince.toISOString(),
       firstSeen,
       baseline,
+      names,
       rosterEvents: events.map((e) => ({ at: e.at.toISOString(), tag: e.playerTag, name: e.name, kind: e.kind as RosterEventKind, detail: e.detail ?? undefined })),
       dailyDecks,
       trophiesWeekAgo,

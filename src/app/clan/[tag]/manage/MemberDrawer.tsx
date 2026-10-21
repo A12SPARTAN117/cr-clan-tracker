@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
+import { LineChart } from '@/components/LineChart';
 import { ActivityDot, HeatCell, ROLE_LABEL, ScoreGauge, ACTIVITY_LABEL, activityOf, heatStyle } from '@/components/ui/primitives';
 import type { RosterEvent } from '@/lib/history';
 import { FACTORS, FACTOR_INFO, weightSum, type Weights } from '@/lib/clan/score';
@@ -168,6 +169,25 @@ export function MemberDrawer({
               </span>
             )}
           </div>
+
+          {present.length >= 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+                <span className="label" style={{ letterSpacing: '.14em' }}>
+                  War fame · finished races
+                </span>
+                <span style={{ font: '500 10px/1 var(--mono)', color: 'var(--text-2)' }}>
+                  {Math.round(present.reduce((a, h) => a + (h?.fame ?? 0), 0) / present.length).toLocaleString('en-US')} a race
+                </span>
+              </div>
+              {/* Oldest race first; races they weren't in the clan for break the line. */}
+              <LineChart
+                points={[...m.hist].reverse().map((w) => (w ? { x: w.label, v: w.fame, tip: `${w.decks}/16 decks` } : { x: 'Not in clan', v: null }))}
+                label={`${m.name}'s war fame over the last ${m.hist.length} races`}
+                height={110}
+              />
+            </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <span className="label" style={{ letterSpacing: '.14em' }}>

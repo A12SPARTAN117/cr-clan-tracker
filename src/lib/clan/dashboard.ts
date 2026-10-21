@@ -364,11 +364,14 @@ export function applyHistory(d: Dashboard, h: ClanHistory | null): Dashboard {
   const week = warWeekKey(new Date(d.generatedAt));
   const trackedDays = Math.max(0, (now - new Date(h.trackedSince).getTime()) / 86400_000);
   const baseline = new Set(h.baseline);
+  const { joins, leaves } = pendingRoster(d, h);
+  const fresh = new Set(joins.map((e) => e.tag));
   const members = d.members.map((m) => {
     const snap = h.dailyDecks[week]?.[m.tag];
     const days = m.days.map((c, i) => (c === 'untracked' ? (snap?.[i] ?? 'untracked') : c));
     const hist = m.hist.map((w) => (w ? { ...w, days: h.dailyDecks[w.key]?.[m.tag] ?? null } : null));
-    const first = h.firstSeen[m.tag];
+    // Joined since the last snapshot: on the live roster, not yet in history.
+    const first = h.firstSeen[m.tag] ?? (fresh.has(m.tag) ? d.generatedAt : undefined);
     const streakDays = raceStreak(hist) * 7;
     // Members present at the first snapshot have been here at least since tracking began.
     const tenureDays = first ? (now - new Date(first).getTime()) / 86400_000 : baseline.has(m.tag) ? Math.max(streakDays, trackedDays) : streakDays;
@@ -387,5 +390,26 @@ export function applyHistory(d: Dashboard, h: ClanHistory | null): Dashboard {
       factors: factorScores(inputs),
     };
   });
-  return { ...d, members, history: { trackedSince: h.trackedSince, events: h.rosterEvents } };
+  const events = [...joins, ...leaves, ...h.rosterEvents].sort((a, b) => b.at.localeCompare(a.at));
+  return { ...d, members, history: { trackedSince: h.trackedSince, events } };
+}
+
+/**
+ * Roster changes the live roster shows but no snapshot has recorded yet (snapshots run every
+ * 30 minutes, and a dashboard view takes one only after it has read history). A change already
+ * logged after the roster was read is left to the log, so nothing shows twice.
+ */
+export function pendingRoster(d: Dashboard, h: ClanHistory): { joins: RosterEvent[]; leaves: RosterEvent[] } {
+  const at = d.generatedAt;
+  const loggedAfter = new Set(h.rosterEvents.filter((e) => e.at >= at).map((e) => e.tag));
+  const stored = new Set([...Object.keys(h.firstSeen), ...h.baseline]);
+  const live = new Set(d.members.map((m) => m.tag));
+  const joins = d.members
+    .filter((m) => !stored.has(m.tag) && !loggedAfter.has(m.tag))
+    .map((m): RosterEvent => ({ at, tag: m.tag, name: m.name, kind: 'joined' }));
+  const leaves = [...stored]
+    // Someone first seen after this roster was read joined later; they haven't left.
+    .filter((t) => !live.has(t) && !loggedAfter.has(t) && !((h.firstSeen[t] ?? '') > at))
+    .map((t): RosterEvent => ({ at, tag: t, name: h.names?.[t] ?? `#${t}`, kind: 'left' }));
+  return { joins, leaves };
 }

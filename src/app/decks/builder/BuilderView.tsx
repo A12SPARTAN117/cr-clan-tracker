@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
 import { EmptyState } from '@/components/EmptyState';
@@ -20,6 +20,7 @@ import {
   deckSummary,
   defaultForm,
   encodeSlots,
+  poolDecks,
   slotCards,
   slotForms,
   slotFor,
@@ -28,6 +29,7 @@ import {
   type Collection,
   type PackedMeta,
   type Slot,
+  type Suggestion,
 } from '@/lib/builder';
 import { TOWER_TROOPS, cardById, cardBySlug, type Rarity } from '@/lib/cards';
 import { deckHref, deckLink } from '@/lib/decks';
@@ -70,6 +72,8 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
   const [selected, setSelected] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [copied, setCopied] = useState<'deck' | 'share' | null>(null);
+  // The deck as it was before Clear, for one-tap undo.
+  const [cleared, setCleared] = useState<Slot[] | null>(null);
   const deckRef = useRef<HTMLElement>(null);
 
   // Picker filters.
@@ -115,30 +119,52 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
   const m = meta.modes[mode];
   const decks = useMemo(() => m.decks.map(unpackDeck), [m]);
   const report = useMemo(() => counterReport(decks, cards), [decks, cards]);
-  const inDeck = new Set(cards.map((c) => c.id));
+  // Counters draw on every 1v1 mode at once: one mode alone rarely has enough games per matchup.
+  const { pooled, home, labels } = useMemo(() => {
+    const keys = meta.order.filter((k) => meta.modes[k].kind !== '2v2');
+    const lists = keys.map((k) => meta.modes[k].decks.map(unpackDeck));
+    // Each deck links to the mode it was played most in.
+    const home = new Map<string, { mode: string; games: number }>();
+    lists.forEach((l, i) =>
+      l.forEach((d) => {
+        if ((home.get(d.key)?.games ?? -1) < d.games) home.set(d.key, { mode: keys[i], games: d.games });
+      }),
+    );
+    return { pooled: poolDecks(lists), home, labels: keys.map((k) => meta.modes[k].label) };
+  }, [meta]);
+  const counters = useMemo(() => counterReport(pooled, cards), [pooled, cards]);
+  const inDeck = useMemo(() => new Set(cards.map((c) => c.id)), [cards]);
 
   const place = (next: Slot[]) => {
     setSlots(next);
     setSelected(null);
     setNotice(null);
     setCopied(null);
+    setCleared(null);
   };
 
+  function clearDeck() {
+    const before = slots;
+    place(Array(DECK_SIZE).fill(null));
+    setCleared(before);
+  }
+
+  /** Adds a card; with the Evo or Hero filter on, it goes in a slot that plays that form. */
   function pick(id: number) {
-    const at = slots.findIndex((x) => x?.id === id);
-    if (at >= 0) {
-      const next = [...slots];
-      next[at] = null;
-      return place(next);
-    }
-    const target = selected ?? slotFor(slots, id);
+    const info = cardById(id);
+    if (!info || slots.some((x) => x?.id === id)) return;
+    const form = special;
+    const can = (i: number) => (form === 'evo' ? slotForms(info, i).evo : form === 'hero' ? slotForms(info, i).hero : false);
+    const formSlot = form ? (form === 'evo' ? [0, 2] : [1, 2]).find((i) => !slots[i] && can(i)) : undefined;
+    const target = selected ?? formSlot ?? slotFor(slots, id);
     if (target < 0) return setNotice('The deck is full. Tap a card in the deck, then a card here to swap it.');
     const replacing = slots[target];
-    if (cardById(id)?.rarity === 'champion' && championCount(slots) - (replacing && cardById(replacing.id)?.rarity === 'champion' ? 1 : 0) >= 1)
+    if (info.rarity === 'champion' && championCount(slots) - (replacing && cardById(replacing.id)?.rarity === 'champion' ? 1 : 0) >= 1)
       return setNotice('A deck can hold only one Champion.');
     const next = [...slots];
-    next[target] = { id, ...defaultForm(id, target, unlock(id)) };
+    next[target] = form && can(target) ? { id, evo: form === 'evo', hero: form === 'hero' } : { id, ...defaultForm(id, target, unlock(id)) };
     place(next);
+    if (form && !can(target)) setNotice(`${info.name} went in as a normal card: the ${form} slots (${form === 'evo' ? '1 and 3' : '2 and 3'}) are taken.`);
   }
 
   function tapSlot(i: number) {
@@ -178,6 +204,8 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
   const list = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return PICKABLE.filter((c) => {
+      // Cards already in the deck leave the picker; tap them in the deck to remove them.
+      if (inDeck.has(c.id)) return false;
       if (needle && !c.name.toLowerCase().includes(needle)) return false;
       if (rarity && c.rarity !== rarity) return false;
       if (elixir && (c.elixir == null || (elixir === '7+' ? c.elixir < 7 : c.elixir !== Number(elixir)))) return false;
@@ -188,7 +216,16 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
       if (col && minLevel != null && !(own && own.level >= minLevel)) return false;
       return true;
     });
-  }, [q, rarity, elixir, special, ownedOnly, minLevel, col]);
+  }, [q, rarity, elixir, special, ownedOnly, minLevel, col, inDeck]);
+  const filtered = !!q.trim() || !!rarity || !!elixir || !!special || ownedOnly || minLevel != null;
+  const clearFilters = () => {
+    setQ('');
+    setRarity(null);
+    setElixir(null);
+    setSpecial(null);
+    setOwnedOnly(false);
+    setMinLevel(null);
+  };
 
   const sel = selected != null ? slots[selected] : null;
   const selInfo = sel ? cardById(sel.id) : undefined;
@@ -212,8 +249,15 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
         <section ref={deckRef} className={s.deck} aria-label="Your deck">
           <div className={s.deckHead}>
             <span className={s.deckName}>{sum.name}</span>
-            <span className="label-sm">
-              {cards.length}/{DECK_SIZE} cards
+            <span className={s.deckMeta}>
+              <span className="label-sm">
+                {cards.length}/{DECK_SIZE} cards
+              </span>
+              {cards.length > 0 && (
+                <button type="button" className={s.clearDeck} onClick={clearDeck} title="Remove every card from the deck">
+                  <span aria-hidden>✕</span> Clear deck
+                </button>
+              )}
             </span>
           </div>
           <div className={s.slots}>
@@ -280,8 +324,24 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
               </>
             ) : selected != null ? (
               <span className={s.hint}>The next card you pick goes in slot {selected + 1}. Tap a deck card to move it here.</span>
+            ) : cleared ? (
+              <span className={s.hint}>
+                Deck cleared.{' '}
+                <button
+                  type="button"
+                  className={s.undo}
+                  onClick={() => {
+                    setSlots(cleared);
+                    setCleared(null);
+                  }}
+                >
+                  Undo
+                </button>
+              </span>
             ) : (
-              <span className={s.hint}>{notice ?? (cards.length ? 'Tap a deck card to change its form, move or remove it.' : 'Pick cards below. Evo and hero cards go to the first three slots, as in the game.')}</span>
+              <span className={notice ? s.warn : s.hint}>
+                {notice ?? (cards.length ? 'Tap a deck card to change its form, move or remove it.' : 'Pick cards below. Evo and hero cards go to the first three slots, as in the game.')}
+              </span>
             )}
           </div>
           {notice && selected != null && <span className={s.warn}>{notice}</span>}
@@ -337,9 +397,6 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
             <button type="button" className="btn btn-secondary btn-sm" disabled={!cards.length} onClick={() => copy('share')}>
               {copied === 'share' ? '✓ Copied' : 'Share builder link'}
             </button>
-            <button type="button" className="btn btn-secondary btn-sm" disabled={!cards.length} onClick={() => place(Array(DECK_SIZE).fill(null))}>
-              Clear
-            </button>
           </div>
           {championCount(slots) > 1 && <span className={s.warn}>A deck can hold only one Champion.</span>}
         </section>
@@ -382,7 +439,7 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
               </button>
               {tag && (
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => setChosen('')}>
-                  Clear
+                  Remove player
                 </button>
               )}
               {!tag && pins.player && (
@@ -395,38 +452,43 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
 
           <div className={s.filters}>
             <label className="field" style={{ flex: '1 1 180px' }}>
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search cards" aria-label="Search cards" type="search" />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search cards" aria-label="Search cards" />
+              {q && (
+                <button type="button" className={s.fieldX} onClick={() => setQ('')} aria-label="Clear search">
+                  ✕
+                </button>
+              )}
             </label>
             <div className={s.chips} role="group" aria-label="Rarity">
               {RARITIES.map(([r, l]) => (
-                <button key={r} type="button" className="chip" aria-pressed={rarity === r} onClick={() => setRarity(rarity === r ? null : r)}>
+                <Chip key={r} on={rarity === r} onClick={() => setRarity(rarity === r ? null : r)}>
                   {l}
-                </button>
+                </Chip>
               ))}
             </div>
             <div className={s.chips} role="group" aria-label="Elixir">
               <ElixirIcon size={14} />
               {ELIXIR.map((e) => (
-                <button key={e} type="button" className="chip" aria-pressed={elixir === e} onClick={() => setElixir(elixir === e ? null : e)}>
+                <Chip key={e} on={elixir === e} onClick={() => setElixir(elixir === e ? null : e)}>
                   {e}
-                </button>
+                </Chip>
               ))}
             </div>
             <div className={s.chips} role="group" aria-label="Evolution and hero">
-              <button type="button" className="chip" aria-pressed={special === 'evo'} onClick={() => setSpecial(special === 'evo' ? null : 'evo')}>
-                Has evo
-              </button>
-              <button type="button" className="chip" aria-pressed={special === 'hero'} onClick={() => setSpecial(special === 'hero' ? null : 'hero')}>
-                Has hero
-              </button>
+              <Chip on={special === 'evo'} onClick={() => setSpecial(special === 'evo' ? null : 'evo')} title="Show evolutions; a pick goes in an evo slot">
+                Evo
+              </Chip>
+              <Chip on={special === 'hero'} onClick={() => setSpecial(special === 'hero' ? null : 'hero')} title="Show heroes; a pick goes in a hero slot">
+                Hero
+              </Chip>
             </div>
             <div className={s.chips} role="group" aria-label="Collection filters">
-              <button type="button" className="chip" aria-pressed={ownedOnly} disabled={!col} onClick={() => setOwnedOnly(!ownedOnly)} title={col ? undefined : 'Load a player first'}>
+              <Chip on={ownedOnly} disabled={!col} onClick={() => setOwnedOnly(!ownedOnly)} title={col ? undefined : 'Load a player first'}>
                 Owned only
-              </button>
+              </Chip>
               <label className="label-sm" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 Level
-                <select className={s.select} value={minLevel ?? ''} disabled={!col} onChange={(e) => setMinLevel(e.target.value ? Number(e.target.value) : null)} title={col ? undefined : 'Load a player first'}>
+                <select className={s.select} data-on={minLevel != null} value={minLevel ?? ''} disabled={!col} onChange={(e) => setMinLevel(e.target.value ? Number(e.target.value) : null)} title={col ? undefined : 'Load a player first'}>
                   <option value="">Any</option>
                   {LEVELS.map((l) => (
                     <option key={l} value={l}>
@@ -435,30 +497,37 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
                   ))}
                 </select>
               </label>
+              {minLevel != null && (
+                <button type="button" className={s.fieldX} onClick={() => setMinLevel(null)} aria-label="Clear level filter">
+                  ✕
+                </button>
+              )}
             </div>
-            <span className={s.count}>{list.length} cards</span>
+            <span className={s.count}>
+              {list.length} cards
+              {filtered && (
+                <button type="button" className={s.clearFilters} onClick={clearFilters}>
+                  <span aria-hidden>✕</span> Clear filters
+                </button>
+              )}
+            </span>
           </div>
 
           {list.length ? (
             <div className={s.grid}>
               {list.map((c) => {
                 const own = col?.cards[c.id];
-                const on = inDeck.has(c.id);
+                const form = special === 'evo' ? ' evolution' : special === 'hero' ? ' hero' : '';
                 return (
-                  <button key={c.id} type="button" className={s.pick} data-in={on} onClick={() => pick(c.id)} aria-pressed={on} aria-label={`${c.name}, ${c.elixir ?? '?'} elixir${on ? ', in deck' : ''}`} title={c.name}>
-                    <CardTile slug={c.slug} label={c.name} rarity={c.rarity} level={own?.level ?? null} owned={!col || !!own} size="fluid" />
+                  <button key={c.id} type="button" className={s.pick} onClick={() => pick(c.id)} aria-label={`Add ${c.name}${form}, ${c.elixir ?? '?'} elixir`} title={`${c.name}${form}`}>
+                    <CardTile slug={c.slug} label={c.name} rarity={c.rarity} evo={special === 'evo'} hero={special === 'hero'} level={own?.level ?? null} owned={!col || !!own} size="fluid" />
                     <span className={s.elixir}>{c.elixir ?? '?'}</span>
-                    {on && (
-                      <span className={s.check} aria-hidden>
-                        ✓
-                      </span>
-                    )}
                   </button>
                 );
               })}
             </div>
           ) : (
-            <EmptyState text="No cards match these filters." />
+            <EmptyState text={filtered ? 'No cards match these filters.' : 'Every card is in the deck.'} />
           )}
         </section>
       </div>
@@ -474,7 +543,7 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
         </span>
 
         <Meta report={report} cards={cards.length} mode={mode} onLoad={load} />
-        <Counters report={report} cards={cards.length} mode={mode} onLoad={load} />
+        <Counters report={counters} cards={cards.length} modes={labels} home={home} onLoad={load} />
       </section>
     </main>
   );
@@ -539,42 +608,77 @@ function Meta({ report, cards, mode, onLoad }: { report: Report; cards: number; 
   );
 }
 
-function Counters({ report, cards, mode, onLoad }: { report: Report; cards: number; mode: string; onLoad: (d: DeckStat) => void }) {
-  const { winCon, counters } = report;
+function Counters({ report, cards, modes, home, onLoad }: { report: Report; cards: number; modes: string[]; home: Map<string, { mode: string }>; onLoad: (d: DeckStat) => void }) {
+  const { winCon, suggestions } = report;
   return (
     <div className={s.block}>
       <h2 className={s.h2}>Hard counters{winCon ? ` to ${winCon.name} decks` : ''}</h2>
       {!cards ? (
         <EmptyState text="Add cards to see which decks beat yours." />
       ) : !winCon ? (
-        <EmptyState text="Matchups are recorded against the opponent's win condition (Hog Rider, Golem, X-Bow …). Add one to see the decks that beat it." />
-      ) : counters.length ? (
+        <EmptyState text="Counters are found against your deck's win condition (Hog Rider, Golem, X-Bow …). Add one to see the decks that beat it." />
+      ) : suggestions.length ? (
         <>
           <span className={s.method}>
-            Meta decks with a winning record against {winCon.name} decks, at least {MIN_MATCHUP_GAMES} games each. Ranked by that win rate, discounted for small samples, so 14 wins in 20 games beats 5 in 5. Decks sharing {CLOSE_SHARED}+ of your cards are left out (they are versions of your deck).
+            Decks to play against {winCon.name}, from {modes.join(', ')} combined. Strongest evidence first: a deck&apos;s own winning record against {winCon.name} decks ({MIN_MATCHUP_GAMES}+ games), then the win conditions that beat it
+            across every deck that has them, then strong decks built around cards that stop {winCon.name}. Load one to make it yours.
           </span>
           <DeckGrid min={300}>
-            {counters.map((c) => {
-              const wc = c.deck.winCon ? cardBySlug(c.deck.winCon)?.name : null;
-              return (
-                <div key={c.deck.key} className={s.cell}>
-                  <DeckBlock {...metaDeck(c.deck)} use={null} games={null} win={null} href={deckHref(c.deck.key, mode)} action={<LoadButton onClick={() => onLoad(c.deck)} />} />
-                  <span className={s.vs}>
-                    <b>{pct(c.vs.wins, c.vs.games)}</b> win vs {winCon.name} decks · {fmt(c.vs.wins)} of {fmt(c.vs.games)} games
-                  </span>
-                  <span className={s.note}>
-                    Overall {pct(c.deck.wins, c.deck.games)} in {fmt(c.deck.games)} games
-                    {c.likeYours && wc ? ` · decks like yours won ${fmt(c.likeYours.wins)} of ${fmt(c.likeYours.games)} (${pct(c.likeYours.wins, c.likeYours.games)}) vs ${wc} decks` : ''}
-                  </span>
-                </div>
-              );
-            })}
+            {suggestions.map((x) => (
+              <div key={x.deck.key} className={s.cell}>
+                <DeckBlock {...metaDeck(x.deck)} use={null} games={null} win={null} href={deckHref(x.deck.key, home.get(x.deck.key)?.mode ?? 'pol')} action={<LoadButton onClick={() => onLoad(x.deck)} />} />
+                <Why x={x} vs={winCon.name} />
+              </div>
+            ))}
           </DeckGrid>
         </>
       ) : (
-        <EmptyState text={`No deck in this mode has ${MIN_MATCHUP_GAMES}+ games and a winning record against ${winCon.name} decks yet. Try another mode.`} />
+        <EmptyState text={`Nothing in today's sample beats ${winCon.name} decks yet, and no deck carries the usual answers to it. Check back after the next meta refresh.`} />
       )}
     </div>
+  );
+}
+
+/** Why a deck is suggested: its own record, its win condition's, or the counter cards it holds. */
+function Why({ x, vs }: { x: Suggestion; vs: string }) {
+  const wc = x.deck.winCon ? cardBySlug(x.deck.winCon)?.name : null;
+  const tag = x.basis === 'deck' ? 'Proven' : x.basis === 'winCon' ? 'Win condition' : 'Counter cards';
+  return (
+    <>
+      <span className={s.vs}>
+        <span className={s.basis} data-basis={x.basis}>
+          {tag}
+        </span>{' '}
+        {x.vs ? (
+          <>
+            <b>{pct(x.vs.wins, x.vs.games)}</b> win vs {vs} · {fmt(x.vs.wins)} of {fmt(x.vs.games)} games
+            {x.basis === 'winCon' && wc ? ` by ${wc} decks (${x.decks})` : ''}
+          </>
+        ) : (
+          <>
+            {x.counterCards.join(', ')} {x.counterCards.length === 1 ? 'stops' : 'stop'} {vs}
+          </>
+        )}
+      </span>
+      <span className={s.note}>
+        Overall {pct(x.deck.wins, x.deck.games)} in {fmt(x.deck.games)} games
+        {x.vs && x.counterCards.length ? ` · answers ${vs} with ${x.counterCards.join(', ')}` : ''}
+      </span>
+    </>
+  );
+}
+
+/** A filter chip; when on, it shows an ✕ to say a second tap turns it off. */
+function Chip({ on, children, ...rest }: { on: boolean; children: ReactNode } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'type'>) {
+  return (
+    <button type="button" className={`chip ${s.chip}`} aria-pressed={on} {...rest}>
+      {children}
+      {on && (
+        <span className={s.chipX} aria-hidden>
+          ✕
+        </span>
+      )}
+    </button>
   );
 }
 

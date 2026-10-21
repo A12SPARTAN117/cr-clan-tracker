@@ -24,6 +24,20 @@ export function show(v: number | string | null, r: CompareRow) {
   return `${v.toLocaleString('en-US', { maximumFractionDigits: r.digits ?? 0, minimumFractionDigits: r.digits ?? 0 })}${r.unit ?? ''}`;
 }
 
+/** Shorter stat titles and text values for the 3D plates, which have about a tile's width. */
+const PLATE_TITLE: Record<string, string> = {
+  'Path of Legends league': 'PoL league',
+  'Ultimate Champion medals': 'UC medals',
+  'Win % · recent battles': 'Recent win %',
+};
+const PLATE_TEXT: [RegExp, string][] = [
+  [/^Ultimate Champion$/, 'Ultimate'],
+  [/^(Grand|Royal) Champion$/, '$1 Champ'],
+  [/^Challenger /, 'Chall. '],
+];
+export const plateTitle = (t: string) => PLATE_TITLE[t] ?? t;
+export const plateText = (t: string) => PLATE_TEXT.reduce((s, [re, to]) => s.replace(re, to), t);
+
 /**
  * Each value as a share of the best in its row, so heights are honest. Lower-is-better rows are
  * inverted, counting from zero: 0 inactive members is the best possible and gets a full bar.
@@ -76,7 +90,7 @@ export function CompareArena({ data, colors }: { data: Comparison; colors: strin
       tier: clanLeague(e.warTrophies)?.tier ?? 0,
     }));
   }, [data, rows, leads, champ, colors]);
-  const stats: ShowdownStat[] = useMemo(() => rows.map((r) => ({ title: r.label, values: r.values.map((v, i) => r.labels?.[i] ?? show(v, r)) })), [rows]);
+  const stats: ShowdownStat[] = useMemo(() => rows.map((r) => ({ title: plateTitle(r.label), values: r.values.map((v, i) => plateText(r.labels?.[i] ?? show(v, r))) })), [rows]);
 
   const key = JSON.stringify([contenders, stats]);
   useLazyScene(host, () => import('@/components/fx/gl/showdown'), (m, el) => m.mountShowdown(el, { contenders, stats, names: data.entities.map((e) => e.name) }), [key]);

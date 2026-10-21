@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Reveal } from '@/components/fx/Reveal';
+import { LineChart, type LinePoint } from '@/components/LineChart';
 import { dstr } from '@/lib/format';
 import { POL_LEAGUES } from '@/lib/leagues';
 import { addGoal, removeGoal, useGoals, type Goal } from '@/lib/myGoals';
@@ -29,10 +30,34 @@ function suggestions(metrics: Metric[]): { metric: MetricKey; target: number; la
   return out;
 }
 
+const DAY = 86_400_000;
+
+/** How far along a goal is, as a ring with the percentage inside. */
+function Ring({ value, done }: { value: number; done: boolean }) {
+  const r = 26;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg viewBox="0 0 64 64" className={s.ring} role="img" aria-label={`${Math.round(value * 100)}% there`}>
+      <circle cx="32" cy="32" r={r} className={s.ringTrack} />
+      <circle cx="32" cy="32" r={r} className={s.ringFill} data-done={done} strokeDasharray={`${value * c} ${c}`} transform="rotate(-90 32 32)" />
+      <text x="32" y="36" textAnchor="middle" className={s.ringText}>
+        {done ? '✓' : `${Math.floor(value * 100)}%`}
+      </text>
+    </svg>
+  );
+}
+
 function GoalCard({ g, m, today, onRemove }: { g: Goal; m: Metric; today: string; onRemove: () => void }) {
   const pace = paceOf(m, g.target, today);
   const prog = progressOf(m, g.target);
   const cur = m.current ?? m.series.at(-1)?.[1] ?? null;
+  // The last 60 days of snapshots, with today's live number as the newest point.
+  const from = Date.parse(today) - 60 * DAY;
+  const days = m.series.filter(([d]) => Date.parse(d) >= from && d < today);
+  const points: LinePoint[] = [...days, ...(cur != null ? [[today, cur] as [string, number]] : [])].map(([d, v]) => ({ x: dstr(new Date(d)), v, t: Date.parse(d) }));
+  // Where the pace leads, drawn only when it lands within a year (further out says little).
+  const projection: LinePoint | null =
+    pace.eta && Date.parse(pace.eta) - Date.parse(today) <= 365 * DAY ? { x: dstr(new Date(pace.eta)), v: g.target, t: Date.parse(pace.eta) } : null;
   return (
     <article className={s.goal} data-done={pace.done}>
       <div className={s.goalHead}>
@@ -41,14 +66,28 @@ function GoalCard({ g, m, today, onRemove }: { g: Goal; m: Metric; today: string
           ✕
         </button>
       </div>
-      <b className={s.target}>{show(m, g.target)}</b>
-      <span className={s.bar} aria-label={`${Math.round(prog * 100)}% there`}>
-        <span style={{ width: `${prog * 100}%` }} />
-      </span>
-      <span className={s.now}>
-        Now {cur == null ? '—' : show(m, cur)}
-        {!pace.done && cur != null && m.format !== 'league' ? ` · ${(g.target - cur).toLocaleString('en-US')} to go` : ''}
-      </span>
+      <div className={s.top}>
+        <Ring value={prog} done={pace.done} />
+        <div className={s.topText}>
+          <b className={s.target}>{show(m, g.target)}</b>
+          <span className={s.now}>
+            Now {cur == null ? '—' : show(m, cur)}
+            {!pace.done && cur != null && m.format !== 'league' ? ` · ${(g.target - cur).toLocaleString('en-US')} to go` : ''}
+          </span>
+        </div>
+      </div>
+      {points.length >= 2 ? (
+        <LineChart
+          points={points}
+          target={g.target}
+          projection={projection}
+          format={(v) => show(m, Math.round(v))}
+          label={`${m.label} over the last ${points.length} snapshots, against the goal of ${show(m, g.target)}`}
+          color={pace.done ? 'var(--gold)' : 'var(--blue)'}
+        />
+      ) : (
+        <span className={s.noChart}>{m.series.length === 0 && m.key === 'maxCards' ? 'No daily history for this one.' : 'The chart fills in as daily snapshots come in.'}</span>
+      )}
       <span className={s.eta}>
         {pace.done
           ? 'Reached ✓'
