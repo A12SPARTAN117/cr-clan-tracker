@@ -41,6 +41,22 @@
     0 0 40px rgba(58, 160, 255, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
+.donate[data-alt] {
+  background: transparent;
+  border: 1px solid rgba(var(--glow-rgb), 0.55);
+  box-shadow: none;
+  color: var(--blue-hi);
+}
+.donate[data-alt]:hover {
+  color: var(--blue-hi);
+  border-color: var(--blue-hi);
+  box-shadow: 0 0 24px rgba(58, 160, 255, 0.35);
+}
+.donateRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 .donate[data-off] {
   background: var(--slate);
   box-shadow: none;
@@ -92,7 +108,8 @@
   letter-spacing: -0.03em;
 }
 @media (max-width: 599px) {
-  .donate {
+  .donate,
+  .donateRow {
     width: 100%;
   }
 }

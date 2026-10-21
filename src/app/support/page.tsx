@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Reveal } from '@/components/fx/Reveal';
 import { SceneHeader } from '@/components/SceneHeader';
-import { DONATE_URL } from '@/lib/donate';
+import { DONATE_LINKS } from '@/lib/donate';
 import h from '../help/help.module.css';
 import s from './support.module.css';
 
@@ -24,17 +24,22 @@ const HEART = (
   </svg>
 );
 
-function DonateButton() {
-  if (!DONATE_URL)
+/** One button per way to give; the first is the main one, the rest are outlined. */
+function DonateButtons() {
+  if (!DONATE_LINKS.length)
     return (
       <span className={s.donate} aria-disabled="true" data-off="">
         {HEART} Donations open soon
       </span>
     );
   return (
-    <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" className={s.donate}>
-      {HEART} Donate to CR Clan Tracker
-    </a>
+    <div className={s.donateRow}>
+      {DONATE_LINKS.map((l, i) => (
+        <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer" className={s.donate} data-alt={i > 0 ? '' : undefined}>
+          {HEART} {l.id === 'other' && DONATE_LINKS.length === 1 ? 'Donate to CR Clan Tracker' : l.label}
+        </a>
+      ))}
+    </div>
   );
 }
 
@@ -49,7 +54,7 @@ export default function SupportPage() {
             <br />
             ARENA OPEN
           </Reveal>
-          <DonateButton />
+          <DonateButtons />
         </div>
       </SceneHeader>
 
@@ -100,7 +105,7 @@ export default function SupportPage() {
               Donations are purely donations: they don&apos;t unlock features, perks or anything else on the site, as the Fan Content Policy requires.
             </p>
           </div>
-          <DonateButton />
+          <DonateButtons />
         </section>
 
         <section className={h.section}>

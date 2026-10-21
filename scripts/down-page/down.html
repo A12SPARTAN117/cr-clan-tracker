@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Site-down page. Source: scripts/down-page/down.html. `npm run dev` / `npm run build` copy it to
-  public/down.html with the donate link filled in (scripts/build-down-page.mjs).
+  public/down.html with the donate buttons filled in (scripts/build-down-page.mjs).
   Shown by the service worker when the server can't be reached, by SITE_DOWN=1, and it can be
   uploaded as a host's custom 5xx page. Must stay self-contained: no external files at all.
 -->
@@ -76,6 +76,8 @@
   .btn-ghost { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,.35); }
   .btn-donate { background: linear-gradient(180deg, #5BB4FF, #2A6FD6); color: var(--bg); box-shadow: 0 0 24px rgba(58,160,255,.45), inset 0 1px 0 rgba(255,255,255,.35); }
   .btn-donate:hover { box-shadow: 0 0 36px rgba(58,160,255,.7), inset 0 1px 0 rgba(255,255,255,.35); }
+  .btn-alt { background: transparent; color: var(--ice); border: 1px solid rgba(140,203,255,.45); }
+  .btn-alt:hover { border-color: var(--ice); box-shadow: 0 0 24px rgba(58,160,255,.35); }
   .btn svg { width: 16px; height: 16px; }
 
   .card { width: 100%; max-width: 520px; margin-top: 6px; padding: 22px 22px 24px; border-radius: 6px; text-align: left;
@@ -84,7 +86,7 @@
   .card .kicker { color: var(--ice); }
   .card h3 { margin: 10px 0 8px; font: 700 20px/1.2 var(--mono); letter-spacing: -.02em; }
   .card p { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: #C9CCD2; }
-  .card .btn { margin-top: 8px; }
+  .card .donate-row { justify-content: flex-start; margin-top: 8px; }
 
   .status { font: 500 10px/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); min-height: 14px; }
   .status.up { color: var(--ice); }
@@ -160,10 +162,7 @@
     <p>CR Clan Tracker is free and fan-made. Right now it runs on free hosting because we can't afford real servers yet, so when lots of people visit at once or the free limits run out, the site goes down.</p>
     <p class="donate-only">Donations pay for hosting so this stops happening. They are purely donations and do not unlock anything.</p>
     <p class="no-donate-only">Thanks for your patience. Please check back in a few minutes.</p>
-    <a class="btn btn-donate donate-only" href="%DONATE_URL%" target="_blank" rel="noopener noreferrer">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4h2c.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21Z"/></svg>
-      Donate to keep the site running
-    </a>
+    <div class="row donate-only donate-row"><!--DONATE_BUTTONS--></div>
   </section>
 </main>
 
