@@ -10,6 +10,7 @@ import { EmberField } from '@/components/fx/EmberField';
 import { Decode } from '@/components/fx/Reveal';
 import { CycleIcon, ElixirIcon, MedalIcon, SwordsIcon, WinRateIcon } from '@/components/ui/icons';
 import { Tabs } from '@/components/ui/Tabs';
+import { builderHref } from '@/lib/builder';
 import { cardBySlug } from '@/lib/cards';
 import { deckHref, deckLink } from '@/lib/decks';
 import { fmt } from '@/lib/format';
@@ -71,6 +72,9 @@ export function DeckStatsView({
             <a href={link} className="btn btn-scene" style={{ border: '1px solid var(--hair)', color: 'var(--text-1)' }}>
               Open in game ↗
             </a>
+            <Link href={builderHref(deck.cards, { tower: deck.tower ? cardBySlug(deck.tower.slug)?.id : null, mode })} className="btn btn-scene" style={{ border: '1px solid var(--hair)', color: 'var(--text-1)' }}>
+              Edit in builder
+            </Link>
           </div>
         </div>
       </div>
