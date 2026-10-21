@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import Link from 'next/link';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
@@ -13,6 +13,8 @@ import { ModeFilter, ModeIcon } from '@/components/ModeFilter';
 import { deckHref } from '@/lib/decks';
 import { fmt } from '@/lib/format';
 import type { MetaMode, MetaSnapshot } from '@/lib/meta';
+import type { ModeTrends } from '@/lib/trends';
+import { Trends } from './Trends';
 import s from './decks.module.css';
 
 const pct = (n: number) => n.toFixed(1);
@@ -26,7 +28,7 @@ function setUrl(patch: Record<string, string | null>) {
   window.history.replaceState(null, '', u);
 }
 
-export function DecksView({ meta }: { meta: MetaSnapshot }) {
+export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promise<Record<string, ModeTrends>> }) {
   const params = useSearchParams();
   const router = useRouter();
   const [mode, setMode] = useState<MetaMode>(() => (meta.modes[params.get('mode') ?? ''] ? (params.get('mode') as MetaMode) : 'pol'));
@@ -112,6 +114,10 @@ export function DecksView({ meta }: { meta: MetaSnapshot }) {
             modes={meta.order.map((k) => ({ key: k, label: meta.modes[k].label, kind: meta.modes[k].kind, count: meta.modes[k].decks.length }))}
           />
         </div>
+
+        <Suspense fallback={null}>
+          <Trends trends={trends} mode={mode} />
+        </Suspense>
 
         {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

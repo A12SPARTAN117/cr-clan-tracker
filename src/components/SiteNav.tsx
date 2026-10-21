@@ -27,6 +27,7 @@ const MENU = [
   ...LINKS.slice(0, 3),
   { href: '/decks', label: 'Decks', match: ['/decks'] },
   { href: '/decks/builder', label: 'Deck builder', match: ['/decks/builder'] },
+  { href: '/pros', label: 'Pro tracker', match: ['/pros'] },
   ...LINKS.slice(4, 7),
   { href: '/cards', label: 'Cards', match: ['/cards'] },
   { href: '/goals', label: 'Goals', match: ['/goals'] },

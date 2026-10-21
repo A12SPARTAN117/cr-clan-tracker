@@ -210,3 +210,41 @@ export const playerIdentity = pgTable(
   },
   (t) => [index('player_identity_tag').on(t.tag, t.lastSeenAt)],
 );
+
+/**
+ * Each day's meta (the last snapshot of the UTC day): every deck's games, wins and share of its
+ * mode, so the Decks page can show what's rising, falling and new.
+ */
+export const metaDaily = pgTable(
+  'meta_daily',
+  {
+    day: date('day').notNull(),
+    mode: text('mode').notNull(),
+    deckKey: text('deck_key').notNull(),
+    name: text('name').notNull(),
+    games: integer('games').notNull(),
+    wins: integer('wins').notNull(),
+    /** Share of the mode's decks, in percent (the Decks page's "use"). */
+    use: real('use').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.day, t.mode, t.deckKey] })],
+);
+
+/**
+ * The decks the top Path of Legends players carry, one row per stretch with the same deck, so the
+ * Pro tracker can show when a pro switched.
+ */
+export const proDecks = pgTable(
+  'pro_decks',
+  {
+    id: serial('id').primaryKey(),
+    tag: text('tag').notNull(),
+    name: text('name').notNull(),
+    deckKey: text('deck_key').notNull(),
+    firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+    rank: integer('rank'),
+    rating: integer('rating'),
+  },
+  (t) => [index('pro_decks_tag').on(t.tag, t.lastSeenAt)],
+);

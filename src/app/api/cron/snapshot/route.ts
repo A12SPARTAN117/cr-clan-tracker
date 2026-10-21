@@ -3,6 +3,9 @@ import { connection } from 'next/server';
 import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb, schema } from '@/lib/db';
 import { liveEventBoards } from '@/lib/events';
+import { getMeta } from '@/lib/meta';
+import { recordMeta } from '@/lib/metaHistory';
+import { getPros, recordPros } from '@/lib/pros';
 import { snapshotClan, snapshotPlayer, type SnapshotResult } from '@/lib/history/snapshot';
 
 export const maxDuration = 300;
@@ -35,6 +38,10 @@ export async function GET(req: Request) {
     .limit(limit);
 
   const events = await liveEventBoards().catch(() => []);
+  // Today's meta (for rising and falling decks) and the top 100's decks (for the Pro tracker).
+  const [meta, pros] = await Promise.all([getMeta().catch(() => null), getPros(100).catch(() => null)]);
+  if (meta) await recordMeta(meta);
+  if (pros) await recordPros(pros);
   const started = Date.now();
   const results: SnapshotResult[] = [];
   for (const c of clans) {

@@ -64,6 +64,13 @@
       "when": 1792616265831,
       "tag": "0008_player_insights",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792617115093,
+      "tag": "0009_meta_trends_pros",
+      "breakpoints": true
     }
   ]
 }
