@@ -185,6 +185,11 @@ export function PlayerView({
             <Link href={`/player/${p.tag}/rivals`} className="btn btn-scene">
               Rivals ⚔
             </Link>
+            {pinned && (
+              <Link href={`/player/${p.tag}/goals`} className="btn btn-scene">
+                Goals ◎
+              </Link>
+            )}
             {!pinned && (
               <button
                 type="button"

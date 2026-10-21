@@ -26,6 +26,7 @@ const MENU = [
   { href: '/', label: 'Home', match: [] as string[] },
   ...LINKS.slice(0, 7),
   { href: '/cards', label: 'Cards', match: ['/cards'] },
+  { href: '/goals', label: 'Goals', match: ['/goals'] },
   ...LINKS.slice(7),
 ];
 
@@ -40,6 +41,7 @@ function isActive(pathname: string, match: string[]) {
   // /clan/X/manage belongs to "My Clan", not "Clans"; /player/X/rivals(/Y) to "Rivals", not "Players"
   if (pathname.endsWith('/manage')) return match.includes('/manage');
   if (/\/rivals(\/|$)/.test(pathname)) return match.includes('/rivals');
+  if (/\/goals$/.test(pathname)) return match.includes('/goals');
   return match.some((m) => (m.endsWith('/') ? pathname.startsWith(m) : pathname === m || pathname.startsWith(m + '/')));
 }
 
