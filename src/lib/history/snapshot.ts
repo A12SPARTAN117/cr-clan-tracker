@@ -7,6 +7,7 @@ import { warWeekKey } from '../war';
 import { indexClanMembers } from '../directory';
 import { saveBattles } from './battles';
 import { playerDayOf } from './playerDaily';
+import { onceEvery, TRACK_MS } from '../throttle';
 
 const { trackedClans, clanMembers, rosterEvents, memberDaily, warDays, trackedPlayers, playerDaily, playerIdentity } = schema;
 
@@ -167,20 +168,27 @@ export async function snapshotClan(tagRaw: string): Promise<SnapshotResult> {
   return { tag, ok: true, joined, left, roleChanges, warRows };
 }
 
-/** Marks a clan as tracked (first view of its dashboard) and takes its first snapshot. */
+/** Snapshots taken because of a view are at least this far apart (the cron job's pace). */
+const VIEW_SNAPSHOT_MS = 30 * 60_000;
+
+/**
+ * Marks a clan as tracked (first view of its dashboard) and takes its first snapshot. Later views
+ * take one only when the last is over 30 minutes old (it reuses the roster and race the page just
+ * loaded, so it costs no API calls), and bump "last viewed" at most hourly. Repeat views inside
+ * the window touch nothing.
+ */
 export async function trackClan(tagRaw: string): Promise<void> {
   const tag = bare(tagRaw);
+  if (!onceEvery(`track-clan:${tag}`, VIEW_SNAPSHOT_MS)) return;
   const db = await getDb();
   if (!db) return;
-  const existing = await db.select({ tag: trackedClans.tag, last: trackedClans.lastSnapshotAt }).from(trackedClans).where(eq(trackedClans.tag, tag));
-  if (existing.length) {
-    await db.update(trackedClans).set({ lastViewedAt: new Date() }).where(eq(trackedClans.tag, tag));
-    // Viewing keeps data fresh between cron runs (at most every 30 minutes).
-    const last = existing[0].last?.getTime() ?? 0;
-    if (Date.now() - last > 30 * 60_000) await snapshotClan(tag);
+  const [row] = await db.select({ viewed: trackedClans.lastViewedAt, last: trackedClans.lastSnapshotAt }).from(trackedClans).where(eq(trackedClans.tag, tag));
+  if (!row) {
+    await snapshotClan(tag);
     return;
   }
-  await snapshotClan(tag);
+  if (Date.now() - row.viewed.getTime() > TRACK_MS) await db.update(trackedClans).set({ lastViewedAt: new Date() }).where(eq(trackedClans.tag, tag));
+  if (Date.now() - (row.last?.getTime() ?? 0) > VIEW_SNAPSHOT_MS) await snapshotClan(tag);
 }
 
 /** Writes today's row for a tracked player from a profile already fetched. */
@@ -215,19 +223,22 @@ export async function snapshotPlayer(tagRaw: string): Promise<SnapshotResult> {
 
 /**
  * Marks a player as tracked when their profile is opened, and records today's snapshot from the
- * profile the page already loaded (no extra API call). Best-effort: never throws.
+ * profile the page already loaded (no extra API call) if there isn't one yet. "Last viewed" is
+ * bumped at most hourly; repeat views within the hour on this server touch nothing. Best-effort.
  */
 export function trackPlayer(p: Player) {
+  const tag = bare(p.tag);
+  if (!onceEvery(`track:${tag}`, TRACK_MS)) return;
   return enqueue(async () => {
     const db = await getDb();
     if (!db) return;
     const now = new Date();
     try {
-      await db
-        .insert(trackedPlayers)
-        .values({ tag: bare(p.tag), name: p.name, lastViewedAt: now })
-        .onConflictDoUpdate({ target: trackedPlayers.tag, set: { name: p.name, lastViewedAt: now } });
-      await savePlayerDay(p, now);
+      const [row] = await db.select({ viewed: trackedPlayers.lastViewedAt, snap: trackedPlayers.lastSnapshotAt }).from(trackedPlayers).where(eq(trackedPlayers.tag, tag));
+      if (!row) await db.insert(trackedPlayers).values({ tag, name: p.name, lastViewedAt: now }).onConflictDoNothing();
+      else if (now.getTime() - row.viewed.getTime() > TRACK_MS) await db.update(trackedPlayers).set({ name: p.name, lastViewedAt: now }).where(eq(trackedPlayers.tag, tag));
+      const today = now.toISOString().slice(0, 10);
+      if (!row?.snap || row.snap.toISOString().slice(0, 10) < today) await savePlayerDay(p, now);
     } catch (e) {
       console.warn('[history] track player failed (is migration 0005 applied?):', e instanceof Error ? e.message : e);
     }

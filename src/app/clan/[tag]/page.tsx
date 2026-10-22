@@ -7,6 +7,7 @@ import { getClanProfile, getMemberLevels } from '@/lib/clan/profile';
 import { getClanHistory } from '@/lib/history';
 import { indexClanMembers } from '@/lib/directory';
 import { after, connection } from 'next/server';
+import { onceEvery, TRACK_MS } from '@/lib/throttle';
 import { checkTag } from '@/lib/tags';
 import { ClanProfileView } from './ClanProfileView';
 
@@ -25,7 +26,8 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (!r.ok) return <LostScene variant={r.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
   // Background work below reads the clock, so it must run at request time, not in a prerender.
   await connection();
-  after(() => indexClanMembers(r.data));
+  // The roster goes into name search at most hourly per clan.
+  if (onceEvery(`index-clan:${c.tag}`, TRACK_MS)) after(() => indexClanMembers(r.data));
   const [data, history] = await Promise.all([getClanProfile(c.tag), getClanHistory(c.tag)]);
   if (!data) return <LostScene variant="error" tag={c.tag} />;
   // Member levels take ~50 profile calls on a cold cache: the page shows now and they stream in.

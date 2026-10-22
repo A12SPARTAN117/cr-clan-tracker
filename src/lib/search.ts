@@ -3,6 +3,7 @@ import { after, connection } from 'next/server';
 import { getClan, getClanRankings, getClanWarRankings, getLocations, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
 import { findPlayersByName, indexClanMembers, indexPlayers, rankByName, seedDirectory, type DirPlayer } from './directory';
 import { checkTag } from './tags';
+import { onceEvery, TRACK_MS, VIEW_WRITE_MS } from './throttle';
 
 /**
  * One search box for everything: player names, player tags, clan names and clan tags.
@@ -103,8 +104,8 @@ export async function search(raw: string, scope: SearchScope = 'all', limit = 10
     for (const p of rankByName(fromTop, name, limit)) if (!merged.has(p.tag)) merged.set(p.tag, p);
     out.players = rankByName([...merged.values()], name, limit);
   }
-  if (out.tagPlayer) void indexPlayers([out.tagPlayer]);
+  if (out.tagPlayer && onceEvery(`seen:${out.tagPlayer.tag}`, VIEW_WRITE_MS)) void indexPlayers([out.tagPlayer]);
   // A clan found by tag brings its whole roster into the directory.
-  if (clan?.ok) void indexClanMembers(clan.data);
+  if (clan?.ok && onceEvery(`index-clan:${bare(clan.data.tag)}`, TRACK_MS)) void indexClanMembers(clan.data);
   return out;
 }
