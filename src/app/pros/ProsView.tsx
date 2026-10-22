@@ -104,7 +104,7 @@ export function ProsView({ pros, history, at }: { pros: Pro[]; history: Record<s
   const top = pros[0];
   // Which cards the top 100 are running, most common first.
   const usage = useMemo(() => {
-    const m = new Map<string, { slug: string; name: string; img: string | null; rarity: Rarity; n: number; evo: number; hero: number }>();
+    const m = new Map<string, { slug: string; name: string; img?: string | null; rarity: Rarity; n: number; evo: number; hero: number }>();
     let decks = 0;
     for (const p of pros) {
       if (!p.deck) continue;

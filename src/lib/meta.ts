@@ -2,7 +2,7 @@ import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getBattleLog, getClan, getClanWarRankings, getPolLeaderboard } from './cr/api';
 import type { BattleSide } from './cr/types';
-import { cardById, slugify, type Rarity } from './cards';
+import { cardArt, cardById, slugify, type Rarity } from './cards';
 import { deckKey, deckName, deckStats, toDeckCard, winConOf, type DeckCard } from './decks';
 
 export type { DeckCard };
@@ -32,7 +32,7 @@ export type DeckStat = {
   name: string;
   winCon: string | null;
   cards: DeckCard[];
-  tower: { slug: string; name: string; img: string | null } | null;
+  tower: { slug: string; name: string; img?: string | null } | null;
   games: number;
   wins: number;
   draws: number;
@@ -53,7 +53,8 @@ export type CardStat = {
   name: string;
   rarity: Rarity;
   elixir: number | null;
-  img: string | null;
+  /** Only when the card table has no art for it (see cardArt). */
+  img?: string | null;
   games: number;
   wins: number;
   use: number;
@@ -152,7 +153,9 @@ export async function buildMeta(sampleSize = 100): Promise<MetaSnapshot | null> 
     const cards = side.cards.map(toDeckCard);
     const key = deckKey(cards);
     const t = side.supportCards?.[0];
-    const tower = t ? { slug: cardById(t.id)?.slug ?? slugify(t.name), name: t.name, img: t.iconUrls.medium ?? null } : null;
+    const tSlug = t ? (cardById(t.id)?.slug ?? slugify(t.name)) : '';
+    const tImg = t?.iconUrls.medium ?? null;
+    const tower = t ? { slug: tSlug, name: t.name, ...(tImg !== cardArt(tSlug) ? { img: tImg } : {}) } : null;
     const d = m.decks.get(key) ?? { cards, tower, games: 0, wins: 0, draws: 0, crowns: [0, 0, 0, 0, 0, 0, 0], vs: new Map(), players: new Map() };
     d.games++;
     if (won) d.wins++;
@@ -173,7 +176,7 @@ export async function buildMeta(sampleSize = 100): Promise<MetaSnapshot | null> 
     }
     m.decks.set(key, d);
     for (const c of cards) {
-      const ca = m.cards.get(c.id) ?? { c: { ...c, evo: false, hero: false, img: cardById(c.id)?.icons.normal ?? c.img }, games: 0, wins: 0, evo: 0, evoW: 0, hero: 0, heroW: 0 };
+      const ca = m.cards.get(c.id) ?? { c: { ...c, evo: false, hero: false, img: cardById(c.id)?.icons.normal ? undefined : (c.img ?? null) }, games: 0, wins: 0, evo: 0, evoW: 0, hero: 0, heroW: 0 };
       ca.games++;
       if (won) ca.wins++;
       if (c.evo) {
@@ -250,7 +253,7 @@ export async function buildMeta(sampleSize = 100): Promise<MetaSnapshot | null> 
         name: c.name,
         rarity: c.rarity,
         elixir: c.elixir,
-        img: c.img,
+        ...(c.img !== undefined ? { img: c.img } : {}),
         games,
         wins,
         use: (games / Math.max(1, m.sides)) * 100,
@@ -285,6 +288,20 @@ export async function buildMeta(sampleSize = 100): Promise<MetaSnapshot | null> 
     order: [...CORE_MODES.map((c) => c.key), ...events],
     modes,
   };
+}
+
+/** What the Decks list needs of a mode: no matchups, players or crown splits (each deck's own page has those). */
+export type ModeList = Pick<ModeMeta, 'decks' | 'cards'>;
+export const listOf = (m: ModeMeta): ModeList => ({ decks: m.decks.map((d) => ({ ...d, matchups: [], players: [], crowns: [] })), cards: m.cards });
+
+/** One mode's list, for /api/meta/[mode] (the Decks page loads modes other than the first on demand). */
+export async function getModeList(mode: MetaMode): Promise<ModeList | null> {
+  'use cache';
+  cacheTag('meta');
+  cacheLife('meta');
+  const meta = await getMeta();
+  const m = meta?.modes[mode];
+  return m ? listOf(m) : null;
 }
 
 /** A deck by key: in the requested mode first, then any mode. */

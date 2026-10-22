@@ -2,13 +2,14 @@
 
 import { HoverLink } from '@/components/ui/HoverLink';
 import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { EmptyState } from '@/components/EmptyState';
 import { ClanBadge } from '@/components/ui/ClanBadge';
 import { EventIcon, MedalIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import { fmt } from '@/lib/format';
 import { BoardControls } from './BoardControls';
 import { PodiumScene } from './PodiumScene';
-import type { BoardRow } from './page';
+import type { BoardRow } from './rows';
 import s from './leaderboards.module.css';
 
 export type Tab = 'pol' | 'clans' | 'war' | 'events';
@@ -17,6 +18,8 @@ export type Board = { rows: BoardRow[]; ok: boolean; note: string };
 const TABS: Tab[] = ['pol', 'clans', 'war', 'events'];
 const SCORE_HEAD: Record<Tab, string> = { pol: 'RATING', clans: 'CLAN SCORE', war: 'WAR TROPHIES', events: 'POINTS' };
 const NO_EVENTS: Board = { rows: [], ok: true, note: 'Only events running in the game right now are listed.' };
+const LOADING: Board = { rows: [], ok: true, note: '' };
+const FAILED: Board = { rows: [], ok: false, note: '' };
 
 /** The icon that goes with each board's score. */
 function ScoreIcon({ tab, size = 16 }: { tab: Tab; size?: number }) {
@@ -27,9 +30,9 @@ function ScoreIcon({ tab, size = 16 }: { tab: Tab; size?: number }) {
 }
 
 /**
- * Every board for the chosen location arrives with the page, so switching tab or event only
- * changes the URL (history.replaceState) and shows a board already on hand. A new location
- * still loads from the server.
+ * The three location boards arrive with the page, so switching between them only changes the URL
+ * (history.replaceState). Event boards load when picked (once each), from /api/events/[id]. A new
+ * location still loads from the server.
  */
 export function BoardView({
   boards,
@@ -38,7 +41,7 @@ export function BoardView({
   locName,
   locations,
 }: {
-  boards: Record<Exclude<Tab, 'events'>, Board> & { events: Record<number, Board> };
+  boards: Record<Exclude<Tab, 'events'>, Board>;
   events: { id: number; name: string }[];
   loc: string;
   locName: string;
@@ -47,7 +50,21 @@ export function BoardView({
   const params = useSearchParams();
   const tab = (TABS.find((t) => t === params.get('tab')) ?? 'pol') as Tab;
   const ev = tab === 'events' ? (events.find((e) => e.id === Number(params.get('ev')))?.id ?? events[0]?.id ?? null) : null;
-  const { rows, ok, note } = tab === 'events' ? (ev != null ? boards.events[ev] : NO_EVENTS) : boards[tab];
+  const [loaded, setLoaded] = useState<Record<number, Board>>({});
+  const evBoard = ev != null ? loaded[ev] : undefined;
+  useEffect(() => {
+    if (ev == null || evBoard) return;
+    let dead = false;
+    const done = (b: Board) => !dead && setLoaded((l) => ({ ...l, [ev]: b }));
+    fetch(`/api/events/${ev}`)
+      .then((r) => (r.ok ? (r.json() as Promise<Board>) : FAILED))
+      .then(done, () => done(FAILED));
+    return () => {
+      dead = true;
+    };
+  }, [ev, evBoard]);
+  const loading = tab === 'events' && ev != null && !evBoard;
+  const { rows, ok, note } = tab === 'events' ? (ev != null ? (evBoard ?? LOADING) : NO_EVENTS) : boards[tab];
   const isClan = tab === 'clans' || tab === 'war';
 
   return (
@@ -55,34 +72,34 @@ export function BoardView({
       <PodiumScene rows={rows.slice(0, 3)} label={tab === 'events' ? (events.find((e) => e.id === ev)?.name ?? 'Events') : locName} isClan={isClan} scoreIcon={<ScoreIcon tab={tab} size={15} />} />
       <main className={s.main}>
         <BoardControls tab={tab} loc={loc} ev={ev} locations={locations} events={events} />
-        {!ok ? (
+        {loading ? (
+          <EmptyState text="Loading the leaderboard…" />
+        ) : !ok ? (
           <EmptyState text="The Clash Royale API did not answer. Try again in a minute." />
         ) : rows.length ? (
           <div className={s.table}>
-            <div className={s.row} style={{ background: 'var(--glass)', minHeight: 42, font: '500 10px/42px var(--mono)', letterSpacing: '.12em', color: 'var(--text-3)' }}>
+            <div className={`${s.row} ${s.headRow}`}>
               <span>RANK</span>
               <span>MOVE</span>
               <span>{isClan ? 'CLAN' : 'PLAYER'}</span>
               <span className={s.sub}>{isClan ? 'MEMBERS' : 'CLAN'}</span>
-              <span style={{ textAlign: 'right', color: 'var(--text-1)' }}>
-                {SCORE_HEAD[tab]} <span style={{ color: 'var(--blue)' }}>▼</span>
+              <span className={s.scoreHead}>
+                {SCORE_HEAD[tab]} <span>▼</span>
               </span>
             </div>
             {rows.slice(3).map((r) => (
               <HoverLink key={r.tag + r.rank} href={r.href} className={`${s.row} ${s.link}`}>
-                <span style={{ font: '800 16px/1 var(--mono)', color: 'var(--text-3)' }}>{String(r.rank).padStart(2, '0')}</span>
-                <span style={{ font: '600 11px/1 var(--mono)', color: r.move ? (r.move > 0 ? 'var(--blue)' : 'var(--ember)') : 'var(--text-3)' }}>
+                <span className={s.rankCell}>{String(r.rank).padStart(2, '0')}</span>
+                <span className={s.move} data-dir={r.move ? (r.move > 0 ? 'up' : 'down') : undefined}>
                   {r.move == null ? '—' : r.move > 0 ? `▲ ${r.move}` : r.move < 0 ? `▼ ${-r.move}` : '—'}
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                  {r.badgeId != null ? <ClanBadge badgeId={r.badgeId} size={22} /> : <span style={{ width: 22 }} />}
-                  <span style={{ font: '600 14px/1.2 var(--sans)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</span>
-                  {r.cc && <span style={{ font: '500 9px/1 var(--mono)', letterSpacing: '.1em', color: 'var(--text-3)' }}>{r.cc}</span>}
+                <span className={s.who}>
+                  {r.badgeId != null ? <ClanBadge badgeId={r.badgeId} size={22} /> : <span className={s.noBadge} />}
+                  <span className={s.whoName}>{r.name}</span>
+                  {r.cc && <span className={s.cc}>{r.cc}</span>}
                 </span>
-                <span className={s.sub} style={{ font: '500 11px/1.2 var(--mono)', letterSpacing: '.06em', color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {r.sub}
-                </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: 7, font: '700 15px/1 var(--mono)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                <span className={`${s.sub} ${s.subCell}`}>{r.sub}</span>
+                <span className={s.score}>
                   <ScoreIcon tab={tab} />
                   {fmt(r.score)}
                 </span>

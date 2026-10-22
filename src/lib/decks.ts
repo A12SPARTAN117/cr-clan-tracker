@@ -1,5 +1,5 @@
 import type { ApiCard } from './cr/types';
-import { cardById, playedAsEvo, playedAsHero, slugify, type Rarity } from './cards';
+import { cardArt, cardById, playedAsEvo, playedAsHero, slugify, type Rarity } from './cards';
 
 // Shared deck helpers: card conversion, win conditions, naming, copy links.
 
@@ -11,7 +11,8 @@ export type DeckCard = {
   elixir: number | null;
   evo: boolean;
   hero: boolean;
-  img: string | null;
+  /** Left out when it's the card's own art (cardArt), which the browser looks up itself. */
+  img?: string | null;
 };
 
 /** Cards that win games on their own; used to name decks and group matchups. */
@@ -29,6 +30,9 @@ export function toDeckCard(c: ApiCard): DeckCard {
   const evo = playedAsEvo(c.evolutionLevel);
   const hero = playedAsHero(c.evolutionLevel);
   const slug = info?.slug ?? slugify(c.name);
+  const img = (evo ? c.iconUrls.evolutionMedium : hero ? c.iconUrls.heroMedium : null) ?? c.iconUrls.medium ?? info?.icons.normal ?? null;
+  // Pages carry thousands of these cards (meta decks, pros, battles), so the URL only travels when
+  // it differs from the art the card table already has.
   return {
     id: c.id,
     slug,
@@ -37,7 +41,7 @@ export function toDeckCard(c: ApiCard): DeckCard {
     elixir: info?.elixir ?? c.elixirCost ?? null,
     evo,
     hero,
-    img: (evo ? c.iconUrls.evolutionMedium : hero ? c.iconUrls.heroMedium : null) ?? c.iconUrls.medium ?? info?.icons.normal ?? null,
+    ...(img !== cardArt(slug, evo, hero) ? { img } : {}),
   };
 }
 

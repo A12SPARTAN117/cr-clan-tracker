@@ -1,7 +1,7 @@
 import type { PlayerHistory } from '../history';
 import type { Playstyle } from '../player/insights';
 import type { BattleRow, LeveledCard, PlayerProfile } from '../player/profile';
-import { cardBySlug } from '../cards';
+import { cardArt, cardBySlug } from '../cards';
 import { characterFor } from '../characters';
 import { polLabel } from '../leagues';
 
@@ -60,7 +60,7 @@ export function longestWinRun(battles: BattleRow[]): number {
 }
 
 /** Card art for a slug: the API's own icon for the form the card was played in, else ours. */
-const cardImg = (c: Pick<LeveledCard, 'slug' | 'img'>) => c.img ?? cardBySlug(c.slug)?.icons.normal ?? null;
+const cardImg = (c: Pick<LeveledCard, 'slug' | 'img' | 'evo' | 'hero'>) => c.img ?? cardArt(c.slug, c.evo, c.hero);
 
 export function playerRecap(p: PlayerProfile, h: PlayerHistory | null, season: string | null, style: Playstyle | null = null): PlayerRecap {
   const { wins, losses } = p.totals;

@@ -1,0 +1,149 @@
+/* A card tile. These were inline styles: about 700 bytes of HTML per card, and pages show up to
+   900 cards (the Pro tracker), so they moved here. */
+
+.tile {
+  position: relative;
+  min-width: 0;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transform-style: preserve-3d;
+}
+.S {
+  width: 44px;
+}
+.M {
+  width: 68px;
+}
+.L {
+  width: 104px;
+}
+.XL {
+  width: 150px;
+}
+.fluid {
+  width: 100%;
+  flex: 1 1 0;
+}
+.unowned {
+  opacity: 0.35;
+}
+
+/* drop-shadow follows the PNG's alpha, so the glow hugs the card's own frame. */
+.art {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 95 / 140;
+  filter: drop-shadow(0 6px 10px rgba(var(--shade-rgb), 0.45));
+}
+.art[data-glow='gray'] {
+  filter: grayscale(1);
+}
+.art[data-glow='evohero'] {
+  filter: drop-shadow(0 0 6px rgba(var(--evo-rgb), 0.55)) drop-shadow(0 0 6px rgba(var(--gold-rgb), 0.4));
+}
+.art[data-glow='evo'] {
+  filter: drop-shadow(0 0 7px rgba(199, 155, 255, 0.6));
+}
+.art[data-glow='hero'] {
+  filter: drop-shadow(0 0 7px rgba(245, 213, 138, 0.5));
+}
+.art[data-glow='active'] {
+  filter: drop-shadow(0 0 8px rgba(var(--glow-rgb), 0.8));
+}
+
+.img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.half {
+  clip-path: polygon(58% 0, 100% 0, 100% 100%, 42% 100%);
+}
+.seam {
+  position: absolute;
+  inset: 6% 10%;
+  background: linear-gradient(112deg, transparent calc(50% - 1px), #f5d58a calc(50% - 1px), #f5d58a calc(50% + 1px), transparent calc(50% + 1px));
+  filter: drop-shadow(0 0 4px #e6b34a);
+  pointer-events: none;
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  text-align: center;
+  background: repeating-linear-gradient(135deg, var(--charcoal) 0 6px, var(--obsidian) 6px 12px);
+  font: 600 8px/1.2 var(--mono);
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.S .placeholder {
+  font-size: 6px;
+}
+
+/* Glare, kept inside the card's rounded body (CORS rules out masking with the remote art). */
+.glare {
+  position: absolute;
+  inset: 3% 4%;
+  border-radius: 9% / 6%;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--gx, 30%) var(--gy, 20%), rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 45%);
+  mix-blend-mode: overlay;
+  opacity: var(--ga, 0);
+  transition: opacity 0.3s;
+}
+
+.level {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 5%;
+  padding: 9px 0 3px;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(to top, rgba(var(--void-rgb), 0.9), rgba(var(--void-rgb), 0));
+  font: 700 9px/1 var(--mono);
+  color: var(--text-1);
+  text-align: center;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.big .level {
+  padding: 12px 0 5px;
+  font-size: 11px;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.name {
+  font: 500 12px/1.2 var(--sans);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kind {
+  font: 500 9px/1.2 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.kind[data-k='evo'] {
+  color: var(--evo-hi);
+}
+.kind[data-k='hero'] {
+  color: var(--gold);
+}
