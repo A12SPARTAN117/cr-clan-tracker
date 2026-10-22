@@ -1,7 +1,7 @@
 import 'server-only';
-import { after, connection } from 'next/server';
-import { getClan, getClanRankings, getClanWarRankings, getLocations, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
-import { findPlayersByName, indexClanMembers, indexPlayers, rankByName, seedDirectory, type DirPlayer } from './directory';
+import { connection } from 'next/server';
+import { getClan, getPlayer, getPolLeaderboard, searchClans } from './cr/api';
+import { findPlayersByName, indexClanMembers, indexPlayers, rankByName, type DirPlayer } from './directory';
 import { checkTag } from './tags';
 import { onceEvery, TRACK_MS, VIEW_WRITE_MS } from './throttle';
 
@@ -30,32 +30,6 @@ const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
 export async function search(raw: string, scope: SearchScope = 'all', limit = 100): Promise<SearchResults> {
   await connection(); // per-request: results depend on the live directory
-  // Seed this server's directory (Path of Legends boards, then top clans' rosters) once a day in
-  // the background. With a database the rosters are saved too, and the cron job
-  // (/api/cron/directory) keeps it fresh on hosts where memory doesn't last.
-  // It starts after the response is sent: started during the render, its thousand-odd API calls
-  // belonged to this request, and Next.js held the first search open until all of them finished
-  // (about three minutes).
-  after(() =>
-    seedDirectory({
-      locations: async () => {
-        const r = await getLocations();
-        return r.ok ? r.data.items : [];
-      },
-      board: async (loc) => {
-        const r = await getPolLeaderboard(loc, 1000);
-        return r.ok ? r.data.items : [];
-      },
-      clans: async (loc, limit) => {
-        const [war, trophy] = await Promise.all([getClanWarRankings(loc, limit), loc === 'global' ? getClanRankings(loc, limit) : null]);
-        return [...(war.ok ? war.data.items : []), ...(trophy?.ok ? trophy.data.items : [])].map((c) => bare(c.tag));
-      },
-      roster: async (tag) => {
-        const r = await getClan(tag);
-        return r.ok ? r.data : null;
-      },
-    }),
-  );
   const q = raw.trim();
   const out: SearchResults = { q, tagPlayer: null, tagClan: null, players: [], clans: [], clanError: false };
   if (!q) return out;
