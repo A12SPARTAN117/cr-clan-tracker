@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, desc, eq, lt } from 'drizzle-orm';
+import { and, desc, eq, notInArray } from 'drizzle-orm';
 import { enqueue, getDb, schema } from './db';
 
 /**
@@ -10,8 +10,8 @@ import { enqueue, getDb, schema } from './db';
 
 const { sharedSnapshots } = schema;
 
-/** Old rows of a kind are dropped after this long (the newest is always kept). */
-const KEEP_MS = 3 * 86_400_000;
+/** Rows kept per kind: the newest, and the one before it. Some kinds are megabytes each. */
+const KEEP = 2;
 
 export type Stored<T> = { generatedAt: Date; data: T };
 
@@ -45,14 +45,15 @@ export async function snapshotTime(kind: string): Promise<Date | null> {
   }
 }
 
-/** Saves a snapshot and drops rows of the same kind older than three days. */
+/** Saves a snapshot and drops all but the newest rows of the same kind. */
 export function saveSnapshot(kind: string, data: unknown, generatedAt: Date) {
   return enqueue(async () => {
     const db = await getDb();
     if (!db) return;
     try {
       await db.insert(sharedSnapshots).values({ kind, generatedAt, data });
-      await db.delete(sharedSnapshots).where(and(eq(sharedSnapshots.kind, kind), lt(sharedSnapshots.generatedAt, new Date(generatedAt.getTime() - KEEP_MS))));
+      const keep = await db.select({ id: sharedSnapshots.id }).from(sharedSnapshots).where(eq(sharedSnapshots.kind, kind)).orderBy(desc(sharedSnapshots.generatedAt)).limit(KEEP);
+      await db.delete(sharedSnapshots).where(and(eq(sharedSnapshots.kind, kind), notInArray(sharedSnapshots.id, keep.map((r) => r.id))));
     } catch (e) {
       console.warn(`[snapshots] save ${kind} failed (is migration 0010 applied?):`, e instanceof Error ? e.message : e);
     }

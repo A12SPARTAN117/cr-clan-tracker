@@ -2,6 +2,7 @@ import { revalidateTag } from 'next/cache';
 import { connection } from 'next/server';
 import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb } from '@/lib/db';
+import { refreshEventBoards } from '@/lib/events';
 import { buildMeta } from '@/lib/meta';
 import { recordMeta } from '@/lib/metaHistory';
 import { saveSnapshot, snapshotTime } from '@/lib/snapshots';
@@ -13,7 +14,8 @@ const META_EVERY_MS = 50 * 60_000;
 
 /**
  * Builds the data that is the same for every visitor and stores it, so pages read it instead of
- * calling the Clash Royale API: the meta decks (about 250 battle logs). Same auth as the other
+ * calling the Clash Royale API: the meta decks (about 250 battle logs, hourly) and the live event
+ * boards with each one's full listing (every run). Same auth as the other
  * jobs: `Authorization: Bearer $CRON_SECRET`. `?force=1` rebuilds even when the stored copy is fresh.
  */
 export async function GET(req: Request) {
@@ -34,5 +36,6 @@ export async function GET(req: Request) {
       meta = { built: true, generatedAt: m.generatedAt, battles: m.battles };
     }
   }
-  return Response.json({ meta });
+  const events = await refreshEventBoards().catch((e) => ({ error: e instanceof Error ? e.message : 'failed' }));
+  return Response.json({ meta, events });
 }
