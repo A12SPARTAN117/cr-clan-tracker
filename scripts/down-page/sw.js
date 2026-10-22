@@ -6,8 +6,9 @@
 // instead of the browser's error screen. Everything else goes straight to the network.
 //
 // The page (14 KB) is cached for every visitor. Its three.js scene (/down-scene.js, ~580 KB) is
-// cached only from a visitor's third page view on, and never with Save-Data on, so a one-page
-// visit doesn't download it; without the scene the page shows its static crown.
+// cached only the third time someone opens the site (in-app navigations aren't page loads, and
+// the first load happens before this worker is in charge), and never with Save-Data on, so a
+// one-off visit doesn't download it; without the scene the page shows its static crown.
 //
 // Emergency off switch: replace this file's contents with
 //   self.addEventListener('install', () => self.skipWaiting());
@@ -15,9 +16,9 @@
 const CACHE = 'down-%VERSION%';
 const DOWN = '/down.html';
 const SCENE = '/down-scene.js';
-/** A tiny cached counter of successful page views (resets with each new version). */
+/** A tiny cached counter of page loads this worker saw (resets with each new version). */
 const VISITS = '/__visits';
-const SCENE_AFTER = 3;
+const SCENE_AFTER = 2;
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -51,7 +52,7 @@ async function downPage(status) {
   return cached ? new Response(cached.body, { status, statusText: 'Service Unavailable', headers: cached.headers }) : null;
 }
 
-/** Counts a page view; from the third on, caches the scene if it isn't yet. */
+/** Counts a page load; from SCENE_AFTER on, caches the scene if it isn't yet. */
 async function noteVisit(saveData) {
   const c = await caches.open(CACHE);
   if (await c.match(SCENE)) return;
