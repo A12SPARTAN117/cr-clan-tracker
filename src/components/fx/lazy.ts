@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, type DependencyList, type RefObject } from 'react';
+import { fxLevel } from './budget';
 
 type Stop = (() => void) | null | undefined;
 
@@ -17,7 +18,8 @@ function whenIdle(fn: () => void, timeout = 1200): () => void {
 /**
  * Mounts a three.js scene into `host` without putting three.js in the page bundle: `load`
  * imports the scene module (its own chunk, fetched when the browser is idle), then `mount`
- * starts it. The host element is server-rendered, so the page layout never shifts.
+ * starts it. The host element is server-rendered, so the page layout never shifts. At the 'off'
+ * effects level (Save-Data, or a device that couldn't keep up) the scene is never loaded.
  */
 export function useLazyScene<M>(
   host: RefObject<HTMLElement | null>,
@@ -27,7 +29,7 @@ export function useLazyScene<M>(
 ) {
   useEffect(() => {
     const el = host.current;
-    if (!el) return;
+    if (!el || fxLevel() === 'off') return;
     let dead = false;
     let stop: Stop;
     const cancel = whenIdle(() => {
