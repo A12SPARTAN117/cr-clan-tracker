@@ -8,6 +8,7 @@ import { deckKey, deckName, deckStats, toDeckCard, winConOf, type DeckCard } fro
 export type { DeckCard };
 import { parseApiDate } from './format';
 import { pool } from './pool';
+import { readSnapshot, saveSnapshot } from './snapshots';
 import { CORE_MODES, modesOfBattle, type ModeInfo, type ModeKind } from './modes';
 import { outcome } from './battle';
 
@@ -97,15 +98,36 @@ function emptyMode(): { sides: number; decks: Map<string, DeckAcc>; cards: Map<n
   return { sides: 0, decks: new Map(), cards: new Map() };
 }
 
-export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
+/**
+ * The meta every page shows: the newest snapshot the cron job stored (/api/cron/shared), so a page
+ * view never calls the API for it. With no database, or before the first snapshot is stored (a
+ * fresh database), it is built here once and saved.
+ */
+export async function getMeta(): Promise<MetaSnapshot | null> {
   'use cache';
   cacheTag('meta');
-
-  const [top, warTop] = await Promise.all([getPolLeaderboard('global', sampleSize), getClanWarRankings('global', 3)]);
-  if (!top.ok || !top.data.items.length) {
+  const stored = await readSnapshot<MetaSnapshot>('meta');
+  if (stored) {
+    cacheLife('meta');
+    return stored.data;
+  }
+  const built = await buildMeta();
+  if (!built) {
     cacheLife('crError');
     return null;
   }
+  await saveSnapshot('meta', built, new Date(built.generatedAt));
+  cacheLife('hours');
+  return built;
+}
+
+/**
+ * Builds a fresh snapshot from about 250 battle logs. Only the cron job (and getMeta's first run
+ * on an empty database) calls this.
+ */
+export async function buildMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
+  const [top, warTop] = await Promise.all([getPolLeaderboard('global', sampleSize), getClanWarRankings('global', 3)]);
+  if (!top.ok || !top.data.items.length) return null;
   // Members of the top war clans play ladder, war and events far more than the ranked top 100.
   const clans = warTop.ok ? await Promise.all(warTop.data.items.map((c) => getClan(c.tag.replace('#', '')))) : [];
   const tags = [...new Set([...top.data.items.map((p) => p.tag), ...clans.flatMap((c) => (c.ok ? c.data.memberList.map((m) => m.tag) : []))])];
@@ -255,7 +277,6 @@ export async function getMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
     .sort((a, b) => b.battles - a.battles)
     .map((m) => m.mode);
 
-  cacheLife('hours');
   return {
     generatedAt: new Date(now).toISOString(),
     windowHours: RANKED_HOURS,

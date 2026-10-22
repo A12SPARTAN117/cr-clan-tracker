@@ -65,6 +65,8 @@ const nextConfig: NextConfig = {
     crLive: { stale: 30, revalidate: 60, expire: 900 },
     // Failed upstream calls: retry soon instead of caching the error.
     crError: { stale: 30, revalidate: 15, expire: 60 },
+    // Stored snapshots the cron job rebuilds about hourly (meta decks): re-read every 10 minutes.
+    meta: { stale: 300, revalidate: 600, expire: 86400 },
   },
   async headers() {
     return [
