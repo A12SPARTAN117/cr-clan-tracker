@@ -59,7 +59,10 @@ async function open(url: string): Promise<Db> {
  * single-threaded and crashed under many concurrent upserts, which corrupted its data folder.
  */
 let queue: Promise<unknown> = Promise.resolve();
+/** Writes queued since this process started (shown by /api/cron/status). */
+export const writeStats = { queued: 0 };
 export function enqueue<T>(job: () => Promise<T>): Promise<T> {
+  writeStats.queued++;
   const run = queue.then(job);
   queue = run.catch(() => {});
   return run;
