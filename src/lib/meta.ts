@@ -290,6 +290,20 @@ export async function buildMeta(sampleSize = 100): Promise<MetaSnapshot | null> 
   };
 }
 
+/** What the Decks list needs of a mode: no matchups, players or crown splits (each deck's own page has those). */
+export type ModeList = Pick<ModeMeta, 'decks' | 'cards'>;
+export const listOf = (m: ModeMeta): ModeList => ({ decks: m.decks.map((d) => ({ ...d, matchups: [], players: [], crowns: [] })), cards: m.cards });
+
+/** One mode's list, for /api/meta/[mode] (the Decks page loads modes other than the first on demand). */
+export async function getModeList(mode: MetaMode): Promise<ModeList | null> {
+  'use cache';
+  cacheTag('meta');
+  cacheLife('meta');
+  const meta = await getMeta();
+  const m = meta?.modes[mode];
+  return m ? listOf(m) : null;
+}
+
 /** A deck by key: in the requested mode first, then any mode. */
 export function findDeck(meta: MetaSnapshot, key: string, prefer: MetaMode = 'pol'): { deck: DeckStat; mode: MetaMode; rank: number } | null {
   const order = [prefer, ...meta.order.filter((m) => m !== prefer)];

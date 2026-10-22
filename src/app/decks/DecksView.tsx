@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ModeFilter, ModeIcon } from '@/components/ModeFilter';
 import { deckHref } from '@/lib/decks';
 import { fmt } from '@/lib/format';
-import type { MetaMode, MetaSnapshot } from '@/lib/meta';
+import type { DeckStat, MetaMode, ModeList, ModeMeta } from '@/lib/meta';
 import type { ModeTrends } from '@/lib/trends';
 import { Trends } from './Trends';
 import s from './decks.module.css';
@@ -28,7 +28,17 @@ function setUrl(patch: Record<string, string | null>) {
   window.history.replaceState(null, '', u);
 }
 
-export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promise<Record<string, ModeTrends>> }) {
+/** What the page sends: every mode's header facts, Ranked's list, and the deck of the day. */
+export type DecksMeta = {
+  players: number;
+  order: MetaMode[];
+  modes: Record<MetaMode, Omit<ModeMeta, 'decks' | 'cards'> & { count: number; list: ModeList | null }>;
+  dotd: { mode: MetaMode; deck: DeckStat } | null;
+};
+
+const EMPTY: ModeList = { decks: [], cards: [] };
+
+export function DecksView({ meta, trends }: { meta: DecksMeta; trends: Promise<Record<string, ModeTrends>> }) {
   const params = useSearchParams();
   const router = useRouter();
   const [mode, setMode] = useState<MetaMode>(() => (meta.modes[params.get('mode') ?? ''] ? (params.get('mode') as MetaMode) : 'pol'));
@@ -36,14 +46,23 @@ export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promis
   const [sort, setSort] = useState<'use' | 'win'>('use');
   const [inc, setInc] = useState('');
   const [exc, setExc] = useState('');
-  // Deck of the day: the best win rate in Ultimate Champion among decks with enough games
-  // (at least 8, or the top quarter by games when the sample is small).
-  const dotd = useMemo(() => {
-    const pool = (meta.modes.uc?.decks.length ? meta.modes.uc : meta.modes.pol).decks;
-    const games = pool.map((d) => d.games).sort((a, b) => b - a);
-    const min = Math.min(8, games[Math.floor(games.length / 4)] ?? 2);
-    return [...pool].filter((d) => d.games >= min).sort((a, b) => b.win - a.win || b.games - a.games)[0] ?? null;
-  }, [meta]);
+  const dotd = meta.dotd?.deck ?? null;
+  // Modes other than Ranked load when picked (once each).
+  const [loaded, setLoaded] = useState<Record<MetaMode, ModeList>>({});
+  const list = meta.modes[mode].list ?? loaded[mode] ?? null;
+  useEffect(() => {
+    if (list) return;
+    let dead = false;
+    fetch(`/api/meta/${encodeURIComponent(mode)}`)
+      .then((r) => (r.ok ? (r.json() as Promise<ModeList>) : null))
+      .then((d) => {
+        if (!dead && d) setLoaded((l) => ({ ...l, [mode]: d }));
+      })
+      .catch(() => {});
+    return () => {
+      dead = true;
+    };
+  }, [mode, list]);
 
   // Old links (/decks?deck=KEY) open the deck stats page.
   const legacy = params.get('deck');
@@ -51,7 +70,7 @@ export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promis
     if (legacy) router.replace(deckHref(legacy, params.get('mode')));
   }, [legacy, params, router]);
 
-  const m = meta.modes[mode];
+  const m = useMemo(() => ({ ...meta.modes[mode], ...(list ?? EMPTY) }), [meta, mode, list]);
   // A 2-game deck at 100% isn't a real win rate, so "highest win %" only ranks decks with enough
   // games behind them (10, or 5 in thin modes).
   const minWinGames = m.decks.some((d) => d.games >= 10) ? 10 : 5;
@@ -72,7 +91,7 @@ export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promis
         <Fog density={0.8} />
         <EmberField count={200} gold={0.2} />
         {dotd && (
-          <HoverLink href={deckHref(dotd.key, meta.modes.uc?.decks.length ? 'uc' : 'pol')} className={s.dotd} aria-label={`Deck of the day: ${dotd.name}`}>
+          <HoverLink href={deckHref(dotd.key, meta.dotd!.mode)} className={s.dotd} aria-label={`Deck of the day: ${dotd.name}`}>
             <span className={s.dotdLabel}>
               <ModeIcon kind="uc" size={18} /> Deck of the day · Ultimate Champion
             </span>
@@ -111,7 +130,7 @@ export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promis
               setMode(k);
               setUrl({ mode: k === 'pol' ? null : k });
             }}
-            modes={meta.order.map((k) => ({ key: k, label: meta.modes[k].label, kind: meta.modes[k].kind, count: meta.modes[k].decks.length }))}
+            modes={meta.order.map((k) => ({ key: k, label: meta.modes[k].label, kind: meta.modes[k].kind, count: meta.modes[k].count }))}
           />
         </div>
 
@@ -190,7 +209,7 @@ export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promis
                   ))}
                 </DeckGrid>
               ) : (
-                <EmptyState text={m.decks.length ? 'No decks match these filters.' : 'Not enough battles in this mode yet.'} />
+                <EmptyState text={!list ? 'Loading decks…' : m.decks.length ? 'No decks match these filters.' : 'Not enough battles in this mode yet.'} />
               )
             ) : (
               <CardStats m={m} />
@@ -205,7 +224,7 @@ export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promis
   );
 }
 
-function CardStats({ m }: { m: MetaSnapshot['modes'][MetaMode] }) {
+function CardStats({ m }: { m: ModeList }) {
   const [sort, setSort] = useState<'use' | 'win'>('use');
   const rows = [...m.cards].filter((c) => c.games >= 5).sort((a, b) => (sort === 'use' ? b.games - a.games : b.win - a.win));
   const maxUse = Math.max(1, ...rows.map((r) => r.use));
