@@ -2,7 +2,6 @@ import { and, asc, gte, isNull, lt, or, sql } from 'drizzle-orm';
 import { connection } from 'next/server';
 import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb, schema } from '@/lib/db';
-import { getPros, recordPros } from '@/lib/pros';
 import { snapshotClan, snapshotPlayer, type SnapshotResult } from '@/lib/history/snapshot';
 
 export const maxDuration = 300;
@@ -34,9 +33,6 @@ export async function GET(req: Request) {
     .orderBy(asc(sql`coalesce(${schema.trackedClans.lastSnapshotAt}, 'epoch'::timestamptz)`))
     .limit(limit);
 
-  // The top 100's decks (for the Pro tracker). The meta has its own job (/api/cron/shared).
-  const pros = await getPros(100).catch(() => null);
-  if (pros) await recordPros(pros);
   const started = Date.now();
   const results: SnapshotResult[] = [];
   for (const c of clans) {

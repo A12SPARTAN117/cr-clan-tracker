@@ -1,11 +1,12 @@
 import 'server-only';
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache';
 import { desc, inArray } from 'drizzle-orm';
 import { cardById } from './cards';
-import { anyFailed, getPlayer, getPolLeaderboard } from './cr/api';
+import { getPlayer, getPolLeaderboard } from './cr/api';
 import { enqueue, getDb, schema } from './db';
 import { deckKey, deckLink, deckName, deckStats, toDeckCard, winConOf, type DeckCard } from './decks';
 import { pool } from './pool';
+import { readSnapshot, saveSnapshot } from './snapshots';
 
 /** A top Path of Legends player and the deck they have equipped right now. */
 export type Pro = {
@@ -20,19 +21,13 @@ export type Pro = {
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 
 /**
- * The global Path of Legends top `limit` and each one's current deck, from their profiles.
- * Cached like other API data (refreshed every few minutes), so the page and the cron share it.
+ * The global Path of Legends top `limit` and each one's current deck, from their profiles (about
+ * 100 API calls). Only the cron job calls this, and getProsPage when nothing is stored yet.
  */
-export async function getPros(limit = 100): Promise<Pro[] | null> {
-  'use cache';
+export async function buildPros(limit = 100): Promise<Pro[] | null> {
   const top = await getPolLeaderboard('global', limit);
-  if (!top.ok) {
-    cacheLife('crError');
-    return null;
-  }
+  if (!top.ok) return null;
   const profiles = await pool(top.data.items, 10, (p) => getPlayer(bare(p.tag)));
-  if (anyFailed(profiles)) cacheLife('crError');
-  else cacheLife('cr');
   return top.data.items.map((p, i): Pro => {
     const r = profiles[i];
     const cur = r?.ok ? r.data.currentDeck : [];
@@ -51,6 +46,42 @@ export async function getPros(limit = 100): Promise<Pro[] | null> {
     }
     return { rank: p.rank, tag: bare(p.tag), name: p.name, rating: p.eloRating, clan: p.clan?.name ?? null, deck };
   });
+}
+
+/** What the Pro tracker shows: the pros, their deck stretches, and when the decks were read (ms). */
+export type ProsSnapshot = { pros: Pro[]; history: Record<string, ProStint[]>; at: number };
+
+/**
+ * The Pro tracker as the cron job last stored it, so a view makes no API calls and no writes.
+ * With no database, or before the first run, it is built here (without writing history).
+ */
+export async function getProsPage(): Promise<ProsSnapshot | null> {
+  'use cache';
+  cacheTag('pros');
+  const stored = await readSnapshot<ProsSnapshot>('pros');
+  if (stored) {
+    cacheLife('meta');
+    return stored.data;
+  }
+  const pros = await buildPros();
+  if (!pros) {
+    cacheLife('crError');
+    return null;
+  }
+  cacheLife('cr');
+  const { at, stints } = await getProHistory(pros.map((p) => p.tag));
+  return { pros, history: stints, at };
+}
+
+/** Cron job: reads the top 100's decks, records any switches and stores the page's data. */
+export async function refreshPros(): Promise<{ pros: number } | null> {
+  const pros = await buildPros();
+  if (!pros) return null;
+  await recordPros(pros);
+  const { at, stints } = await getProHistory(pros.map((p) => p.tag));
+  await saveSnapshot('pros', { pros, history: stints, at } satisfies ProsSnapshot, new Date(at));
+  revalidateTag('pros', 'max');
+  return { pros: pros.length };
 }
 
 /** Records each pro's deck: extends their current stretch, or starts a new one when they switch. Best-effort. */

@@ -5,6 +5,7 @@ import { getDb } from '@/lib/db';
 import { refreshEventBoards } from '@/lib/events';
 import { buildMeta } from '@/lib/meta';
 import { recordMeta } from '@/lib/metaHistory';
+import { refreshPros } from '@/lib/pros';
 import { saveSnapshot, snapshotTime } from '@/lib/snapshots';
 
 export const maxDuration = 300;
@@ -15,7 +16,7 @@ const META_EVERY_MS = 50 * 60_000;
 /**
  * Builds the data that is the same for every visitor and stores it, so pages read it instead of
  * calling the Clash Royale API: the meta decks (about 250 battle logs, hourly) and the live event
- * boards with each one's full listing (every run). Same auth as the other
+ * boards with each one's full listing and the top 100's decks for the Pro tracker (every run). Same auth as the other
  * jobs: `Authorization: Bearer $CRON_SECRET`. `?force=1` rebuilds even when the stored copy is fresh.
  */
 export async function GET(req: Request) {
@@ -37,5 +38,6 @@ export async function GET(req: Request) {
     }
   }
   const events = await refreshEventBoards().catch((e) => ({ error: e instanceof Error ? e.message : 'failed' }));
-  return Response.json({ meta, events });
+  const pros = await refreshPros().catch((e) => ({ error: e instanceof Error ? e.message : 'failed' }));
+  return Response.json({ meta, events, pros });
 }
