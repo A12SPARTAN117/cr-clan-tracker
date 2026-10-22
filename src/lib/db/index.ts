@@ -17,6 +17,9 @@ const g = globalThis as unknown as { __crDb?: Promise<Db | null> };
 export function getDb(): Promise<Db | null> {
   const url = process.env.DATABASE_URL?.trim();
   if (!url) return Promise.resolve(null);
+  // `next build` prerenders in many worker processes at once, and the embedded Postgres can only
+  // be opened by one process (several at once corrupt its folder). Builds use no history then.
+  if (url.startsWith('pglite:') && process.env.NEXT_PHASE === 'phase-production-build') return Promise.resolve(null);
   if (!g.__crDb) {
     g.__crDb = open(url).catch((e) => {
       console.error('[db] could not open the database:', e instanceof Error ? (e.cause ?? e.message) : e);
