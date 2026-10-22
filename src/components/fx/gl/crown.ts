@@ -11,7 +11,9 @@ import {
   ShaderMaterial,
   WebGLRenderer,
 } from 'three';
+import { fxLevel, fxPixelRatio } from '../budget';
 import { getTheme, reducedMotion } from '../motion';
+import { addEffect, kick } from '../ticker';
 
 const TAU = Math.PI * 2;
 
@@ -96,7 +98,7 @@ export function mountCrown(el: HTMLElement, { count, scrollRoot }: { count?: num
   } catch {
     return null; // No WebGL: the scene still works without the crown.
   }
-  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const dpr = fxPixelRatio();
   renderer.setPixelRatio(dpr);
   renderer.setClearColor(0x000000, 0);
   renderer.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
@@ -106,8 +108,8 @@ export function mountCrown(el: HTMLElement, { count, scrollRoot }: { count?: num
   const camera = new PerspectiveCamera(52, 1, 0.1, 50);
   camera.position.set(0, 0, CAM_DIST);
 
-  // 2.8k dots on desktop, 1.5k on phones.
-  const n = count ?? (innerWidth < 760 ? 1500 : 2800);
+  // 2.8k dots on desktop, 1.5k on phones and slower devices.
+  const n = count ?? (innerWidth < 760 || fxLevel() !== 'full' ? 1500 : 2800);
   const base = crownPoints(n);
   const pos = new Float32Array(n * 3);
   const scat = new Float32Array(n * 3);
@@ -157,22 +159,31 @@ export function mountCrown(el: HTMLElement, { count, scrollRoot }: { count?: num
   let tmy = 0;
   let rot = 0;
   let burst = 0;
+  // The pointer is read once per frame, not on every move event (each read forces layout).
+  let cx: number | null = null;
+  let cy = 0;
   const onMove = (e: PointerEvent) => {
-    const r = el.getBoundingClientRect();
-    tmx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-    tmy = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    cx = e.clientX;
+    cy = e.clientY;
   };
   addEventListener('pointermove', onMove, { passive: true });
 
   let visible = true;
-  const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+  const io = new IntersectionObserver(([e]) => {
+    visible = e.isIntersecting;
+    if (visible) kick();
+  });
   io.observe(el);
 
-  let raf = 0;
+  let drawn = false;
   const frame = () => {
-    raf = requestAnimationFrame(frame);
-    if (!visible || document.hidden) return;
     const still = reducedMotion();
+    if (cx !== null) {
+      const b = el.getBoundingClientRect();
+      tmx = ((cx - b.left) / b.width - 0.5) * 2;
+      tmy = ((cy - b.top) / b.height - 0.5) * 2;
+      cx = null;
+    }
     const root = scrollRoot?.current ?? el;
     const r = root.getBoundingClientRect();
     const sp = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height * 0.9)));
@@ -193,11 +204,13 @@ export function mountCrown(el: HTMLElement, { count, scrollRoot }: { count?: num
       mat.needsUpdate = true;
     }
     renderer.render(scene, camera);
+    drawn = true;
   };
-  raf = requestAnimationFrame(frame);
+  // The hero's centrepiece: full frame rate, still frame only under reduced motion.
+  const stop = addEffect(frame, { active: () => visible && !(drawn && reducedMotion()), fps: 60 });
 
   return () => {
-    cancelAnimationFrame(raf);
+    stop();
     removeEventListener('pointermove', onMove);
     ro.disconnect();
     io.disconnect();

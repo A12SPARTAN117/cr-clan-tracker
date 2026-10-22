@@ -1,6 +1,7 @@
 'use client';
 
 import { AdditiveBlending, BufferAttribute, BufferGeometry, NormalBlending, Points, ShaderMaterial } from 'three';
+import { fxLevel } from '../budget';
 import { getTheme } from '../motion';
 import { mountThree } from './three';
 
@@ -46,12 +47,15 @@ const fragment = /* glsl */ `
 `;
 
 /** Mounts the ember scene into `el` (see ../EmberField). Returns a cleanup function. */
-export function mountEmbers(el: HTMLElement, { count, gold, intensity }: { count: number; gold: number; intensity: number }) {
-  const n = innerWidth < 760 ? Math.round(count * 0.5) : count;
+export function mountEmbers(el: HTMLElement, { count, gold, intensity, fps }: { count: number; gold: number; intensity: number; fps: number }) {
+  const n = innerWidth < 760 || fxLevel() !== 'full' ? Math.round(count * 0.5) : count;
   let pointer = { x: 9, y: 9 };
+  // The pointer is read once per frame, not on every move event (each read forces layout).
+  let cx: number | null = null;
+  let cy = 0;
   const onMove = (e: PointerEvent) => {
-    const r = el.getBoundingClientRect();
-    pointer = { x: ((e.clientX - r.left) / r.width - 0.5) * 2, y: -((e.clientY - r.top) / r.height - 0.5) * 2 };
+    cx = e.clientX;
+    cy = e.clientY;
   };
   addEventListener('pointermove', onMove, { passive: true });
   const stop = mountThree(
@@ -90,6 +94,11 @@ export function mountEmbers(el: HTMLElement, { count, gold, intensity }: { count
             mat.needsUpdate = true;
           }
           mat.uniforms.uTime.value = still ? 12 : t;
+          if (cx !== null) {
+            const r = el.getBoundingClientRect();
+            pointer = { x: ((cx - r.left) / r.width - 0.5) * 2, y: -((cy - r.top) / r.height - 0.5) * 2 };
+            cx = null;
+          }
           px += (pointer.x - px) * 0.08;
           py += (pointer.y - py) * 0.08;
           mat.uniforms.uPointer.value = [px, py];
@@ -100,7 +109,7 @@ export function mountEmbers(el: HTMLElement, { count, gold, intensity }: { count
         },
       };
     },
-    { fov: 50, z: 4 },
+    { fov: 50, z: 4, fps },
   );
   return () => {
     removeEventListener('pointermove', onMove);
