@@ -4,35 +4,17 @@ import { enqueue, getDb, schema } from './db';
 
 /**
  * Player directory for name search. The official API only finds players by tag, so every
- * roster and profile the site fetches is recorded here. Stored in Postgres when DATABASE_URL
- * is set; otherwise (or if the table is not migrated yet) in this server process's memory.
+ * roster and profile the site fetches is recorded here, and the directory job
+ * (/api/cron/directory) adds every country's Path of Legends leaderboard. Stored in Postgres;
+ * without DATABASE_URL name search only covers the global top 1,000.
  */
 
 export type DirPlayer = { tag: string; name: string; clanTag: string | null; clanName: string | null; trophies: number | null };
 
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
-const MEM_MAX = 250_000;
-const g = globalThis as unknown as { __crDir?: Map<string, DirPlayer> };
-const mem = () => (g.__crDir ??= new Map());
 
-function remember(rows: DirPlayer[]) {
-  const m = mem();
-  for (const r of rows) {
-    m.delete(r.tag); // re-insert so the newest entries survive trimming
-    m.set(r.tag, r);
-  }
-  if (m.size > MEM_MAX) for (const k of [...m.keys()].slice(0, m.size - MEM_MAX)) m.delete(k);
-}
-
-
-/**
- * Records players (deduped by tag). Never throws: search is best-effort. `persist: false`
- * keeps them in memory only (used for the bulk leaderboard seed, which is rebuilt daily).
- */
-export async function indexPlayers(
-  input: { tag: string; name: string; clanTag?: string | null; clanName?: string | null; trophies?: number | null }[],
-  { persist = true }: { persist?: boolean } = {},
-) {
+/** Records players (deduped by tag). Never throws: search is best-effort. */
+export async function indexPlayers(input: { tag: string; name: string; clanTag?: string | null; clanName?: string | null; trophies?: number | null }[]) {
   const rows: DirPlayer[] = [
     ...new Map(
       input
@@ -41,8 +23,6 @@ export async function indexPlayers(
     ).values(),
   ];
   if (!rows.length) return;
-  remember(rows);
-  if (!persist) return;
   return enqueue(() => persistRows(rows));
 }
 
@@ -93,82 +73,18 @@ export function rankByName<T extends { name: string; trophies: number | null }>(
 export async function findPlayersByName(q: string, limit = 100): Promise<DirPlayer[]> {
   const n = q.trim().toLowerCase();
   if (n.length < 2) return [];
-  const found = new Map<string, DirPlayer>();
   const db = await getDb();
-  if (db) {
-    try {
-      const esc = n.replace(/[\\%_]/g, (c) => `\\${c}`);
-      const rows = await db
-        .select({ tag: schema.players.tag, name: schema.players.name, clanTag: schema.players.clanTag, clanName: schema.players.clanName, trophies: schema.players.trophies })
-        .from(schema.players)
-        .where(like(schema.players.nameLower, `%${esc}%`))
-        .orderBy(desc(schema.players.trophies))
-        .limit(500);
-      for (const r of rows) found.set(r.tag, r);
-    } catch {
-      // Table not migrated yet: fall through to memory.
-    }
+  if (!db) return [];
+  try {
+    const esc = n.replace(/[\\%_]/g, (c) => `\\${c}`);
+    const rows = await db
+      .select({ tag: schema.players.tag, name: schema.players.name, clanTag: schema.players.clanTag, clanName: schema.players.clanName, trophies: schema.players.trophies })
+      .from(schema.players)
+      .where(like(schema.players.nameLower, `%${esc}%`))
+      .orderBy(desc(schema.players.trophies))
+      .limit(500);
+    return rankByName(rows, n, limit);
+  } catch {
+    return []; // table not migrated yet
   }
-  for (const r of mem().values()) if (!found.has(r.tag) && r.name.toLowerCase().includes(n)) found.set(r.tag, r);
-  return rankByName([...found.values()], n, limit);
-}
-
-/**
- * Seeds the directory from every Path of Legends leaderboard (global + each country, up to
- * 1,000 players each), at most once a day per server, in the background. The first search
- * after a cold start therefore sees a partial directory; later ones see up to ~200k players.
- */
-export function seedDirectory(fetchers: {
-  locations: () => Promise<{ id: number; isCountry: boolean }[]>;
-  board: (loc: number | 'global') => Promise<{ tag: string; name: string; clan?: { tag: string; name: string } }[]>;
-  /** Clan tags worth crawling for a location: top war and trophy clans. */
-  clans?: (loc: number | 'global', limit: number) => Promise<string[]>;
-  roster?: (tag: string) => Promise<{ tag: string; name: string; memberList: { tag: string; name: string; trophies: number }[] } | null>;
-}) {
-  const g = globalThis as unknown as { __crSeed?: { at: number; running: boolean } };
-  const st = (g.__crSeed ??= { at: 0, running: false });
-  if (st.running || Date.now() - st.at < 24 * 3600_000) return;
-  st.running = true;
-  // Paced on purpose: about 5 calls a second at most, a small share of the API budget (cr/limiter
-  // allows 20), so the crawl never crowds out visitors' pages.
-  const paced = <T>(p: Promise<T>) => Promise.all([p, new Promise((r) => setTimeout(r, 400))]).then(([v]) => v);
-  void (async () => {
-    try {
-      const locs = [{ id: 'global' as const }, ...(await fetchers.locations()).filter((l) => l.isCountry)];
-      let i = 0;
-      await Promise.all(
-        Array.from({ length: 2 }, async () => {
-          while (i < locs.length) {
-            const loc = locs[i++];
-            const items = await paced(fetchers.board(loc.id).catch(() => []));
-            await indexPlayers(
-              items.map((p) => ({ tag: p.tag, name: p.name, clanTag: p.clan?.tag, clanName: p.clan?.name })),
-              { persist: false },
-            );
-          }
-        }),
-      );
-      // Then everyone in the strongest clans: the global top 100 and each country's top 2. This
-      // reaches the far larger pool of players who never rank in Path of Legends; saved to the
-      // database too.
-      const { clans, roster } = fetchers;
-      if (clans && roster) {
-        const tags = new Set<string>();
-        for (const loc of locs) for (const t of await paced(clans(loc.id, loc.id === 'global' ? 50 : 2).catch(() => []))) tags.add(t);
-        const queue = [...tags];
-        let j = 0;
-        await Promise.all(
-          Array.from({ length: 2 }, async () => {
-            while (j < queue.length) {
-              const c = await paced(roster(queue[j++]).catch(() => null));
-              if (c) await indexClanMembers(c);
-            }
-          }),
-        );
-      }
-      st.at = Date.now();
-    } finally {
-      st.running = false;
-    }
-  })();
 }
