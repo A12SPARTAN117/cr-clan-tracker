@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useEffect, useState } from 'react';
 import { createClientCache } from '@/lib/clientCache';
 import { CardTile } from '@/components/CardTile';
@@ -74,15 +74,15 @@ export function Pinned() {
             Pin your player and clan tag, and Home opens straight to your data. Look yourself up above, then press <b>Pin</b> on
             your profile. Stored on this device only.
           </span>
-          <Link href="/players" className="btn btn-secondary" style={{ height: 40, padding: '0 16px', fontSize: 10 }}>
+          <HoverLink href="/players" className="btn btn-secondary" style={{ height: 40, padding: '0 16px', fontSize: 10 }}>
             Find my profile
-          </Link>
+          </HoverLink>
         </div>
       ) : (
         <div className={s.pinGrid}>
           {pins.player &&
             (player.data ? (
-              <Link href={`/player/${player.data.tag}`} data-spot="" className={s.pinCard}>
+              <HoverLink href={`/player/${player.data.tag}`} data-spot="" className={s.pinCard}>
                 {player.data.favourite ? (
                   <CardTile slug={player.data.favourite.slug} rarity={player.data.favourite.rarity} img={player.data.favourite.img} size="M" />
                 ) : (
@@ -117,7 +117,7 @@ export function Pinned() {
                     </span>
                   )}
                 </div>
-              </Link>
+              </HoverLink>
             ) : player.failed ? (
               <div className={s.pinEmpty}>
                 <span className="label" style={{ color: 'var(--ember)' }}>
@@ -129,7 +129,7 @@ export function Pinned() {
             ))}
           {pins.clan &&
             (clan.data ? (
-              <Link href={`/clan/${clan.data.tag}/manage`} data-spot="" className={s.pinCard}>
+              <HoverLink href={`/clan/${clan.data.tag}/manage`} data-spot="" className={s.pinCard}>
                 <ClanBadge badgeId={clan.data.badgeId} size={68} name={clan.data.name} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
                   <span className="label-sm">Your clan</span>
@@ -147,7 +147,7 @@ export function Pinned() {
                     FAME{clan.data.raceRank ? ` · #${clan.data.raceRank} IN RACE` : ''}
                   </span>
                 </div>
-              </Link>
+              </HoverLink>
             ) : clan.failed ? (
               <div className={s.pinEmpty}>
                 <span className="label" style={{ color: 'var(--ember)' }}>

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useEffect, useRef } from 'react';
 import { LineChart } from '@/components/LineChart';
 import { ActivityDot, HeatCell, ROLE_LABEL, ScoreGauge, ACTIVITY_LABEL, activityOf, heatStyle } from '@/components/ui/primitives';
@@ -98,9 +98,9 @@ export function MemberDrawer({
                 <ActivityDot hours={m.hours} />
                 Last seen {m.hours < 1 ? 'just now' : `${agoShort(m.hours)} ago`} · {ACTIVITY_LABEL[act]}
               </span>
-              <Link href={`/player/${m.tag}`} className="link-mono" style={{ fontSize: 10 }}>
+              <HoverLink href={`/player/${m.tag}`} className="link-mono" style={{ fontSize: 10 }}>
                 Player profile →
-              </Link>
+              </HoverLink>
             </div>
             <ScoreGauge score={m.score} size={120} big />
           </div>

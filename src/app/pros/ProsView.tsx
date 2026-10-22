@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useMemo, useSyncExternalStore } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { DeckBlock } from '@/components/DeckBlock';
@@ -70,9 +70,9 @@ function ProRow({ p, history, at, followed }: { p: Pro; history: Record<string, 
         {p.rank}
       </span>
       <span className={s.who}>
-        <Link href={`/player/${p.tag}`}>
+        <HoverLink href={`/player/${p.tag}`}>
           <b>{p.name}</b>
-        </Link>
+        </HoverLink>
         <small>
           {p.clan ?? 'No clan'}
           {fresh ? ` · new deck ${agoShort(st.switched!)} ago` : st.since != null && st.stints > 1 ? ` · on this deck ${agoShort(st.since)}` : ''}
@@ -143,9 +143,9 @@ export function ProsView({ pros, history, at }: { pros: Pro[]; history: Record<s
             <h2 className="heading">What #1 is using today</h2>
             <div className={s.hero}>
               <div className={s.heroWho}>
-                <Link href={`/player/${top.tag}`}>
+                <HoverLink href={`/player/${top.tag}`}>
                   <b>{top.name}</b>
-                </Link>
+                </HoverLink>
                 <span>
                   <PolRating rating={top.rating} size={14} /> · {top.clan ?? 'No clan'}
                 </span>

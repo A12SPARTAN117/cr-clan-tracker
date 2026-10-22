@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { Reveal } from '@/components/fx/Reveal';
 import { SceneHeader } from '@/components/SceneHeader';
 import { FAQ, FEATURES, GUIDES, QUICK_START, TIPS } from '@/content/help';
@@ -54,11 +54,11 @@ export default function HelpPage() {
             <h2 className={s.h2}>Everything you can do</h2>
             <div className={s.features}>
               {FEATURES.map((f) => (
-                <Link key={f.title} href={f.href} className={s.feature} data-spot="">
+                <HoverLink key={f.title} href={f.href} className={s.feature} data-spot="">
                   <b>{f.title}</b>
                   <p>{f.text}</p>
                   <span className="link-mono">{f.cta} →</span>
-                </Link>
+                </HoverLink>
               ))}
             </div>
           </section>
@@ -106,9 +106,9 @@ export default function HelpPage() {
 
           <section className={s.cta}>
             <b>Still stuck, or want to help keep the site free?</b>
-            <Link href="/support" className="btn btn-primary">
+            <HoverLink href="/support" className="btn btn-primary">
               Support us
-            </Link>
+            </HoverLink>
           </section>
         </main>
       </div>

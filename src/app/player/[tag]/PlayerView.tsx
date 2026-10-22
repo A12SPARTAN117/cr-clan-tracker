@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useCallback, useState, useTransition } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { ShareRecap } from '@/components/ShareRecap';
@@ -121,7 +121,7 @@ export function PlayerView({
               #{p.tag} <span style={{ color: 'var(--text-3)' }}>COPY</span>
             </button>
             {p.clan && (
-              <Link href={`/clan/${p.clan.tag}`} className={s.chip}>
+              <HoverLink href={`/clan/${p.clan.tag}`} className={s.chip}>
                 {p.clan.name}
                 {p.role && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: p.role === 'leader' ? 'var(--gold)' : 'var(--text-1)' }}>
@@ -129,7 +129,7 @@ export function PlayerView({
                     {ROLE_LABEL[p.role]}
                   </span>
                 )}
-              </Link>
+              </HoverLink>
             )}
           </div>
           <Reveal as="h1" className={s.name}>
@@ -179,16 +179,16 @@ export function PlayerView({
             >
               {syncing ? 'Syncing…' : '↻ Refresh'}
             </button>
-            <Link href={`/compare?type=player&tags=${p.tag}`} className="btn btn-scene">
+            <HoverLink href={`/compare?type=player&tags=${p.tag}`} className="btn btn-scene">
               Compare ⇄
-            </Link>
-            <Link href={`/player/${p.tag}/rivals`} className="btn btn-scene">
+            </HoverLink>
+            <HoverLink href={`/player/${p.tag}/rivals`} className="btn btn-scene">
               Rivals ⚔
-            </Link>
+            </HoverLink>
             {pinned && (
-              <Link href={`/player/${p.tag}/goals`} className="btn btn-scene">
+              <HoverLink href={`/player/${p.tag}/goals`} className="btn btn-scene">
                 Goals ◎
-              </Link>
+              </HoverLink>
             )}
             {!pinned && (
               <button
@@ -204,9 +204,9 @@ export function PlayerView({
               </button>
             )}
             {!pinned && isRival && pins.player && (
-              <Link href={`/player/${pins.player}/rivals/${p.tag}`} className="btn btn-scene">
+              <HoverLink href={`/player/${pins.player}/rivals/${p.tag}`} className="btn btn-scene">
                 Head to head →
-              </Link>
+              </HoverLink>
             )}
             <ShareRecap src={`/player/${p.tag}/recap`} file={`recap-${p.tag}.png`} title={`${p.name} · season recap`} />
           </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { Suspense, use } from 'react';
 import { ClanFrame } from '@/components/ui/ClanFrame';
 import { MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
@@ -55,7 +55,7 @@ function Details({ c, details }: { c: ClanRow; details: Promise<ClanDetails> }) 
 export function ClanCard({ c, details }: { c: ClanRow; details?: Promise<ClanDetails> }) {
   const tag = c.tag.replace('#', '');
   return (
-    <Link href={`/clan/${tag}`} data-spot="" className={`panel ${s.card}`}>
+    <HoverLink href={`/clan/${tag}`} data-spot="" className={`panel ${s.card}`}>
       <div className={s.head}>
         <ClanFrame badgeId={c.badgeId} warTrophies={c.clanWarTrophies} size={44} name={c.name} label />
         <div className={s.who}>
@@ -78,6 +78,6 @@ export function ClanCard({ c, details }: { c: ClanRow; details?: Promise<ClanDet
       ) : (
         <Body c={c} />
       )}
-    </Link>
+    </HoverLink>
   );
 }

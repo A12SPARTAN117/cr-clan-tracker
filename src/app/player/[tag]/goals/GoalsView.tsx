@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useState } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Reveal } from '@/components/fx/Reveal';
@@ -114,9 +114,9 @@ export function GoalsView({ name, tag, metrics, today, trackedSince }: { name: s
     <>
       <SceneHeader scene="/scenes/podium.jpg" height="clamp(320px, 42vh, 440px)" status={<span>Season goals · saved on this device</span>}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 820 }}>
-          <Link href={`/player/${tag}`} className={ps.chip} style={{ alignSelf: 'flex-start' }}>
+          <HoverLink href={`/player/${tag}`} className={ps.chip} style={{ alignSelf: 'flex-start' }}>
             ← {name} <span style={{ color: 'var(--text-3)' }}>#{tag}</span>
-          </Link>
+          </HoverLink>
           <Reveal as="h1" className={ps.name}>
             GOALS
           </Reveal>

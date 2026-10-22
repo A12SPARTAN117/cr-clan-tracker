@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useState } from 'react';
 import { DeckBlock, DeckGrid, type DeckBlockProps } from '@/components/DeckBlock';
 import { ModeFilter, type ModeOption } from '@/components/ModeFilter';
@@ -26,7 +26,7 @@ export function HomeDecks({ modes, players }: { modes: HomeMode[]; players: numb
       ) : (
         <p className="body" style={{ padding: '24px 0' }}>
           Not enough {m.label} battles in the sample yet. Try another mode or{' '}
-          <Link href={`/decks?mode=${m.key}`}>check the decks page</Link>.
+          <HoverLink href={`/decks?mode=${m.key}`}>check the decks page</HoverLink>.
         </p>
       )}
       <p className="label-sm" style={{ lineHeight: 1.6 }}>

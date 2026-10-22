@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useRef } from 'react';
 import { Fog } from '@/components/fx/Fog';
 import { ParticleCrown } from '@/components/fx/ParticleCrown';
@@ -29,7 +29,7 @@ export function PodiumScene({ rows, label, isClan, scoreIcon }: { rows: BoardRow
         {ORDER.map((i) => {
           const r = rows[i];
           return (
-            <Link key={i} href={r?.href ?? '#'} className={s.step} aria-label={r ? `${['First', 'Second', 'Third'][i]}: ${r.name}` : undefined}>
+            <HoverLink key={i} href={r?.href ?? '#'} className={s.step} aria-label={r ? `${['First', 'Second', 'Third'][i]}: ${r.name}` : undefined}>
               <div style={{ height: 'clamp(54px,7vw,92px)', display: 'flex', alignItems: 'flex-end', filter: 'drop-shadow(0 0 16px rgba(var(--glow-rgb), .4))' }}>
                 {r?.badgeId != null && <ClanBadge badgeId={r.badgeId} size={64} name={isClan ? r.name : undefined} />}
               </div>
@@ -55,7 +55,7 @@ export function PodiumScene({ rows, label, isClan, scoreIcon }: { rows: BoardRow
                   {['I', 'II', 'III'][i]}
                 </span>
               </div>
-            </Link>
+            </HoverLink>
           );
         })}
       </div>

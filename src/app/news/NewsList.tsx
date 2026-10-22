@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useState } from 'react';
 import type { NewsPost, NewsTag } from '@/content/news';
 import { art } from '@/lib/art';
@@ -22,7 +22,7 @@ export function NewsList({ posts }: { posts: NewsPost[] }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,340px),1fr))', gap: '28px 20px' }}>
         {list.map((p) => (
-          <Link key={p.slug} href={`/news/${p.slug}`} className="news-card" style={{ display: 'flex', flexDirection: 'column', gap: 14, color: 'var(--text-1)' }}>
+          <HoverLink key={p.slug} href={`/news/${p.slug}`} className="news-card" style={{ display: 'flex', flexDirection: 'column', gap: 14, color: 'var(--text-1)' }}>
             <div
               style={{
                 position: 'relative',
@@ -42,7 +42,7 @@ export function NewsList({ posts }: { posts: NewsPost[] }) {
             </span>
             <span style={{ font: '600 21px/1.25 var(--sans)', textWrap: 'pretty' }}>{p.title}</span>
             <span style={{ font: '400 14px/1.5 var(--sans)', color: 'var(--text-2)', textWrap: 'pretty' }}>{p.summary}</span>
-          </Link>
+          </HoverLink>
         ))}
       </div>
     </div>

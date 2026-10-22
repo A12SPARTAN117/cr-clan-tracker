@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useState } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Reveal } from '@/components/fx/Reveal';
@@ -60,12 +60,12 @@ function RivalRow({ x, me, at, open, onToggle }: { x: Rival; me: string; at: num
             ))}
           </ol>
           <div className={s.links}>
-            <Link href={`/player/${x.tag}`} className="link-mono">
+            <HoverLink href={`/player/${x.tag}`} className="link-mono">
               {x.name}&apos;s profile →
-            </Link>
-            <Link href={`/compare?type=player&tags=${me},${x.tag}`} className="link-mono">
+            </HoverLink>
+            <HoverLink href={`/compare?type=player&tags=${me},${x.tag}`} className="link-mono">
               Compare ⇄
-            </Link>
+            </HoverLink>
           </div>
         </div>
       )}
@@ -89,10 +89,10 @@ function Added({ me, name, found }: { me: string; name: string; found: Rival[] }
             const x = byTag.get(t);
             return (
               <li key={t}>
-                <Link href={`/player/${me}/rivals/${t}`} className={s.addedItem}>
+                <HoverLink href={`/player/${me}/rivals/${t}`} className={s.addedItem}>
                   <b>{x?.name ?? `#${t}`}</b>
                   <span>{x ? `${x.wins}–${x.losses}${x.draws ? `–${x.draws}` : ''} · ${x.games} games` : 'Head to head →'}</span>
-                </Link>
+                </HoverLink>
                 <button type="button" className={s.remove} aria-label={`Remove #${t} from rivals`} onClick={() => setRival(me, t, false)}>
                   ✕
                 </button>
@@ -154,9 +154,9 @@ export function RivalsView({ name, tag, character, rivals, logSize, at }: { name
         }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 880 }}>
-          <Link href={`/player/${tag}`} className={ps.chip} style={{ alignSelf: 'flex-start' }}>
+          <HoverLink href={`/player/${tag}`} className={ps.chip} style={{ alignSelf: 'flex-start' }}>
             ← {name} <span style={{ color: 'var(--text-3)' }}>#{tag}</span>
-          </Link>
+          </HoverLink>
           <Reveal as="h1" className={ps.name}>
             RIVALS
           </Reveal>

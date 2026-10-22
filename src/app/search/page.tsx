@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { Suspense } from 'react';
 import { EmptyState } from '@/components/EmptyState';
 import { TagFirst } from '@/components/TagFirst';
@@ -36,7 +36,7 @@ function Initial({ name }: { name: string }) {
 
 function ClanRow({ c, href }: { c: SearchClan; href: string }) {
   return (
-    <Link href={href} data-spot="" className="spot" style={row}>
+    <HoverLink href={href} data-spot="" className="spot" style={row}>
       <ClanBadge badgeId={c.badgeId} size={36} name={c.name} />
       <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
         <span style={{ font: '600 15px/1.15 var(--sans)', overflowWrap: 'anywhere' }}>{c.name}</span>
@@ -57,7 +57,7 @@ function ClanRow({ c, href }: { c: SearchClan; href: string }) {
           </span>
         )}
       </span>
-    </Link>
+    </HoverLink>
   );
 }
 
@@ -85,7 +85,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
             <div className="panel" style={{ overflow: 'hidden' }}>
               {r.tagPlayer && (
                 <ScopeSection kind="player">
-                  <Link href={playerHref(r.tagPlayer.tag)} data-spot="" className="spot" style={row}>
+                  <HoverLink href={playerHref(r.tagPlayer.tag)} data-spot="" className="spot" style={row}>
                     <Initial name={r.tagPlayer.name} />
                     <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
                       <span style={{ font: '600 15px/1.15 var(--sans)' }}>{r.tagPlayer.name}</span>
@@ -103,7 +103,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
                         {fmt(r.tagPlayer.trophies)}
                       </span>
                     </span>
-                  </Link>
+                  </HoverLink>
                 </ScopeSection>
               )}
               {r.tagClan && (
@@ -122,7 +122,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
           {r.players.length ? (
             <div className="panel" style={{ overflow: 'hidden' }}>
               {r.players.map((p) => (
-                <Link key={p.tag} href={playerHref(p.tag)} data-spot="" className="spot" style={row}>
+                <HoverLink key={p.tag} href={playerHref(p.tag)} data-spot="" className="spot" style={row}>
                   <Initial name={p.name} />
                   <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
                     <span style={{ font: '600 15px/1.15 var(--sans)', overflowWrap: 'anywhere' }}>{p.name}</span>
@@ -139,7 +139,7 @@ async function Results({ searchParams }: { searchParams: SP }) {
                   ) : (
                     <span />
                   )}
-                </Link>
+                </HoverLink>
               ))}
             </div>
           ) : (
@@ -168,9 +168,9 @@ async function Results({ searchParams }: { searchParams: SP }) {
             </p>
           )}
           {!r.clanError && r.clans.length > 0 && (
-            <Link href={`/clans?q=${encodeURIComponent(q)}`} className="link-mono" style={{ alignSelf: 'flex-start' }}>
+            <HoverLink href={`/clans?q=${encodeURIComponent(q)}`} className="link-mono" style={{ alignSelf: 'flex-start' }}>
               Filter these clans →
-            </Link>
+            </HoverLink>
           )}
         </section>
       </ScopeSection>

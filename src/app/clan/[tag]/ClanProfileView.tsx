@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useRouter } from 'next/navigation';
 import { Suspense, use, useState } from 'react';
 import { EmberField } from '@/components/fx/EmberField';
@@ -194,7 +194,7 @@ export function ClanProfileView({ c, levels }: { c: ClanProfile; levels?: Promis
                 <span style={{ padding: '5px 0' }}>{TYPE[c.type]}</span>
               </div>
             </div>
-            <Link
+            <HoverLink
               href={`/clan/${c.tag}/manage`}
               data-magnet=""
               className="btn btn-primary"
@@ -208,10 +208,10 @@ export function ClanProfileView({ c, levels }: { c: ClanProfile; levels?: Promis
               }}
             >
               Manage this clan →
-            </Link>
-            <Link href={`/compare?type=clan&tags=${c.tag}`} className="btn btn-scene" style={{ height: 56 }}>
+            </HoverLink>
+            <HoverLink href={`/compare?type=clan&tags=${c.tag}`} className="btn btn-scene" style={{ height: 56 }}>
               Compare ⇄
-            </Link>
+            </HoverLink>
             <ShareRecap src={`/clan/${c.tag}/recap`} file={`recap-${c.tag}.png`} title={`${c.name} · clan recap`} style={{ height: 56 }} />
           </div>
         </div>
@@ -306,12 +306,12 @@ export function ClanProfileView({ c, levels }: { c: ClanProfile; levels?: Promis
                   return (
                     <div key={r.tag} style={{ display: 'grid', gridTemplateColumns: '24px 1fr 80px', gap: 12, alignItems: 'center', padding: '10px 0', borderTop: '1px solid var(--hair)' }}>
                       <span style={{ font: '700 13px/1 var(--mono)', color: i === 0 ? 'var(--gold)' : 'var(--text-3)' }}>{i + 1}</span>
-                      <Link href={`/clan/${r.tag}`} style={{ display: 'flex', flexDirection: 'column', gap: 6, color: r.us ? 'var(--text-1)' : 'var(--text-2)' }}>
+                      <HoverLink href={`/clan/${r.tag}`} style={{ display: 'flex', flexDirection: 'column', gap: 6, color: r.us ? 'var(--text-1)' : 'var(--text-2)' }}>
                         <span style={{ font: '600 14px/1 var(--sans)' }}>{r.name}</span>
                         <span style={{ height: 2, background: 'var(--hair)' }}>
                           <span style={{ display: 'block', height: '100%', width: `${(r.fame / max) * 100}%`, background: r.us ? 'var(--blue-hi)' : 'var(--text-3)', boxShadow: r.us ? '0 0 8px rgba(var(--glow-rgb), .8)' : 'none' }} />
                         </span>
-                      </Link>
+                      </HoverLink>
                       <span style={{ textAlign: 'right', font: '600 13px/1 var(--mono)' }}>{fmt(r.fame)}</span>
                     </div>
                   );

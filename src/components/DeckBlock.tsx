@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import type { Rarity } from '@/lib/cards';
 import type { DeckStat } from '@/lib/meta';
 import { CardTile } from './CardTile';
@@ -54,17 +54,17 @@ export function DeckBlock(p: DeckBlockProps) {
           </span>
         )}
         {p.href ? (
-          <Link href={p.href} className={s.name}>
+          <HoverLink href={p.href} className={s.name}>
             {p.name}
-          </Link>
+          </HoverLink>
         ) : (
           <span className={s.name}>{p.name}</span>
         )}
         {p.action}
         {p.href && (
-          <Link href={p.href} className={s.stats}>
+          <HoverLink href={p.href} className={s.stats}>
             Deck stats <span aria-hidden>▸</span>
-          </Link>
+          </HoverLink>
         )}
       </header>
       <div className={s.cards}>

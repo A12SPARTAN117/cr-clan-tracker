@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { use } from 'react';
 import { deckHref } from '@/lib/decks';
 import { dstr } from '@/lib/format';
@@ -19,12 +19,12 @@ function Column({ title, mark, items, mode, empty }: { title: string; mark: stri
         <ol className={s.list}>
           {items.map((t) => (
             <li key={t.key}>
-              <Link href={deckHref(t.key, mode)} className={s.item} data-kind={t.kind}>
+              <HoverLink href={deckHref(t.key, mode)} className={s.item} data-kind={t.kind}>
                 <b>{t.name}</b>
                 <span>
                   {t.useThen == null ? `${pp(t.useNow)} of decks · ${t.gamesNow} games` : `${pp(t.useThen)} → ${pp(t.useNow)} · ${t.kind === 'falling' ? t.gamesThen : t.gamesNow} games`}
                 </span>
-              </Link>
+              </HoverLink>
             </li>
           ))}
         </ol>
