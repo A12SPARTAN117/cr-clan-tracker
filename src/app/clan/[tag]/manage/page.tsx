@@ -4,6 +4,7 @@ import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getClan } from '@/lib/cr/api';
 import { after, connection } from 'next/server';
+import { onceEvery, TRACK_MS } from '@/lib/throttle';
 import { applyHistory, getDashboard } from '@/lib/clan/dashboard';
 import { getClanHistory } from '@/lib/history';
 import { indexClanMembers } from '@/lib/directory';
@@ -37,7 +38,7 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (!clan.ok) return <LostScene variant={clan.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
   // Background work below reads the clock, so it must run at request time, not in a prerender.
   await connection();
-  after(() => indexClanMembers(clan.data));
+  if (onceEvery(`index-clan:${c.tag}`, TRACK_MS)) after(() => indexClanMembers(clan.data));
   const [data, history] = await Promise.all([getDashboard(c.tag), getClanHistory(c.tag)]);
   if (!data) return <LostScene variant="error" tag={c.tag} />;
   // Opening a dashboard starts (or refreshes) history tracking for the clan.

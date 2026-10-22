@@ -4,6 +4,7 @@ import { getClan, getPlayer } from '@/lib/cr/api';
 import { limitRequest } from '@/lib/ratelimit';
 import { indexClanMembers, indexPlayers } from '@/lib/directory';
 import { checkTag } from '@/lib/tags';
+import { onceEvery, TRACK_MS, VIEW_WRITE_MS } from '@/lib/throttle';
 
 /**
  * Search routing: a tag could belong to a player or a clan, so ask the API about both
@@ -20,8 +21,8 @@ export async function GET(req: Request, ctx: RouteContext<'/t/[tag]'>) {
   // Everyone found by tag joins the name directory, so their name finds them next time (and a
   // clan brings its whole roster).
   after(async () => {
-    if (player.ok) await indexPlayers([{ tag: player.data.tag, name: player.data.name, clanTag: player.data.clan?.tag, clanName: player.data.clan?.name, trophies: player.data.trophies }]);
-    if (clan.ok) await indexClanMembers(clan.data);
+    if (player.ok && onceEvery(`seen:${c.tag}`, VIEW_WRITE_MS)) await indexPlayers([{ tag: player.data.tag, name: player.data.name, clanTag: player.data.clan?.tag, clanName: player.data.clan?.name, trophies: player.data.trophies }]);
+    if (clan.ok && onceEvery(`index-clan:${c.tag}`, TRACK_MS)) await indexClanMembers(clan.data);
   });
   if (player.ok && clan.ok) redirect(`/t/${c.tag}/pick`);
   if (player.ok) redirect(`/player/${c.tag}`);

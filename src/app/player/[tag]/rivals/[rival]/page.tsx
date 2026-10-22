@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { after, connection } from 'next/server';
+import { onceEvery, VIEW_WRITE_MS } from '@/lib/throttle';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
 import { getBattleLog, getPlayer } from '@/lib/cr/api';
@@ -49,8 +50,8 @@ async function Content({ params }: { params: Params }) {
   if (!pa) return <LostScene variant="player" tag={a.tag} />;
   if (!pb) return <LostScene variant="player" tag={b.tag} />;
   // Both players' latest games are stored, so the head-to-head keeps growing.
-  if (logA.ok) after(() => saveBattles(a.tag, logA.data));
-  if (logB.ok) after(() => saveBattles(b.tag, logB.data));
+  if (logA.ok && onceEvery(`seen:${a.tag}`, VIEW_WRITE_MS)) after(() => saveBattles(a.tag, logA.data));
+  if (logB.ok && onceEvery(`seen:${b.tag}`, VIEW_WRITE_MS)) after(() => saveBattles(b.tag, logB.data));
   // Live event ranks need each board's full listing; they stream in.
   const ranksA = eventRanksOf(a.tag).catch(() => []);
   const ranksB = eventRanksOf(b.tag).catch(() => []);

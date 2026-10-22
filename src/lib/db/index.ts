@@ -12,7 +12,8 @@ export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
  * - DATABASE_URL=pglite:./.data/pg   embedded Postgres for local development, no server needed
  * - unset                            no history: pages show their "Data since" states
  */
-const g = globalThis as unknown as { __crDb?: Promise<Db | null> };
+// On globalThis: each route is bundled on its own, and module state isn't shared between bundles.
+const g = globalThis as unknown as { __crDb?: Promise<Db | null>; __crWrites?: { tail: Promise<unknown>; queued: number } };
 
 export function getDb(): Promise<Db | null> {
   const url = process.env.DATABASE_URL?.trim();
@@ -58,10 +59,17 @@ async function open(url: string): Promise<Db> {
  * Background database writes go through one queue: the embedded Postgres (PGlite) is
  * single-threaded and crashed under many concurrent upserts, which corrupted its data folder.
  */
-let queue: Promise<unknown> = Promise.resolve();
+const line = (g.__crWrites ??= { tail: Promise.resolve(), queued: 0 });
+/** Writes queued since this process started (shown by /api/cron/status). */
+export const writeStats = {
+  get queued() {
+    return line.queued;
+  },
+};
 export function enqueue<T>(job: () => Promise<T>): Promise<T> {
-  const run = queue.then(job);
-  queue = run.catch(() => {});
+  line.queued++;
+  const run = line.tail.then(job);
+  line.tail = run.catch(() => {});
   return run;
 }
 

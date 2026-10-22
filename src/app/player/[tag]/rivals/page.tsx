@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { after, connection } from 'next/server';
+import { onceEvery, VIEW_WRITE_MS } from '@/lib/throttle';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
 import { getBattleLog, getPlayer } from '@/lib/cr/api';
@@ -29,7 +30,7 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (!p) return <LostScene variant="error" tag={c.tag} />;
   // Opening Rivals keeps the player tracked and stores their latest games, like the profile does.
   after(() => trackPlayer(r.data));
-  if (log.ok) after(() => saveBattles(c.tag, log.data));
+  if (log.ok && onceEvery(`seen:${c.tag}`, VIEW_WRITE_MS)) after(() => saveBattles(c.tag, log.data));
   return <RivalsView name={p.name} tag={p.tag} character={p.favourite?.render ?? null} rivals={rivals} logSize={p.battles.length} at={Date.parse(p.generatedAt)} />;
 }
 
