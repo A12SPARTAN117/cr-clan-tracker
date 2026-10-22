@@ -49,7 +49,10 @@ async function open(url: string): Promise<Db> {
   const postgres = (await import('postgres')).default;
   const { drizzle } = await import('drizzle-orm/postgres-js');
   const { migrate } = await import('drizzle-orm/postgres-js/migrator');
-  const client = postgres(url, { max: 5, prepare: false, onnotice: () => {} });
+  // Connections per server process. Every instance opens its own pool, so instances × DB_POOL_MAX
+  // must stay under the pooler's client limit (Supabase free: 200). Idle ones close after 20 s.
+  const max = Math.max(1, Number(process.env.DB_POOL_MAX) || 5);
+  const client = postgres(url, { max, idle_timeout: 20, connect_timeout: 10, prepare: false, onnotice: () => {} });
   const db = drizzle({ client, schema });
   await migrate(db, { migrationsFolder });
   return db as unknown as Db;
