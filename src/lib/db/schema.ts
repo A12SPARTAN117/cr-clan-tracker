@@ -1,4 +1,4 @@
-import { date, index, integer, pgTable, primaryKey, real, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { date, index, integer, jsonb, pgTable, primaryKey, real, serial, text, timestamp } from 'drizzle-orm/pg-core';
 
 /**
  * History the official API cannot give us, built from our own snapshots.
@@ -247,4 +247,20 @@ export const proDecks = pgTable(
     rating: integer('rating'),
   },
   (t) => [index('pro_decks_tag').on(t.tag, t.lastSeenAt)],
+);
+
+/**
+ * Snapshots that are the same for every visitor (the meta decks, …), built by the cron job and
+ * read by pages, so a page view never calls the Clash Royale API for them. `kind` names the
+ * snapshot; pages read the newest row of their kind.
+ */
+export const sharedSnapshots = pgTable(
+  'shared_snapshots',
+  {
+    id: serial('id').primaryKey(),
+    kind: text('kind').notNull(),
+    generatedAt: timestamp('generated_at', { withTimezone: true }).notNull(),
+    data: jsonb('data').notNull(),
+  },
+  (t) => [index('shared_snapshots_kind').on(t.kind, t.generatedAt)],
 );

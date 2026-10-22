@@ -4,7 +4,7 @@ import { deckKey, toDeckCard } from '@/lib/decks';
 import { battle, cards, DECKS, MODES, side } from '../fixtures/battles';
 
 /**
- * getMeta on a hand-built sample with known answers. "Now" is Friday 16 Oct 2026 12:00 UTC
+ * buildMeta on a hand-built sample with known answers. "Now" is Friday 16 Oct 2026 12:00 UTC
  * (war day 2), so a river race battle on Thursday counts and one on Wednesday is training.
  */
 const NOW = new Date('2026-10-16T12:00:00Z');
@@ -44,16 +44,16 @@ vi.mock('@/lib/cr/api', () => ({
   getBattleLog: async (tag: string) => ({ ok: true, data: logs[tag] ?? [] }),
 }));
 
-// Set the clock now: getMeta runs while the suite is collected, before any hooks.
+// Set the clock now: buildMeta runs while the suite is collected, before any hooks.
 vi.useFakeTimers({ toFake: ['Date'] });
 vi.setSystemTime(NOW);
 afterAll(() => vi.useRealTimers());
 
 const key = (c: ReturnType<typeof cards>) => deckKey(c.map(toDeckCard));
 
-describe('getMeta aggregation', async () => {
-  const { getMeta } = await import('@/lib/meta');
-  const meta = (await getMeta())!;
+describe('buildMeta aggregation', async () => {
+  const { buildMeta } = await import('@/lib/meta');
+  const meta = (await buildMeta())!;
 
   it('samples the ranked top players plus the top war clan members', () => {
     expect(meta.players).toBe(3);
