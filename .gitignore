@@ -34,6 +34,7 @@ next-env.d.ts
 
 # Generated from scripts/down-page/ by scripts/build-down-page.mjs
 /public/down.html
+/public/down-scene.js
 /public/sw.js
 
 # test output
