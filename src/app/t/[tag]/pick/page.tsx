@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getClan, getPlayer } from '@/lib/cr/api';
@@ -24,7 +24,7 @@ async function Choices({ params }: { params: Promise<{ tag: string }> }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,420px),1fr))', gap: 16 }}>
       {player.ok && (
-        <Link href={`/player/${tag}`} data-spot="" className="panel spot ticks" style={card}>
+        <HoverLink href={`/player/${tag}`} data-spot="" className="panel spot ticks" style={card}>
           <span className="label-sm">Player</span>
           <span style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
             <span style={{ font: '800 26px/1 var(--mono)', letterSpacing: '-.04em' }}>{player.data.name}</span>
@@ -33,10 +33,10 @@ async function Choices({ params }: { params: Promise<{ tag: string }> }) {
             </span>
           </span>
           <span className="link-mono">Open →</span>
-        </Link>
+        </HoverLink>
       )}
       {clan.ok && (
-        <Link href={`/clan/${tag}`} data-spot="" className="panel spot ticks" style={card}>
+        <HoverLink href={`/clan/${tag}`} data-spot="" className="panel spot ticks" style={card}>
           <ClanBadge badgeId={clan.data.badgeId} size={48} name={clan.data.name} />
           <span style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
             <span style={{ font: '800 26px/1 var(--mono)', letterSpacing: '-.04em' }}>{clan.data.name}</span>
@@ -45,7 +45,7 @@ async function Choices({ params }: { params: Promise<{ tag: string }> }) {
             </span>
           </span>
           <span className="link-mono">Open →</span>
-        </Link>
+        </HoverLink>
       )}
     </div>
   );

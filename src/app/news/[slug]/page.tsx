@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { notFound } from 'next/navigation';
 import { CardTile } from '@/components/CardTile';
 import { NEWS, newsBySlug } from '@/content/news';
@@ -31,9 +31,9 @@ export default async function NewsArticle({ params }: PageProps<'/news/[slug]'>)
   const words = n.body.join(' ').split(/\s+/).length;
   return (
     <article style={{ maxWidth: 760, margin: '0 auto', padding: 'clamp(32px,5vw,64px) clamp(18px,4vw,24px) 80px', display: 'flex', flexDirection: 'column', gap: 26, animation: 'oaFade .35s' }}>
-      <Link href="/news" className="link-mono" style={{ alignSelf: 'flex-start' }}>
+      <HoverLink href="/news" className="link-mono" style={{ alignSelf: 'flex-start' }}>
         ← All news
-      </Link>
+      </HoverLink>
       <span style={{ display: 'flex', gap: 12, font: '500 10px/1 var(--mono)', letterSpacing: '.14em' }}>
         <span style={{ color: TAG_FG[n.tag] }}>{n.tag}</span>
         <span style={{ color: 'var(--text-3)' }}>

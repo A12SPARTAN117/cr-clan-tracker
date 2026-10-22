@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { Suspense } from 'react';
 import { Reveal } from '@/components/fx/Reveal';
 import { TagSearch } from '@/components/TagSearch';
@@ -19,7 +19,7 @@ async function TopPlayers() {
   return (
     <div className="cells" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))' }}>
       {r.data.items.map((p) => (
-        <Link
+        <HoverLink
           key={p.tag}
           href={`/player/${p.tag.replace('#', '')}`}
           data-spot=""
@@ -37,7 +37,7 @@ async function TopPlayers() {
             <LeagueIcon league={7} size={22} />
             <PolRating rating={p.eloRating} size={16} style={{ font: '700 14px/1 var(--mono)' }} />
           </span>
-        </Link>
+        </HoverLink>
       ))}
     </div>
   );
@@ -59,7 +59,7 @@ async function PlayerResults({ searchParams }: { searchParams: Promise<Record<st
       {rows.length ? (
         <div className="cells" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))' }}>
           {rows.map((p) => (
-            <Link key={p.tag} href={`/player/${p.tag}`} data-spot="" className="spot" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center', padding: '14px 16px', color: 'var(--text-1)' }}>
+            <HoverLink key={p.tag} href={`/player/${p.tag}`} data-spot="" className="spot" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center', padding: '14px 16px', color: 'var(--text-1)' }}>
               <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
                 <span style={{ font: '600 15px/1.1 var(--sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
                 <span className="label-sm" style={{ letterSpacing: '.1em' }}>
@@ -72,7 +72,7 @@ async function PlayerResults({ searchParams }: { searchParams: Promise<Record<st
                   {fmt(p.trophies)}
                 </span>
               )}
-            </Link>
+            </HoverLink>
           ))}
         </div>
       ) : (
@@ -106,9 +106,9 @@ export default function PlayersPage(props: PageProps<'/players'>) {
       <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <span className="label">Path of Legends · global top 10</span>
-          <Link href="/leaderboards" className="link-mono" style={{ fontSize: 10 }}>
+          <HoverLink href="/leaderboards" className="link-mono" style={{ fontSize: 10 }}>
             Full leaderboard →
-          </Link>
+          </HoverLink>
         </div>
         <Suspense fallback={<span className="skeleton" style={{ height: 240 }} />}>
           <TopPlayers />

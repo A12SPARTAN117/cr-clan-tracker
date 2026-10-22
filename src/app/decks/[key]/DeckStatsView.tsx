@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
@@ -47,9 +47,9 @@ export function DeckStatsView({
   return (
     <main className="page" style={{ gap: 32 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <Link href={`/decks${mode === 'pol' ? '' : `?mode=${mode}`}`} className="link-mono" style={{ alignSelf: 'flex-start' }}>
+        <HoverLink href={`/decks${mode === 'pol' ? '' : `?mode=${mode}`}`} className="link-mono" style={{ alignSelf: 'flex-start' }}>
           ← All decks
-        </Link>
+        </HoverLink>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 20 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
             <span className="label">
@@ -72,9 +72,9 @@ export function DeckStatsView({
             <a href={link} className="btn btn-scene" style={{ border: '1px solid var(--hair)', color: 'var(--text-1)' }}>
               Open in game ↗
             </a>
-            <Link href={builderHref(deck.cards, { tower: deck.tower ? cardBySlug(deck.tower.slug)?.id : null, mode })} className="btn btn-scene" style={{ border: '1px solid var(--hair)', color: 'var(--text-1)' }}>
+            <HoverLink href={builderHref(deck.cards, { tower: deck.tower ? cardBySlug(deck.tower.slug)?.id : null, mode })} className="btn btn-scene" style={{ border: '1px solid var(--hair)', color: 'var(--text-1)' }}>
               Edit in builder
-            </Link>
+            </HoverLink>
           </div>
         </div>
       </div>
@@ -121,9 +121,9 @@ export function DeckStatsView({
               <span className={s.factRow}>
                 <MedalIcon size={22} title="Path of Legends rating" />
                 <Decode className={s.factV}>{fmt(best.rating)}</Decode>
-                <Link href={`/player/${best.tag}`} style={{ font: '500 13px/1.2 var(--sans)', overflowWrap: 'anywhere' }}>
+                <HoverLink href={`/player/${best.tag}`} style={{ font: '500 13px/1.2 var(--sans)', overflowWrap: 'anywhere' }}>
                   {best.name}
-                </Link>
+                </HoverLink>
               </span>
             ) : (
               <span className={s.factV}>—</span>
@@ -243,9 +243,9 @@ export function DeckStatsView({
                 {deck.players.map((p) => (
                   <tr key={p.tag}>
                     <td>
-                      <Link href={`/player/${p.tag}`} style={{ color: 'var(--text-1)', font: '600 14px/1.2 var(--sans)' }}>
+                      <HoverLink href={`/player/${p.tag}`} style={{ color: 'var(--text-1)', font: '600 14px/1.2 var(--sans)' }}>
                         {p.name}
-                      </Link>
+                      </HoverLink>
                     </td>
                     <td className={s.num}>
                       {p.rating != null ? (

@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CardTile } from '@/components/CardTile';
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
 import { Reveal } from '@/components/fx/Reveal';
 import { EmberField } from '@/components/fx/EmberField';
@@ -72,7 +72,7 @@ export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promis
         <Fog density={0.8} />
         <EmberField count={200} gold={0.2} />
         {dotd && (
-          <Link href={deckHref(dotd.key, meta.modes.uc?.decks.length ? 'uc' : 'pol')} className={s.dotd} aria-label={`Deck of the day: ${dotd.name}`}>
+          <HoverLink href={deckHref(dotd.key, meta.modes.uc?.decks.length ? 'uc' : 'pol')} className={s.dotd} aria-label={`Deck of the day: ${dotd.name}`}>
             <span className={s.dotdLabel}>
               <ModeIcon kind="uc" size={18} /> Deck of the day · Ultimate Champion
             </span>
@@ -89,7 +89,7 @@ export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promis
                 <em>{dotd.win.toFixed(1)}%</em> win · {fmt(dotd.games)} games · avg {dotd.avgElixir.toFixed(1)} elixir
               </span>
             </span>
-          </Link>
+          </HoverLink>
         )}
         <div className={s.scrim} />
         <div className={s.frame} />
@@ -175,9 +175,9 @@ export function DecksView({ meta, trends }: { meta: MetaSnapshot; trends: Promis
                 </div>
               )}
               <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 14 }}>
-                <Link href={`/decks/builder${mode === 'pol' ? '' : `?mode=${mode}`}`} className="btn btn-secondary btn-sm">
+                <HoverLink href={`/decks/builder${mode === 'pol' ? '' : `?mode=${mode}`}`} className="btn btn-secondary btn-sm">
                   Deck builder ▸
-                </Link>
+                </HoverLink>
                 <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: 'var(--text-3)' }}>{view === 'decks' ? `${decks.length} DECKS` : `${m.cards.length} CARDS`}</span>
               </span>
             </div>

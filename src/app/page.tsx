@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { Suspense } from 'react';
 import { metaDeck } from '@/components/DeckBlock';
 import { Draw, Reveal } from '@/components/fx/Reveal';
@@ -53,7 +53,7 @@ async function PolTop() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       {r.data.items.map((p, i) => (
-        <Link key={p.tag} href={`/player/${p.tag.replace('#', '')}`} className={s.polRow}>
+        <HoverLink key={p.tag} href={`/player/${p.tag.replace('#', '')}`} className={s.polRow}>
           <span
             style={{
               font: '800 26px/1 var(--mono)',
@@ -75,7 +75,7 @@ async function PolTop() {
             <LeagueIcon league={7} size={28} />
             <PolRating rating={p.eloRating} size={20} style={{ font: '700 18px/1 var(--mono)' }} />
           </span>
-        </Link>
+        </HoverLink>
       ))}
     </div>
   );
@@ -110,9 +110,9 @@ export default function Home() {
                 Top decks right now
               </h2>
             </div>
-            <Link href="/decks" className="link-mono">
+            <HoverLink href="/decks" className="link-mono">
               All decks →
-            </Link>
+            </HoverLink>
           </div>
           <Draw />
           <Suspense fallback={<DecksFallback />}>
@@ -131,12 +131,12 @@ export default function Home() {
             <div className={s.section}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span className="label">04 · Latest news</span>
-                <Link href="/news" className="link-mono" style={{ fontSize: 10 }}>
+                <HoverLink href="/news" className="link-mono" style={{ fontSize: 10 }}>
                   All news →
-                </Link>
+                </HoverLink>
               </div>
               {news.map((n) => (
-                <Link key={n.slug} href={`/news/${n.slug}`} className={s.newsRow}>
+                <HoverLink key={n.slug} href={`/news/${n.slug}`} className={s.newsRow}>
                   <div className={s.newsThumb} style={{ backgroundImage: art(n.scene) }} />
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <span style={{ display: 'flex', gap: 10, font: '500 9px/1 var(--mono)', letterSpacing: '.14em' }}>
@@ -145,7 +145,7 @@ export default function Home() {
                     </span>
                     <span style={{ font: '600 17px/1.25 var(--sans)', textWrap: 'pretty' }}>{n.title}</span>
                   </div>
-                </Link>
+                </HoverLink>
               ))}
             </div>
           )}
@@ -170,12 +170,12 @@ export default function Home() {
               Activity, war decks, donations and an Asset Score for every member. Spot promotion candidates and who has gone quiet.
             </p>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Link href="/my-clan" data-magnet="" className="btn btn-primary" style={{ height: 48, padding: '0 22px', background: 'var(--text-1)', color: 'var(--void)' }}>
+              <HoverLink href="/my-clan" data-magnet="" className="btn btn-primary" style={{ height: 48, padding: '0 22px', background: 'var(--text-1)', color: 'var(--void)' }}>
                 Open dashboard
-              </Link>
-              <Link href="/clans" className="btn btn-scene" style={{ height: 48, padding: '0 18px' }}>
+              </HoverLink>
+              <HoverLink href="/clans" className="btn btn-scene" style={{ height: 48, padding: '0 18px' }}>
                 Find a clan →
-              </Link>
+              </HoverLink>
             </div>
           </div>
         </section>

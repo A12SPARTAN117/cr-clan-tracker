@@ -10,7 +10,7 @@ import type { PlayerProfile } from '@/lib/player/profile';
 import type { Rivals } from '@/lib/player/rivals';
 import type { Insights } from '@/lib/player/insights';
 import { InsightsStrip, TiltWarning } from './Insights';
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { BattleKindIcon, KIND_LABEL } from './BattleKindIcon';
 import s from './overview.module.css';
 
@@ -97,7 +97,7 @@ function Enemies({ p }: { p: PlayerProfile }) {
 function RivalsTeaser({ tag, r }: { tag: string; r: Rivals }) {
   const top = r.rivals.slice(0, 3);
   return (
-    <Link href={`/player/${tag}/rivals`} className={s.rivalsTeaser} aria-label="Rivals: head-to-head records">
+    <HoverLink href={`/player/${tag}/rivals`} className={s.rivalsTeaser} aria-label="Rivals: head-to-head records">
       <span className={s.rivalsTeaserHead}>
         <span className="label">Rivals · head to head</span>
         <span className="link-mono">{r.rivals.length ? `All ${r.rivals.length} rivals →` : 'Open rivals →'}</span>
@@ -119,7 +119,7 @@ function RivalsTeaser({ tag, r }: { tag: string; r: Rivals }) {
           Nobody twice in the last {r.games} 1v1 games yet. Games are kept from now on, so rivals build up here.
         </span>
       )}
-    </Link>
+    </HoverLink>
   );
 }
 

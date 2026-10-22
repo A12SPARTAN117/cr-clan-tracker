@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SceneHeader } from '@/components/SceneHeader';
@@ -192,9 +192,9 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
             <button type="button" className="btn btn-scene" onClick={() => (setPin('clan', pinned ? null : tag), flash(pinned ? 'Unpinned' : 'Pinned as your clan'))}>
               {pinned ? '★ Pinned' : '☆ Pin'}
             </button>
-            <Link href={`/clan/${tag}`} className="btn btn-scene">
+            <HoverLink href={`/clan/${tag}`} className="btn btn-scene">
               Clan profile →
-            </Link>
+            </HoverLink>
           </div>
         </div>
       </SceneHeader>

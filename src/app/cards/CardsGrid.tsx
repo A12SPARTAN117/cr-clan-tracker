@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import type { CardInfo, Rarity } from '@/lib/cards';
@@ -70,9 +70,9 @@ export function CardsGrid({ cards }: { cards: CardInfo[] }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(88px,1fr))', gap: '24px 14px' }}>
         {list.map((c) => (
-          <Link key={c.id} href={`/cards/${c.slug}`} aria-label={c.name} style={{ color: 'var(--text-1)' }}>
+          <HoverLink key={c.id} href={`/cards/${c.slug}`} aria-label={c.name} style={{ color: 'var(--text-1)' }}>
             <CardTile slug={c.slug} label={c.name} img={c.icons.normal} rarity={c.rarity} evo={false} hero={false} size="M" showLabel />
-          </Link>
+          </HoverLink>
         ))}
       </div>
     </div>

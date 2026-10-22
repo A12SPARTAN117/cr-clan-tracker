@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import type { ReactNode } from 'react';
 import { Fog } from './fx/Fog';
 import { Reveal } from './fx/Reveal';
@@ -123,18 +123,18 @@ export function LostScene({ variant = 'route', tag, retry, children }: { variant
               Try again
             </button>
           ) : (
-            <Link href="/" data-magnet="" className="btn" style={{ height: 46, background: 'var(--text-1)', color: 'var(--void)' }}>
+            <HoverLink href="/" data-magnet="" className="btn" style={{ height: 46, background: 'var(--text-1)', color: 'var(--void)' }}>
               Back to the arena
-            </Link>
+            </HoverLink>
           )}
           {retry ? (
-            <Link href="/" className="btn btn-scene" style={{ height: 46 }}>
+            <HoverLink href="/" className="btn btn-scene" style={{ height: 46 }}>
               Back to the arena
-            </Link>
+            </HoverLink>
           ) : (
-            <Link href="/clans" className="btn btn-scene" style={{ height: 46 }}>
+            <HoverLink href="/clans" className="btn btn-scene" style={{ height: 46 }}>
               Search clans →
-            </Link>
+            </HoverLink>
           )}
         </div>
         {children}

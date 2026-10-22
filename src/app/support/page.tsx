@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { Reveal } from '@/components/fx/Reveal';
 import { SceneHeader } from '@/components/SceneHeader';
 import { DONATE_LINKS } from '@/lib/donate';
@@ -114,7 +114,7 @@ export default function SupportPage() {
             <li>Share the site with your clan. More clans tracked means more history and better meta stats for everyone.</li>
             <li>Pin your player and clan on their pages so Home opens straight to them.</li>
             <li>
-              New here? The <Link href="/help">Help page</Link> walks through every feature.
+              New here? The <HoverLink href="/help">Help page</HoverLink> walks through every feature.
             </li>
           </ul>
         </section>

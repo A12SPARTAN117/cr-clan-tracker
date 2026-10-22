@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { DeckBlock, DeckGrid, metaDeck } from '@/components/DeckBlock';
@@ -113,9 +113,9 @@ export default async function CardPage({ params }: PageProps<'/cards/[slug]'>) {
     <>
       <CardsHeader title="CARDS" line={`Card encyclopedia · ${c.name}`} />
       <main className="page" style={{ paddingTop: 28, gap: 32 }}>
-        <Link href="/cards" className="link-mono" style={{ alignSelf: 'flex-start' }}>
+        <HoverLink href="/cards" className="link-mono" style={{ alignSelf: 'flex-start' }}>
           ← All cards
-        </Link>
+        </HoverLink>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,420px),1fr))', gap: 32, alignItems: 'start' }}>
           <div className="panel" style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div style={{ position: 'absolute', inset: 12, border: '1px solid var(--hair)', borderRadius: 4, pointerEvents: 'none' }} />

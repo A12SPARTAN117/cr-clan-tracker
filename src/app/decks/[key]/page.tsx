@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { Suspense } from 'react';
 import { EmptyState } from '@/components/EmptyState';
 import { Portal } from '@/components/fx/Portal';
@@ -18,9 +18,9 @@ async function Content({ params, searchParams }: { params: Promise<{ key: string
   if (!found)
     return (
       <main className="page" style={{ maxWidth: 900 }}>
-        <Link href="/decks" className="link-mono">
+        <HoverLink href="/decks" className="link-mono">
           ← All decks
-        </Link>
+        </HoverLink>
         <EmptyState text="This deck is not in the current meta sample. Meta decks refresh every hour from the last 24 hours of top battles." dashed />
       </main>
     );

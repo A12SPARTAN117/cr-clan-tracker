@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { EmptyState } from '@/components/EmptyState';
@@ -15,9 +15,9 @@ function Side({ side, align, href }: { side: BattleSideInfo; align: 'left' | 'ri
     <div className={s.side} data-align={align}>
       <div className={s.who}>
         {href ? (
-          <Link href={href} className={s.pname}>
+          <HoverLink href={href} className={s.pname}>
             {side.name}
-          </Link>
+          </HoverLink>
         ) : (
           <span className={s.pname}>{side.name}</span>
         )}

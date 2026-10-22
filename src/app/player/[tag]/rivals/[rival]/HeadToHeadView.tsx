@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { Suspense, use } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Reveal } from '@/components/fx/Reveal';
@@ -71,13 +71,13 @@ function EventLines({ ranks }: { ranks: Promise<EventRank[]> }) {
 function PlayerCard({ p, ranks, us }: { p: Side; ranks: Promise<EventRank[]>; us: boolean }) {
   return (
     <section className={s.card} data-us={us}>
-      <Link href={`/player/${p.tag}`} className={s.who}>
+      <HoverLink href={`/player/${p.tag}`} className={s.who}>
         <b>{p.name}</b>
         <small>
           #{p.tag}
           {p.clan ? ` · ${p.clan}` : ''}
         </small>
-      </Link>
+      </HoverLink>
       <div className={s.stat}>
         <span className={s.statK}>{p.seasonal ? 'Season trophies' : 'Trophies'}</span>
         <span className={s.statV}>
@@ -135,9 +135,9 @@ export function HeadToHeadView({ a, b, games, ranksA, ranksB, at }: { a: Side; b
         }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 980 }}>
-          <Link href={`/player/${a.tag}/rivals`} className={ps.chip} style={{ alignSelf: 'flex-start' }}>
+          <HoverLink href={`/player/${a.tag}/rivals`} className={ps.chip} style={{ alignSelf: 'flex-start' }}>
             ← {a.name}&apos;s rivals
-          </Link>
+          </HoverLink>
           <Reveal as="h1" className={s.title}>
             {a.name} <span>vs</span> {b.name}
           </Reveal>
@@ -155,9 +155,9 @@ export function HeadToHeadView({ a, b, games, ranksA, ranksB, at }: { a: Side; b
             <button type="button" className="btn btn-scene" onClick={() => setRival(a.tag, b.tag, !added)}>
               {added ? '✓ In your rivals · remove' : '+ Add to rivals'}
             </button>
-            <Link href={`/compare?type=player&tags=${a.tag},${b.tag}`} className="btn btn-scene">
+            <HoverLink href={`/compare?type=player&tags=${a.tag},${b.tag}`} className="btn btn-scene">
               Compare ⇄
-            </Link>
+            </HoverLink>
           </div>
         </div>
       </SceneHeader>

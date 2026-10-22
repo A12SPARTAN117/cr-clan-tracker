@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { FEATURES } from '@/lib/features';
 import s from './SiteFooter.module.css';
 
@@ -15,13 +15,13 @@ export function SiteFooter() {
         .
       </p>
       <nav className={s.nav} aria-label="Footer">
-        <Link href="/cards">Cards</Link>
-        <Link href="/goals">Goals</Link>
-        <Link href="/pros">Pro tracker</Link>
-        <Link href="/leaderboards">Leaderboards</Link>
-        {FEATURES.news && <Link href="/news">News</Link>}
-        <Link href="/help">Help</Link>
-        <Link href="/support">Support us</Link>
+        <HoverLink href="/cards">Cards</HoverLink>
+        <HoverLink href="/goals">Goals</HoverLink>
+        <HoverLink href="/pros">Pro tracker</HoverLink>
+        <HoverLink href="/leaderboards">Leaderboards</HoverLink>
+        {FEATURES.news && <HoverLink href="/news">News</HoverLink>}
+        <HoverLink href="/help">Help</HoverLink>
+        <HoverLink href="/support">Support us</HoverLink>
         <span className={s.muted}>CR Clan Tracker · Fan-made</span>
       </nav>
     </footer>

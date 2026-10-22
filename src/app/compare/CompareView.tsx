@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useRouter } from 'next/navigation';
 import { useMemo, useOptimistic, useTransition } from 'react';
 import { DeckBlock } from '@/components/DeckBlock';
@@ -138,12 +138,12 @@ export function CompareView({ data: loaded, suggest }: { data: Comparison; sugge
             ] as const
           ).map(([kind, pair, title]) =>
             pair ? (
-              <Link key={kind} href={`/compare?type=${kind}&tags=${pair.map((x) => x.tag).join(',')}`} className={s.suggestCard}>
+              <HoverLink key={kind} href={`/compare?type=${kind}&tags=${pair.map((x) => x.tag).join(',')}`} className={s.suggestCard}>
                 <small>{title}</small>
                 <span>
                   {pair[0].name} <b>VS</b> {pair[1].name}
                 </span>
-              </Link>
+              </HoverLink>
             ) : null,
           )}
         </div>
@@ -161,13 +161,13 @@ export function CompareView({ data: loaded, suggest }: { data: Comparison; sugge
                 <th />
                 {data.entities.map((e, i) => (
                   <th key={e.tag} style={{ ['--c' as string]: COLORS[i] }}>
-                    <Link href={data.kind === 'player' ? `/player/${e.tag}` : `/clan/${e.tag}`} className={s.who}>
+                    <HoverLink href={data.kind === 'player' ? `/player/${e.tag}` : `/clan/${e.tag}`} className={s.who}>
                       {e.badgeId != null && <ClanFrame badgeId={e.badgeId} warTrophies={e.warTrophies} size={34} label />}
                       <span>
                         <b>{e.name}</b>
                         <small>{e.sub}</small>
                       </span>
-                    </Link>
+                    </HoverLink>
                   </th>
                 ))}
               </tr>

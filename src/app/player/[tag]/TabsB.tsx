@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useState } from 'react';
 import { LeagueIcon, leagueName, PolRating } from '@/components/ui/primitives';
 import { polLabel } from '@/lib/leagues';
@@ -328,7 +328,7 @@ function NamesTimeline({ names }: { names: NameHistory }) {
               {n.name}
               <span style={{ font: '500 12px/1 var(--sans)', color: 'var(--text-2)' }}>
                 {' · '}
-                {n.clanTag ? <Link href={`/clan/${n.clanTag}`}>{n.clanName ?? `#${n.clanTag}`}</Link> : 'No clan'}
+                {n.clanTag ? <HoverLink href={`/clan/${n.clanTag}`}>{n.clanName ?? `#${n.clanTag}`}</HoverLink> : 'No clan'}
               </span>
             </span>
             <span style={{ font: '500 10px/1.4 var(--mono)', letterSpacing: '.06em', color: 'var(--text-3)' }}>

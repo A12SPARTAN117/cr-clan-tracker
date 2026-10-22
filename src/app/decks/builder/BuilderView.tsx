@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { CardTile } from '@/components/CardTile';
@@ -238,9 +238,9 @@ export function BuilderView({ meta }: { meta: PackedMeta }) {
   return (
     <main className="page" style={{ gap: 28 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <Link href={`/decks${mode === 'pol' ? '' : `?mode=${mode}`}`} className="link-mono" style={{ alignSelf: 'flex-start' }}>
+        <HoverLink href={`/decks${mode === 'pol' ? '' : `?mode=${mode}`}`} className="link-mono" style={{ alignSelf: 'flex-start' }}>
           ← Meta decks
-        </Link>
+        </HoverLink>
         <span className="label">Build · check the meta · find hard counters</span>
         <h1 style={{ margin: 0, font: '800 clamp(34px,6vw,84px)/.9 var(--mono)', letterSpacing: '-.05em' }}>DECK BUILDER</h1>
       </div>
@@ -564,7 +564,7 @@ function Meta({ report, cards, mode, onLoad }: { report: Report; cards: number; 
           {exact ? (
             <p className={s.lead}>
               This exact deck (same evo and hero slots) was played <b>{fmt(exact.games)}</b> times and won <b>{pct(exact.wins, exact.games)}</b> ({fmt(exact.wins)} wins).{' '}
-              <Link href={deckHref(exact.key, mode)}>Deck stats ▸</Link>
+              <HoverLink href={deckHref(exact.key, mode)}>Deck stats ▸</HoverLink>
             </p>
           ) : (
             <p className={s.lead}>

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { useSearchParams } from 'next/navigation';
 import { EmptyState } from '@/components/EmptyState';
 import { ClanBadge } from '@/components/ui/ClanBadge';
@@ -69,7 +69,7 @@ export function BoardView({
               </span>
             </div>
             {rows.slice(3).map((r) => (
-              <Link key={r.tag + r.rank} href={r.href} className={`${s.row} ${s.link}`}>
+              <HoverLink key={r.tag + r.rank} href={r.href} className={`${s.row} ${s.link}`}>
                 <span style={{ font: '800 16px/1 var(--mono)', color: 'var(--text-3)' }}>{String(r.rank).padStart(2, '0')}</span>
                 <span style={{ font: '600 11px/1 var(--mono)', color: r.move ? (r.move > 0 ? 'var(--blue)' : 'var(--ember)') : 'var(--text-3)' }}>
                   {r.move == null ? '—' : r.move > 0 ? `▲ ${r.move}` : r.move < 0 ? `▼ ${-r.move}` : '—'}
@@ -86,7 +86,7 @@ export function BoardView({
                   <ScoreIcon tab={tab} />
                   {fmt(r.score)}
                 </span>
-              </Link>
+              </HoverLink>
             ))}
           </div>
         ) : (
