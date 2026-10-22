@@ -397,7 +397,7 @@ async function build(tag: string): Promise<{ data: PlayerProfile; failed: boolea
   for (const b of battles) {
     if (b.kind === 'friendly' || b.kind === 'boat' || b.result === 'draw') continue;
     for (const c of b.theirs) {
-      const e = foes.get(c.id) ?? { id: c.id, slug: c.slug, name: c.name, img: cardById(c.id)?.icons.normal ?? c.img, games: 0, losses: 0 };
+      const e = foes.get(c.id) ?? { id: c.id, slug: c.slug, name: c.name, img: cardById(c.id)?.icons.normal ?? c.img ?? null, games: 0, losses: 0 };
       e.games++;
       if (b.result === 'loss') e.losses++;
       foes.set(c.id, e);

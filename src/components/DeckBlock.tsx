@@ -6,8 +6,8 @@ import { CycleIcon, ElixirIcon } from './ui/icons';
 import { fmt } from '@/lib/format';
 import s from './DeckBlock.module.css';
 
-export type BlockCard = { id: number; slug: string; name: string; img: string | null; rarity: Rarity; evo: boolean; hero: boolean; level?: number | null };
-export type BlockTower = { slug: string; name: string; img: string | null; level?: number | null } | null;
+export type BlockCard = { id: number; slug: string; name: string; img?: string | null; rarity: Rarity; evo: boolean; hero: boolean; level?: number | null };
+export type BlockTower = { slug: string; name: string; img?: string | null; level?: number | null } | null;
 
 export type DeckBlockProps = {
   name: string;

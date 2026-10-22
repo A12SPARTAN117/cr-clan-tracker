@@ -42,6 +42,12 @@ const bySlug = new Map<string, CardInfo>([...CARDS, ...TOWER_TROOPS].map((c) => 
 export const cardById = (id: number) => byId.get(id);
 export const cardBySlug = (slug: string) => bySlug.get(slug);
 
+/** The art a card is drawn with when nothing else is given: its evolution or hero art when played that way. */
+export function cardArt(slug: string, evo = false, hero = false): string | null {
+  const i = bySlug.get(slug);
+  return (evo ? i?.icons.evolution : hero ? i?.icons.hero : i?.icons.normal) ?? null;
+}
+
 export const slugify = (n: string) =>
   n.toLowerCase().replace(/\./g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 

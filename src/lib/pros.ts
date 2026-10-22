@@ -1,7 +1,7 @@
 import 'server-only';
 import { cacheLife, cacheTag, revalidateTag } from 'next/cache';
 import { desc, inArray } from 'drizzle-orm';
-import { cardById } from './cards';
+import { cardArt, cardById } from './cards';
 import { getPlayer, getPolLeaderboard } from './cr/api';
 import { enqueue, getDb, schema } from './db';
 import { deckKey, deckLink, deckName, deckStats, toDeckCard, winConOf, type DeckCard } from './decks';
@@ -15,10 +15,12 @@ export type Pro = {
   name: string;
   rating: number;
   clan: string | null;
-  deck: { key: string; name: string; cards: DeckCard[]; tower: { slug: string; name: string; img: string | null } | null; avgElixir: number; cycle: number; link: string } | null;
+  deck: { key: string; name: string; cards: DeckCard[]; tower: { slug: string; name: string; img?: string | null } | null; avgElixir: number; cycle: number; link: string } | null;
 };
 
 const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
+/** A tower troop, with its art URL only when the card table doesn't have the same one. */
+const towerOf = (slug: string, name: string, img: string | null) => ({ slug, name, ...(img !== cardArt(slug) ? { img } : {}) });
 
 /**
  * The global Path of Legends top `limit` and each one's current deck, from their profiles (about
@@ -39,7 +41,7 @@ export async function buildPros(limit = 100): Promise<Pro[] | null> {
         key: deckKey(cards),
         name: deckName(cards, winConOf(cards)),
         cards,
-        tower: t ? { slug: cardById(t.id)?.slug ?? 'tower-princess', name: t.name, img: t.iconUrls.medium ?? null } : null,
+        tower: t ? towerOf(cardById(t.id)?.slug ?? 'tower-princess', t.name, t.iconUrls.medium ?? null) : null,
         ...deckStats(cards),
         link: deckLink(cards.map((c) => c.id)),
       };
