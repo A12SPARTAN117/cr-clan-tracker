@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { HoverLink } from '@/components/ui/HoverLink';
 import { usePathname, useRouter } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { FEATURES } from '@/lib/features';
@@ -187,17 +187,17 @@ function NavView({ pathname: path }: { pathname: string | null }) {
         className={`${s.header} ${overlay ? s.overlay : ''} ${overlay && (scrolled || menu) ? s.scrolled : ''}`}
         data-menu={menu || undefined}
       >
-        <Link href="/" className={s.brand} aria-label="CR Clan Tracker home">
+        <HoverLink href="/" className={s.brand} aria-label="CR Clan Tracker home">
           <BrandMark />
           <span className={s.brandText}>
             CR·CLAN<span className={s.brandSlash}>/</span>TRACKER
           </span>
-        </Link>
+        </HoverLink>
         <nav className={s.links} aria-label="Main">
           {LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className={l.href === '/support' ? `${s.link} ${s.support}` : s.link} aria-current={isActive(pathname, l.match) ? 'page' : undefined}>
+            <HoverLink key={l.href} href={l.href} className={l.href === '/support' ? `${s.link} ${s.support}` : s.link} aria-current={isActive(pathname, l.match) ? 'page' : undefined}>
               {l.label}
-            </Link>
+            </HoverLink>
           ))}
         </nav>
         <div className={s.grow} />
@@ -229,10 +229,10 @@ function NavView({ pathname: path }: { pathname: string | null }) {
               {MENU.map((l) => {
                 const cur = l.href === '/' ? pathname === '/' : isActive(pathname, l.match);
                 return (
-                  <Link key={l.href} href={l.href} className={s.sheetLink} aria-current={cur ? 'page' : undefined} onClick={() => setMenu(false)}>
+                  <HoverLink key={l.href} href={l.href} className={s.sheetLink} aria-current={cur ? 'page' : undefined} onClick={() => setMenu(false)}>
                     {l.label}
                     <span aria-hidden>→</span>
-                  </Link>
+                  </HoverLink>
                 );
               })}
             </nav>
@@ -241,10 +241,10 @@ function NavView({ pathname: path }: { pathname: string | null }) {
       )}
       <nav className={s.tabbar} aria-label="Primary">
         {TABS.map((t, i) => (
-          <Link key={t.href} href={t.href} className={s.tab} aria-current={tabOn[i] && !menu ? 'page' : undefined}>
+          <HoverLink key={t.href} href={t.href} className={s.tab} aria-current={tabOn[i] && !menu ? 'page' : undefined}>
             <span className={s.tabIcon} style={t.icon} />
             {t.label}
-          </Link>
+          </HoverLink>
         ))}
         <button
           type="button"
