@@ -142,3 +142,70 @@
     animation: none;
   }
 }
+
+/* Board rows: these were inline styles repeated on every row. */
+.headRow {
+  background: var(--glass);
+  min-height: 42px;
+  font: 500 10px/42px var(--mono);
+  letter-spacing: 0.12em;
+  color: var(--text-3);
+}
+.scoreHead {
+  text-align: right;
+  color: var(--text-1);
+}
+.scoreHead span {
+  color: var(--blue);
+}
+.rankCell {
+  font: 800 16px/1 var(--mono);
+  color: var(--text-3);
+}
+.move {
+  font: 600 11px/1 var(--mono);
+  color: var(--text-3);
+}
+.move[data-dir='up'] {
+  color: var(--blue);
+}
+.move[data-dir='down'] {
+  color: var(--ember);
+}
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.noBadge {
+  width: 22px;
+}
+.whoName {
+  font: 600 14px/1.2 var(--sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cc {
+  font: 500 9px/1 var(--mono);
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+}
+.subCell {
+  font: 500 11px/1.2 var(--mono);
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  font: 700 15px/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
