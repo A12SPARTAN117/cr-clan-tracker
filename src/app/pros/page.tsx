@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { after, connection } from 'next/server';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
-import { getProHistory, getPros, recordPros } from '@/lib/pros';
+import { getProsPage } from '@/lib/pros';
 import { ProsView } from './ProsView';
 
 export const metadata: Metadata = {
@@ -12,13 +11,10 @@ export const metadata: Metadata = {
 };
 
 async function Content() {
-  const pros = await getPros(100);
-  if (!pros) return <LostScene variant="error" />;
-  // Deck history reads and writes the clock-stamped record, so it runs at request time.
-  await connection();
-  after(() => recordPros(pros));
-  const { at, stints } = await getProHistory(pros.map((p) => p.tag));
-  return <ProsView pros={pros} history={stints} at={at} />;
+  // Stored by the cron job: a view makes no API calls and no writes.
+  const data = await getProsPage();
+  if (!data) return <LostScene variant="error" />;
+  return <ProsView pros={data.pros} history={data.history} at={data.at} />;
 }
 
 export default function ProsPage() {
