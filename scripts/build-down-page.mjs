@@ -35,16 +35,18 @@ const buttons = links
   .join('\n    ');
 
 const src = (f) => readFileSync(path.join(root, 'scripts/down-page', f), 'utf8');
-// The three-crowned scene (three.js, prebuilt by bundle-down-scene.mjs) goes inline, so the page
-// stays one self-contained file that the service worker can cache.
-const scene = existsSync(path.join(root, 'scripts/down-page/scene.bundle.js')) ? src('scene.bundle.js').replaceAll('</script', '<\\/script') : '';
+// The three-crowned scene (three.js, prebuilt by bundle-down-scene.mjs, ~580 KB) is its own file.
+// The service worker caches the 14 KB page for every visitor and the scene only for returning
+// ones (see sw.js); without it the page shows its static crown.
+const scene = existsSync(path.join(root, 'scripts/down-page/scene.bundle.js')) ? src('scene.bundle.js') : '';
 const html = src('down.html')
   .replace('<!--DONATE_BUTTONS-->', () => buttons)
   .replaceAll('%DONATE_STATE%', links.length ? '' : 'no-donate')
-  .replace('<!--SCENE-->', () => (scene ? `<script>${scene}</script>` : ''));
-const version = createHash('sha256').update(html).update(src('sw.js')).digest('hex').slice(0, 12);
+  .replace('<!--SCENE-->', () => (scene ? '<script src="/down-scene.js" defer></script>' : ''));
+const version = createHash('sha256').update(html).update(scene).update(src('sw.js')).digest('hex').slice(0, 12);
 const sw = src('sw.js').replaceAll('%VERSION%', version);
 
 writeFileSync(path.join(root, 'public/down.html'), html);
+writeFileSync(path.join(root, 'public/down-scene.js'), scene);
 writeFileSync(path.join(root, 'public/sw.js'), sw);
-console.log(`[down-page] public/down.html + sw.js (${version}), ${links.length ? `donate buttons: ${links.map((l) => l.label.replace('Donate with ', '')).join(', ')}` : 'donate buttons off: set NEXT_PUBLIC_DONATE_*_URL'}`);
+console.log(`[down-page] public/down.html + down-scene.js + sw.js (${version}), ${links.length ? `donate buttons: ${links.map((l) => l.label.replace('Donate with ', '')).join(', ')}` : 'donate buttons off: set NEXT_PUBLIC_DONATE_*_URL'}`);

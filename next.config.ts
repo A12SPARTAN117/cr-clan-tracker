@@ -42,7 +42,7 @@ const securityHeaders = [
 const artCache = 'public, max-age=86400, stale-while-revalidate=604800';
 
 /** Paths that keep working while SITE_DOWN=1 (the down page itself, its worker, build assets, cron). */
-const ALWAYS_UP = '(?!down\\.html$|sw\\.js$|_next/|api/cron/|favicon\\.ico$)';
+const ALWAYS_UP = '(?!down\\.html$|down-scene\\.js$|sw\\.js$|_next/|api/cron/|favicon\\.ico$)';
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
@@ -75,6 +75,7 @@ const nextConfig: NextConfig = {
       // The worker must always be re-checked so fixes reach visitors straight away.
       { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }] },
       { source: '/down.html', headers: [{ key: 'Cache-Control', value: 'no-cache' }, { key: 'X-Robots-Tag', value: 'noindex' }] },
+      { source: '/down-scene.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }] },
     ];
   },
   // Maintenance switch: with SITE_DOWN=1 every page shows the site-down page (rebuild to apply).

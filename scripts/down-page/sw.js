@@ -5,11 +5,19 @@
 // the host answers with a gateway/outage error, the visitor sees the cached /down.html page
 // instead of the browser's error screen. Everything else goes straight to the network.
 //
+// The page (14 KB) is cached for every visitor. Its three.js scene (/down-scene.js, ~580 KB) is
+// cached only from a visitor's third page view on, and never with Save-Data on, so a one-page
+// visit doesn't download it; without the scene the page shows its static crown.
+//
 // Emergency off switch: replace this file's contents with
 //   self.addEventListener('install', () => self.skipWaiting());
 //   self.addEventListener('activate', () => self.registration.unregister());
 const CACHE = 'down-%VERSION%';
 const DOWN = '/down.html';
+const SCENE = '/down-scene.js';
+/** A tiny cached counter of successful page views (resets with each new version). */
+const VISITS = '/__visits';
+const SCENE_AFTER = 3;
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -43,13 +51,29 @@ async function downPage(status) {
   return cached ? new Response(cached.body, { status, statusText: 'Service Unavailable', headers: cached.headers }) : null;
 }
 
+/** Counts a page view; from the third on, caches the scene if it isn't yet. */
+async function noteVisit(saveData) {
+  const c = await caches.open(CACHE);
+  if (await c.match(SCENE)) return;
+  const n = Number(await (await c.match(VISITS))?.text()) + 1 || 1;
+  await c.put(VISITS, new Response(String(n)));
+  if (n >= SCENE_AFTER && !saveData) await c.add(new Request(SCENE, { cache: 'reload' })).catch(() => {});
+}
+
 self.addEventListener('fetch', (e) => {
+  // The scene for the down page: from the cache when we have it (the server may be down).
+  if (e.request.method === 'GET' && new URL(e.request.url).pathname === SCENE) {
+    e.respondWith(caches.match(SCENE, { cacheName: CACHE }).then((hit) => hit || fetch(e.request)));
+    return;
+  }
   if (e.request.mode !== 'navigate') return;
   e.respondWith(
     (async () => {
       try {
         const r = (await e.preloadResponse) || (await fetch(e.request));
-        return isOutage(r) ? (await downPage(r.status)) || r : r;
+        if (isOutage(r)) return (await downPage(r.status)) || r;
+        e.waitUntil(noteVisit(e.request.headers.get('save-data') === 'on').catch(() => {}));
+        return r;
       } catch {
         return (await downPage(503)) || Response.error();
       }
