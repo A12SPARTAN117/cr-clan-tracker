@@ -78,6 +78,10 @@ const nextConfig: NextConfig = {
       { source: '/down-scene.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }] },
     ];
   },
+  // The Pro tracker was removed; its old links land on the meta decks.
+  async redirects() {
+    return [{ source: '/pros', destination: '/decks', permanent: true }];
+  },
   // Maintenance switch: with SITE_DOWN=1 every page shows the site-down page (rebuild to apply).
   async rewrites() {
     if (process.env.SITE_DOWN !== '1') return [];

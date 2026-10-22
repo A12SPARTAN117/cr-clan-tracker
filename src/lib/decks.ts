@@ -31,7 +31,7 @@ export function toDeckCard(c: ApiCard): DeckCard {
   const hero = playedAsHero(c.evolutionLevel);
   const slug = info?.slug ?? slugify(c.name);
   const img = (evo ? c.iconUrls.evolutionMedium : hero ? c.iconUrls.heroMedium : null) ?? c.iconUrls.medium ?? info?.icons.normal ?? null;
-  // Pages carry thousands of these cards (meta decks, pros, battles), so the URL only travels when
+  // Pages carry thousands of these cards (meta decks, battles), so the URL only travels when
   // it differs from the art the card table already has.
   return {
     id: c.id,

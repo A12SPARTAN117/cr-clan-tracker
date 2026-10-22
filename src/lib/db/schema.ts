@@ -232,7 +232,8 @@ export const metaDaily = pgTable(
 
 /**
  * The decks the top Path of Legends players carry, one row per stretch with the same deck, so the
- * Pro tracker can show when a pro switched.
+ * Pro tracker could show when a pro switched. The Pro tracker was removed (2026-10-23) and nothing
+ * writes here any more; the table and its history are kept.
  */
 export const proDecks = pgTable(
   'pro_decks',

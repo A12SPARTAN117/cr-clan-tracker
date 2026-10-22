@@ -17,7 +17,6 @@ export function SiteFooter() {
       <nav className={s.nav} aria-label="Footer">
         <HoverLink href="/cards">Cards</HoverLink>
         <HoverLink href="/goals">Goals</HoverLink>
-        <HoverLink href="/pros">Pro tracker</HoverLink>
         <HoverLink href="/leaderboards">Leaderboards</HoverLink>
         {FEATURES.news && <HoverLink href="/news">News</HoverLink>}
         <HoverLink href="/help">Help</HoverLink>
