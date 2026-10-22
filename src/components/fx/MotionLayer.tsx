@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { reducedMotion } from './motion';
 import { Portal } from './Portal';
@@ -13,8 +13,10 @@ import { Portal } from './Portal';
  */
 export function MotionLayer() {
   const veil = useRef<HTMLDivElement>(null);
-  const portal = useRef<HTMLDivElement>(null);
   const slowTimer = useRef<number | undefined>(undefined);
+  // The spinner exists only while a slow navigation shows it: its SVG animation never stops, and
+  // even at opacity 0 it made the browser draw a new frame of every page on every tick.
+  const [spin, setSpin] = useState(false);
   const pathname = usePathname();
 
   // Cursor light, card tilt, magnetic buttons.
@@ -95,9 +97,7 @@ export function MotionLayer() {
       v.style.transitionDuration = reducedMotion() ? '.15s' : '.35s';
       v.style.opacity = '1';
       window.clearTimeout(slowTimer.current);
-      slowTimer.current = window.setTimeout(() => {
-        if (portal.current) portal.current.style.opacity = '1';
-      }, 800);
+      slowTimer.current = window.setTimeout(() => setSpin(true), 800);
     };
     document.addEventListener('click', onClick);
     return () => document.removeEventListener('click', onClick);
@@ -126,7 +126,7 @@ export function MotionLayer() {
     const id = requestAnimationFrame(() => {
       v.style.transitionDuration = reducedMotion() ? '.15s' : '.5s';
       v.style.opacity = '0';
-      if (portal.current) portal.current.style.opacity = '0';
+      setSpin(false);
     });
     return () => cancelAnimationFrame(id);
   }, [pathname]);
@@ -148,9 +148,7 @@ export function MotionLayer() {
         justifyContent: 'center',
       }}
     >
-      <div ref={portal} style={{ opacity: 0, transition: 'opacity .3s' }}>
-        <Portal size={72} />
-      </div>
+      {spin && <Portal size={72} />}
     </div>
   );
 }
