@@ -16,6 +16,7 @@ import { recordBadgeArt } from '@/lib/badgeArt';
 import { indexPlayers } from '@/lib/directory';
 import { after, connection } from 'next/server';
 import { onceEvery, VIEW_WRITE_MS } from '@/lib/throttle';
+import { packCards } from '@/lib/cardPack';
 import { PlayerView } from './PlayerView';
 
 export async function generateMetadata({ params }: PageProps<'/player/[tag]'>): Promise<Metadata> {
@@ -51,7 +52,7 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   if (store && log.ok) after(() => saveBattles(c.tag, log.data));
   // Live event ranks need each board's full listing; they stream into the Badges tab.
   const eventRanks = eventRanksOf(c.tag).catch(() => []);
-  return <PlayerView p={p} history={history} rivals={rivals} eventRanks={eventRanks} insights={insights} names={names} />;
+  return <PlayerView data={packCards({ p, history, rivals, insights, names })} eventRanks={eventRanks} />;
 }
 
 export default function PlayerPage({ params }: PageProps<'/player/[tag]'>) {

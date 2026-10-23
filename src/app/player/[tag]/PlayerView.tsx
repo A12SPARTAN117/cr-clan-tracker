@@ -1,7 +1,7 @@
 'use client';
 
 import { HoverLink } from '@/components/ui/HoverLink';
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { ShareRecap } from '@/components/ShareRecap';
 import { Decode, Reveal } from '@/components/fx/Reveal';
@@ -15,6 +15,7 @@ import type { PlayerProfile } from '@/lib/player/profile';
 import type { PlayerHistory } from '@/lib/history';
 import type { Rivals } from '@/lib/player/rivals';
 import type { EventRank } from '@/lib/events';
+import { unpackCards, type Packed } from '@/lib/cardPack';
 import { refreshPlayer } from './actions';
 import { BadgesTab } from './Badges';
 import { BattlesTab } from './Battles';
@@ -30,21 +31,11 @@ type Tab = 'overview' | 'collection' | 'badges' | 'stats' | 'insights' | 'battle
 /** A player's names and clans over time (null without a database). */
 export type NameHistory = { name: string; clanTag: string | null; clanName: string | null; from: string; to: string }[] | null;
 
-export function PlayerView({
-  p,
-  history,
-  rivals,
-  eventRanks,
-  insights,
-  names,
-}: {
-  p: PlayerProfile;
-  history: PlayerHistory | null;
-  rivals: Rivals;
-  eventRanks: Promise<EventRank[]>;
-  insights: Insights;
-  names: NameHistory;
-}) {
+/** Everything the profile shows, sent with its cards packed (see lib/cardPack). */
+export type PlayerData = { p: PlayerProfile; history: PlayerHistory | null; rivals: Rivals; insights: Insights; names: NameHistory };
+
+export function PlayerView({ data, eventRanks }: { data: Packed<PlayerData>; eventRanks: Promise<EventRank[]> }) {
+  const { p, history, rivals, insights, names } = useMemo(() => unpackCards(data), [data]);
   const [tab, setTab] = useState<Tab>('overview');
   const [toast, setToast] = useState('');
   const [syncing, startSync] = useTransition();
