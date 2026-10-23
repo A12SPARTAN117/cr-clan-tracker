@@ -85,6 +85,8 @@ const nextConfig: NextConfig = {
       { source: '/pros', destination: '/decks', permanent: true },
       // Leaderboard locations moved from ?loc= into the path (each is its own cached page).
       { source: '/leaderboards', has: [{ type: 'query', key: 'loc', value: '(?<loc>\\d+)' }], destination: '/leaderboards/:loc', permanent: true },
+      // Player name search moved from /players?q= to /search, so /players is a static page.
+      { source: '/players', has: [{ type: 'query', key: 'q', value: '(?<q>.+)' }], destination: '/search?q=:q&type=player', permanent: true },
     ];
   },
   // Maintenance switch: with SITE_DOWN=1 every page shows the site-down page (rebuild to apply).
