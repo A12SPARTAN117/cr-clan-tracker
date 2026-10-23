@@ -4,6 +4,7 @@ import { inBackground } from '@/lib/cr/api';
 import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb, schema } from '@/lib/db';
 import { snapshotClan, snapshotPlayer, type SnapshotResult } from '@/lib/history/snapshot';
+import { pruneStoredPlayers } from '@/lib/history/stored';
 
 export const maxDuration = 300;
 
@@ -71,7 +72,10 @@ async function run(req: Request) {
     await new Promise((r) => setTimeout(r, PLAYER_PACE_MS));
   }
 
+  // Stored profile copies of players nobody opened for 30 days.
+  const pruned = await pruneStoredPlayers();
   return Response.json({
+    pruned,
     tracked: clans.length,
     snapshotted: results.filter((r) => r.ok).length,
     results,
