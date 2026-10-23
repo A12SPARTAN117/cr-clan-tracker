@@ -29,13 +29,19 @@ async function recordIdentities(people: { tag: string; name: string; clanTag: st
     const rows = await db.select().from(playerIdentity).where(inArray(playerIdentity.tag, tags)).orderBy(desc(playerIdentity.lastSeenAt));
     const latest = new Map<string, (typeof rows)[number]>();
     for (const r of rows) if (!latest.has(r.tag)) latest.set(r.tag, r);
+    // Batched: unchanged stretches are extended with one update per clan name (a clan's snapshot
+    // has one), new stretches go in one insert. It was a statement per member.
+    const extend = new Map<string | null, number[]>();
+    const start: (typeof playerIdentity.$inferInsert)[] = [];
     for (const p of people) {
       const tag = bare(p.tag);
       const clanTag = p.clanTag ? bare(p.clanTag) : null;
       const cur = latest.get(tag);
-      if (cur && cur.name === p.name && cur.clanTag === clanTag) await db.update(playerIdentity).set({ lastSeenAt: now, clanName: p.clanName }).where(eq(playerIdentity.id, cur.id));
-      else await db.insert(playerIdentity).values({ tag, name: p.name, clanTag, clanName: p.clanName, firstSeenAt: now, lastSeenAt: now });
+      if (cur && cur.name === p.name && cur.clanTag === clanTag) extend.set(p.clanName, [...(extend.get(p.clanName) ?? []), cur.id]);
+      else start.push({ tag, name: p.name, clanTag, clanName: p.clanName, firstSeenAt: now, lastSeenAt: now });
     }
+    for (const [clanName, ids] of extend) await db.update(playerIdentity).set({ lastSeenAt: now, clanName }).where(inArray(playerIdentity.id, ids));
+    if (start.length) await db.insert(playerIdentity).values(start);
   } catch (e) {
     console.warn('[history] identity record failed (is migration 0008 applied?):', e instanceof Error ? e.message : e);
   }
@@ -84,6 +90,9 @@ export async function snapshotClan(tagRaw: string): Promise<SnapshotResult> {
   let left = 0;
   let roleChanges = 0;
 
+  const steady: (typeof clanMembers.$inferInsert)[] = [];
+  const fresh: (typeof clanMembers.$inferInsert)[] = [];
+  const events: (typeof rosterEvents.$inferInsert)[] = [];
   await db.transaction(async (tx) => {
     await tx
       .insert(trackedClans)
@@ -100,31 +109,32 @@ export async function snapshotClan(tagRaw: string): Promise<SnapshotResult> {
             .set({ name: m.name, role: m.role, leftAt: null, firstSeenAt: now, lastSeenInClanAt: now, baseline: 0 })
             .where(and(eq(clanMembers.clanTag, tag), eq(clanMembers.playerTag, pt)));
         } else {
-          await tx.insert(clanMembers).values({ clanTag: tag, playerTag: pt, name: m.name, role: m.role, baseline: baseline ? 1 : 0, firstSeenAt: now, lastSeenInClanAt: now });
+          fresh.push({ clanTag: tag, playerTag: pt, name: m.name, role: m.role, baseline: baseline ? 1 : 0, firstSeenAt: now, lastSeenInClanAt: now });
         }
         if (!baseline) {
           joined++;
-          await tx.insert(rosterEvents).values({ clanTag: tag, playerTag: pt, name: m.name, kind: 'joined', at: now });
+          events.push({ clanTag: tag, playerTag: pt, name: m.name, kind: 'joined', at: now });
         }
         continue;
       }
+      steady.push({ clanTag: tag, playerTag: pt, name: m.name, role: m.role, lastSeenInClanAt: now });
       const was = cur.role as ApiRole;
       if (was !== m.role && RANK[was] != null) {
         roleChanges++;
-        await tx.insert(rosterEvents).values({
-          clanTag: tag,
-          playerTag: pt,
-          name: m.name,
-          kind: RANK[m.role] > RANK[was] ? 'promoted' : 'demoted',
-          detail: `to ${LABEL[m.role]}`,
-          at: now,
-        });
+        events.push({ clanTag: tag, playerTag: pt, name: m.name, kind: RANK[m.role] > RANK[was] ? 'promoted' : 'demoted', detail: `to ${LABEL[m.role]}`, at: now });
       }
-      await tx
-        .update(clanMembers)
-        .set({ name: m.name, role: m.role, lastSeenInClanAt: now })
-        .where(and(eq(clanMembers.clanTag, tag), eq(clanMembers.playerTag, pt)));
     }
+    // New members (a whole roster on the first snapshot) in one insert.
+    if (fresh.length) await tx.insert(clanMembers).values(fresh);
+    // Everyone still in the clan, in one statement (was one per member).
+    if (steady.length)
+      await tx
+        .insert(clanMembers)
+        .values(steady)
+        .onConflictDoUpdate({
+          target: [clanMembers.clanTag, clanMembers.playerTag],
+          set: { name: sql`excluded.name`, role: sql`excluded.role`, lastSeenInClanAt: sql`excluded.last_seen_in_clan_at` },
+        });
 
     for (const [pt, m] of active) {
       if (roster.has(pt)) continue;
@@ -134,15 +144,19 @@ export async function snapshotClan(tagRaw: string): Promise<SnapshotResult> {
         .update(clanMembers)
         .set({ leftAt: now })
         .where(and(eq(clanMembers.clanTag, tag), eq(clanMembers.playerTag, pt), isNull(clanMembers.leftAt)));
-      await tx.insert(rosterEvents).values({ clanTag: tag, playerTag: pt, name: m.name, kind: 'left', at: now });
+      events.push({ clanTag: tag, playerTag: pt, name: m.name, kind: 'left', at: now });
     }
+    if (events.length) await tx.insert(rosterEvents).values(events);
 
-    for (const [pt, m] of roster) {
+    // Today's trophies and donations for everyone, in one statement (was one per member).
+    if (roster.size)
       await tx
         .insert(memberDaily)
-        .values({ clanTag: tag, playerTag: pt, day: today, trophies: m.trophies, donations: m.donations })
-        .onConflictDoUpdate({ target: [memberDaily.clanTag, memberDaily.playerTag, memberDaily.day], set: { trophies: m.trophies, donations: m.donations } });
-    }
+        .values([...roster].map(([pt, m]) => ({ clanTag: tag, playerTag: pt, day: today, trophies: m.trophies, donations: m.donations })))
+        .onConflictDoUpdate({
+          target: [memberDaily.clanTag, memberDaily.playerTag, memberDaily.day],
+          set: { trophies: sql`excluded.trophies`, donations: sql`excluded.donations` },
+        });
   });
 
   // War day decks: keep the highest decksUsedToday seen for each member and day.
