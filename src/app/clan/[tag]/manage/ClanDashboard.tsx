@@ -1,8 +1,8 @@
 'use client';
 
+import { setUrlQuery, useUrlQuery } from '@/lib/urlQuery';
 import { HoverLink } from '@/components/ui/HoverLink';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Portal } from '@/components/fx/Portal';
 import { Reveal } from '@/components/fx/Reveal';
@@ -28,14 +28,15 @@ const DEFAULT_FILTERS: Filters = { q: '', role: 'all', act: 'all', war: 'all', t
 
 export function ClanDashboard({ data }: { data: Dashboard }) {
   const tag = data.clan.tag;
-  const params = useSearchParams();
+  const query = useUrlQuery();
   const weights = useWeights(tag);
   const pins = usePins();
   const [tab, setTab] = useState<Tab>('members');
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [sort, setSort] = useState<Sort>({ k: 'score', d: -1 });
   const [sel, setSel] = useState<Set<string>>(new Set());
-  const [openTag, setOpenTag] = useState<string | null>(() => params.get('member')?.toUpperCase() ?? null);
+  // The open member lives in the URL (?member=TAG) for deep links.
+  const openTag = query.get('member')?.toUpperCase() ?? null;
   const [compare, setCompare] = useState(false);
   const [toast, setToast] = useState('');
   const [syncing, startSync] = useTransition();
@@ -60,14 +61,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
   const rows = useMemo(() => applyFilters(all, filters, sort, decksPossible), [all, filters, sort, decksPossible]);
   const open = openTag ? all.find((m) => m.tag === openTag) : undefined;
 
-  // Keep the open member in the URL (?member=TAG) for deep links.
-  const openMember = useCallback((t: string | null) => {
-    setOpenTag(t);
-    const u = new URL(window.location.href);
-    if (t) u.searchParams.set('member', t);
-    else u.searchParams.delete('member');
-    window.history.replaceState(null, '', u);
-  }, []);
+  const openMember = useCallback((t: string | null) => setUrlQuery({ member: t }), []);
   const step = (dir: 1 | -1) => {
     const list = rows.length ? rows : all;
     const i = list.findIndex((m) => m.tag === openTag);

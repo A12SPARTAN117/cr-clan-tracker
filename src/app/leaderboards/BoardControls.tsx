@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
+import { replaceUrl } from '@/lib/urlQuery';
 import { Portal } from '@/components/fx/Portal';
 import { Tabs } from '@/components/ui/Tabs';
 import type { Tab } from './BoardView';
@@ -30,7 +31,7 @@ export function BoardControls({
     // The location is in the path, so each location's boards are their own cached page.
     const url = `/leaderboards${l === 'global' ? '' : `/${l}`}${p.size ? `?${p}` : ''}`;
     // Tabs and events are already on the page (BoardView); only a new location loads.
-    if (l === loc) window.history.replaceState(null, '', url);
+    if (l === loc) replaceUrl(url);
     else start(() => router.replace(url, { scroll: false }));
   };
   return (

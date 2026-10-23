@@ -1,7 +1,7 @@
 'use client';
 
 import { HoverLink } from '@/components/ui/HoverLink';
-import { useSearchParams } from 'next/navigation';
+import { useUrlQuery } from '@/lib/urlQuery';
 import { useEffect, useState } from 'react';
 import { EmptyState } from '@/components/EmptyState';
 import { ClanBadge } from '@/components/ui/ClanBadge';
@@ -47,7 +47,7 @@ export function BoardView({
   locName: string;
   locations: { id: string; name: string; isCountry: boolean }[];
 }) {
-  const params = useSearchParams();
+  const params = useUrlQuery();
   const tab = (TABS.find((t) => t === params.get('tab')) ?? 'pol') as Tab;
   const ev = tab === 'events' ? (events.find((e) => e.id === Number(params.get('ev')))?.id ?? events[0]?.id ?? null) : null;
   const [loaded, setLoaded] = useState<Record<number, Board>>({});
