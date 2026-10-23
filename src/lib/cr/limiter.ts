@@ -74,5 +74,8 @@ export function createLimiter({ perSecond = 20, burst = 10, backoffMs = 2000, ma
 
 /** The process-wide gate the API client uses (kept across hot reloads in development). */
 const g = globalThis as unknown as { __crLimiter3?: ReturnType<typeof createLimiter> };
-// CR_API_RATE: calls a second for this server (default 20), for when the key's real limit is known.
-export const limiter = (g.__crLimiter3 ??= createLimiter({ perSecond: Number(process.env.CR_API_RATE) || 20, maxWaitMs: 5000 }));
+// The key answered 70 calls a second without a 429 and started refusing at 80 (ramp test through
+// the RoyaleAPI proxy, 2026-10-23). The default takes half: the live site shares the key, and on
+// serverless hosts every instance paces on its own. CR_API_RATE sets it per server (one
+// self-hosted server can take ~70).
+export const limiter = (g.__crLimiter3 ??= createLimiter({ perSecond: Number(process.env.CR_API_RATE) || 40, maxWaitMs: 5000 }));

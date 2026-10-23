@@ -265,3 +265,14 @@ export const sharedSnapshots = pgTable(
   },
   (t) => [index('shared_snapshots_kind').on(t.kind, t.generatedAt)],
 );
+
+/**
+ * The last good slim profile (lib/player/lite) of each player whose page was opened, so the page
+ * can still show them, marked with its age, while the Clash Royale API is busy or failing.
+ * Rows untouched for 30 days are pruned by the snapshot job.
+ */
+export const playerSnapshots = pgTable('player_snapshots', {
+  tag: text('tag').primaryKey(),
+  data: jsonb('data').notNull(),
+  savedAt: timestamp('saved_at', { withTimezone: true }).notNull(),
+});

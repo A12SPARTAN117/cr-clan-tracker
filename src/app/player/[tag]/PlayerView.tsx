@@ -56,10 +56,18 @@ function useFullProfile(tag: string, want: boolean) {
 }
 
 /** Everything the profile page shows at first, sent with its cards packed (see lib/cardPack). */
-export type PlayerData = { p: PlayerLite; history: PlayerHistory | null; rivals: Rivals; insights: Insights; names: NameHistory };
+export type PlayerData = {
+  p: PlayerLite;
+  history: PlayerHistory | null;
+  rivals: Rivals;
+  insights: Insights;
+  names: NameHistory;
+  /** Set when the API was busy and this is the stored copy (when it was saved). */
+  stale: string | null;
+};
 
 export function PlayerView({ data }: { data: Packed<PlayerData> }) {
-  const { p, history, rivals, insights, names } = useMemo(() => unpackCards(data), [data]);
+  const { p, history, rivals, insights, names, stale } = useMemo(() => unpackCards(data), [data]);
   const [tab, setTab] = useState<Tab>('overview');
   const needsFull = tab !== 'overview' && tab !== 'insights';
   const { full, failed, retry } = useFullProfile(p.tag, needsFull);
@@ -121,6 +129,7 @@ export function PlayerView({ data }: { data: Packed<PlayerData> }) {
               </span>
             )}
             <span>Last sync {p.generatedAt.slice(11, 16)} UTC</span>
+            {stale && <span style={{ color: 'var(--gold)' }}>Stored copy · the Clash Royale API is busy, this refreshes on its own</span>}
             {p.favourite && <span>Favourite · {p.favourite.name}</span>}
           </>
         }
