@@ -1,6 +1,5 @@
 import 'server-only';
 import { and, desc, eq, gte, inArray, isNull, lte } from 'drizzle-orm';
-import { connection } from 'next/server';
 import { getDb, schema } from '../db';
 import type { PlayerDay } from './playerDaily';
 
@@ -9,7 +8,8 @@ import type { PlayerDay } from './playerDaily';
  * only). Every reader returns null when there is no database or the clan isn't tracked yet,
  * and pages fall back to their "Data since" / partial states.
  *
- * These reads are deliberately uncached: callers merge them into cached API data at request time.
+ * These reads are uncached themselves: callers either run them inside their own 'use cache'
+ * (the player page) or at request time after connection().
  */
 
 const { trackedClans, clanMembers, rosterEvents, memberDaily, warDays, trackedPlayers, playerDaily } = schema;
@@ -45,7 +45,6 @@ const bare = (t: string) => t.replace(/^#/, '').toUpperCase();
 const isoDay = (d: Date) => d.toISOString().slice(0, 10);
 
 export async function getClanHistory(tagRaw: string): Promise<ClanHistory | null> {
-  await connection(); // request-time data, never prerendered
   const tag = bare(tagRaw);
   const db = await getDb();
   if (!db) return null;
@@ -110,7 +109,6 @@ export type PlayerHistory = {
 };
 
 export async function getPlayerHistory(tagRaw: string): Promise<PlayerHistory | null> {
-  await connection(); // request-time data, never prerendered
   const tag = bare(tagRaw);
   const db = await getDb();
   if (!db) return null;

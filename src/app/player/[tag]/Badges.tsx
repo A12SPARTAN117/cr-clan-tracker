@@ -142,8 +142,21 @@ function AchievementIcon({ name }: { name: string }) {
  */
 const RANK_BADGE = /(Top1000|Rank(_vd+)?)$/;
 
-function EventRanks({ ranks }: { ranks: Promise<EventRank[]> }) {
-  const list = use(ranks);
+/** Each player's live event ranks, fetched once per page visit when the Badges tab first opens. */
+const rankRequests = new Map<string, Promise<EventRank[]>>();
+const ranksOf = (tag: string) => {
+  let r = rankRequests.get(tag);
+  if (!r) {
+    r = fetch(`/api/ranks/${encodeURIComponent(tag)}`)
+      .then((res) => (res.ok ? (res.json() as Promise<EventRank[]>) : []))
+      .catch(() => []);
+    rankRequests.set(tag, r);
+  }
+  return r;
+};
+
+function EventRanks({ tag }: { tag: string }) {
+  const list = use(ranksOf(tag));
   if (!list.length) return <span className={s.rankNote}>No event leaderboards are live right now.</span>;
   return (
     <>
@@ -159,7 +172,7 @@ function EventRanks({ ranks }: { ranks: Promise<EventRank[]> }) {
 }
 
 /** Where the player ranks: Path of Legends seasons, live event boards, and rank-badge finishes. */
-function Rankings({ p, eventRanks }: { p: PlayerProfile; eventRanks: Promise<EventRank[]> }) {
+function Rankings({ p }: { p: PlayerProfile }) {
   const seasons = (
     [
       ['This season', p.pol.current],
@@ -180,7 +193,7 @@ function Rankings({ p, eventRanks }: { p: PlayerProfile; eventRanks: Promise<Eve
           </div>
         ))}
         <Suspense fallback={<div className={`${s.rankCard} skeleton`} style={{ minHeight: 86 }} />}>
-          <EventRanks ranks={eventRanks} />
+          <EventRanks tag={p.tag} />
         </Suspense>
       </div>
       {finishes.length > 0 && (
@@ -200,12 +213,12 @@ function Rankings({ p, eventRanks }: { p: PlayerProfile; eventRanks: Promise<Eve
   );
 }
 
-export function BadgesTab({ p, eventRanks }: { p: PlayerProfile; eventRanks: Promise<EventRank[]> }) {
+export function BadgesTab({ p }: { p: PlayerProfile }) {
   const [showAll, setShowAll] = useState(false);
   const groups = GROUP_ORDER.map((g) => ({ g, items: p.badges.filter((b) => b.group === g) })).filter((x) => x.items.length);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
-      <Rankings p={p} eventRanks={eventRanks} />
+      <Rankings p={p} />
       {groups.map(({ g, items }) => {
         const sorted = g === 'Mastery' ? [...items].sort((a, b) => (b.level ?? 0) - (a.level ?? 0) || (b.progress ?? 0) - (a.progress ?? 0)) : items;
         const shown = g === 'Mastery' && !showAll ? sorted.slice(0, 16) : sorted;

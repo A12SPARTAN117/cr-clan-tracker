@@ -186,9 +186,10 @@ describe('TagSearch', () => {
 describe('BadgesTab', () => {
   // Supercell's CDN never published the 2026 year badge, so its official link fails.
   const year = (level: number): Badge => ({ id: '2026YearBadge', label: '2026', group: 'Seasonal', level, maxLevel: 6, progress: null, target: null, img: 'https://example.test/dead.png' });
-  // The Rankings section suspends on its (already resolved) promise; let it settle first.
+  // The Rankings section suspends on its live-rank request; answer it with none and let it settle.
   const tab = async (b: Badge) => {
-    const r = render(<BadgesTab p={{ badges: [b], achievements: [], pol: { current: null, last: null, best: null } } as unknown as PlayerProfile} eventRanks={Promise.resolve([])} />);
+    vi.stubGlobal('fetch', async () => new Response('[]', { status: 200 }));
+    const r = render(<BadgesTab p={{ tag: 'T', badges: [b], achievements: [], pol: { current: null, last: null, best: null } } as unknown as PlayerProfile} />);
     await act(async () => {});
     return r.container;
   };

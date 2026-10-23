@@ -1,23 +1,21 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { LostScene } from '@/components/LostScene';
+import { SeenBeacon } from '@/components/SeenBeacon';
 import { Portal } from '@/components/fx/Portal';
-import { getBattleLog, getPlayer } from '@/lib/cr/api';
-import { getPlayerProfile } from '@/lib/player/profile';
-import { getPlayerHistory } from '@/lib/history';
-import { trackPlayer } from '@/lib/history/snapshot';
-import { getGames, saveBattles } from '@/lib/history/battles';
-import { getIdentityHistory } from '@/lib/history/snapshot';
-import { insightsOf } from '@/lib/player/insights';
-import { rivalsOf } from '@/lib/player/rivals';
-import { eventRanksOf } from '@/lib/events';
+import { getPlayer } from '@/lib/cr/api';
 import { checkTag } from '@/lib/tags';
-import { recordBadgeArt } from '@/lib/badgeArt';
-import { indexPlayers } from '@/lib/directory';
-import { after, connection } from 'next/server';
-import { onceEvery, VIEW_WRITE_MS } from '@/lib/throttle';
-import { packCards } from '@/lib/cardPack';
+import { playerPage } from './data';
 import { PlayerView } from './PlayerView';
+
+/**
+ * Profiles are rendered on a player's first visit and then served from the cache (refreshed at
+ * most once a minute, see ./data), so the page reads nothing per request. Cache Components needs
+ * one param to check that at build time; this placeholder renders the not-found scene.
+ */
+export function generateStaticParams() {
+  return [{ tag: '_' }];
+}
 
 export async function generateMetadata({ params }: PageProps<'/player/[tag]'>): Promise<Metadata> {
   const c = checkTag(decodeURIComponent((await params).tag));
@@ -30,29 +28,14 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   const raw = decodeURIComponent((await params).tag);
   const c = checkTag(raw);
   if (c.kind !== 'valid') return <LostScene variant="player" tag={raw.replace(/^#/, '').toUpperCase()} />;
-  const r = await getPlayer(c.tag);
-  if (!r.ok) return <LostScene variant={r.status === 404 ? 'player' : 'error'} tag={c.tag} />;
-  // Background work below reads the clock, so it must run at request time, not in a prerender.
-  await connection();
-  // What this view saw is stored at most every 15 minutes per player; repeat views write nothing.
-  const store = onceEvery(`seen:${c.tag}`, VIEW_WRITE_MS);
-  if (store) after(() => indexPlayers([{ tag: r.data.tag, name: r.data.name, clanTag: r.data.clan?.tag, clanName: r.data.clan?.name, trophies: r.data.trophies }]));
-  // Opening a profile starts (or keeps up) its daily snapshots, so history builds from here on.
-  after(() => trackPlayer(r.data));
-  const [p, history, games, log, names] = await Promise.all([getPlayerProfile(c.tag), getPlayerHistory(c.tag), getGames(c.tag), getBattleLog(c.tag), getIdentityHistory(c.tag)]);
-  if (!p) return <LostScene variant="error" tag={c.tag} />;
-  // Rivals, elixir, close games, playstyle, tilt and achievements all come from the same games.
-  const rivals = rivalsOf(games);
-  const insights = insightsOf(games, p.war);
-  // Everyone they played against goes into the name-search directory too.
-  if (store) after(() => indexPlayers(p.battles.flatMap((b) => (b.them.tag ? [{ tag: b.them.tag, name: b.them.name, clanName: b.them.clan }] : []))));
-  // Each badge level's art, for the asset checklist (the API only shows the level they own).
-  after(() => recordBadgeArt(p.badges));
-  // Their 1v1 games are kept past the API's ~40, so head-to-head records keep growing.
-  if (store && log.ok) after(() => saveBattles(c.tag, log.data));
-  // Live event ranks need each board's full listing; they stream into the Badges tab.
-  const eventRanks = eventRanksOf(c.tag).catch(() => []);
-  return <PlayerView data={packCards({ p, history, rivals, insights, names })} eventRanks={eventRanks} />;
+  const page = await playerPage(c.tag);
+  if (!page.ok) return <LostScene variant={page.status === 404 ? 'player' : 'error'} tag={c.tag} />;
+  return (
+    <>
+      <PlayerView data={page.data} />
+      <SeenBeacon kind="player" tag={c.tag} />
+    </>
+  );
 }
 
 export default function PlayerPage({ params }: PageProps<'/player/[tag]'>) {
