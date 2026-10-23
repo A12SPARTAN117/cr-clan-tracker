@@ -1,7 +1,6 @@
 'use client';
 
 import { HoverLink } from '@/components/ui/HoverLink';
-import { Suspense, use } from 'react';
 import { ClanFrame } from '@/components/ui/ClanFrame';
 import { MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/ui/icons';
 import type { Clan } from '@/lib/cr/types';
@@ -9,13 +8,11 @@ import { fmt } from '@/lib/format';
 import s from './clans.module.css';
 
 export type ClanRow = { tag: string; name: string; badgeId: number; location?: string; members: number; clanWarTrophies?: number; requiredTrophies?: number; type?: Clan['type']; rank?: number };
-/** What a clan's own record adds to a ranking row (the ranking has no type or required trophies). */
-export type ClanDetails = Pick<ClanRow, 'members' | 'type' | 'requiredTrophies' | 'location'> | null;
 
 const TYPE_LABEL = { open: 'OPEN', inviteOnly: 'INVITE ONLY', closed: 'CLOSED' } as const;
 
-/** The stats row; `pending` while the clan's own record (required trophies, type) is on its way. */
-function Body({ c, pending = false }: { c: ClanRow; pending?: boolean }) {
+/** The stats row. */
+function Body({ c }: { c: ClanRow }) {
   return (
     <>
       <div className={s.stats}>
@@ -30,7 +27,7 @@ function Body({ c, pending = false }: { c: ClanRow; pending?: boolean }) {
             <span className="label-sm">{k}</span>
             <span className={s.value}>
               {icon}
-              {k === 'REQ.' && pending ? <span className={`skeleton ${s.wait}`} /> : v}
+              {v}
             </span>
           </span>
         ))}
@@ -42,17 +39,11 @@ function Body({ c, pending = false }: { c: ClanRow; pending?: boolean }) {
   );
 }
 
-function Details({ c, details }: { c: ClanRow; details: Promise<ClanDetails> }) {
-  const d = use(details);
-  return <Body c={{ ...c, ...(d ?? {}), location: d?.location ?? c.location }} />;
-}
-
 /**
  * A clan in the directory. Rendered on the client so the page sends each clan's data once
- * instead of a serialized element tree. `details`, when given, streams in the clan's type and
- * required trophies after the card itself has shown.
+ * instead of a serialized element tree.
  */
-export function ClanCard({ c, details }: { c: ClanRow; details?: Promise<ClanDetails> }) {
+export function ClanCard({ c }: { c: ClanRow }) {
   const tag = c.tag.replace('#', '');
   return (
     <HoverLink href={`/clan/${tag}`} data-spot="" className={`panel ${s.card}`}>
@@ -71,13 +62,7 @@ export function ClanCard({ c, details }: { c: ClanRow; details?: Promise<ClanDet
           </span>
         )}
       </div>
-      {details ? (
-        <Suspense fallback={<Body c={c} pending />}>
-          <Details c={c} details={details} />
-        </Suspense>
-      ) : (
-        <Body c={c} />
-      )}
+      <Body c={c} />
     </HoverLink>
   );
 }
