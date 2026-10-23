@@ -1,18 +1,17 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { replaceUrl, useUrlQuery } from '@/lib/urlQuery';
 import { checkTag } from '@/lib/tags';
-import { Portal } from '@/components/fx/Portal';
 
 type Loc = { id: number; name: string; isCountry: boolean };
 
-/** Search box + filters. Everything lives in the URL so results render on the server. */
+/** Search box + filters. Everything lives in the URL; ClanResults follows it. */
 export function ClanFilters({ locations }: { locations: Loc[] }) {
   const router = useRouter();
   const pathname = usePathname();
-  const params = useSearchParams();
-  const [pending, start] = useTransition();
+  const params = useUrlQuery();
   const [q, setQ] = useState(params.get('q') ?? '');
   const [focus, setFocus] = useState(false);
   const [minM, setMinM] = useState(Number(params.get('minM') ?? 0));
@@ -38,10 +37,9 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
     }
     return next.size ? `${pathname}?${next}` : pathname;
   };
-  /** Name and location fetch new clans from the server. */
-  const push = (patch: { q?: string; loc?: string }) => start(() => router.replace(urlWith(patch), { scroll: false }));
-  /** Type, members and war trophies only filter the list on screen (ClanResults), so no round trip. */
-  const set = (patch: { type?: string; minM?: number; minW?: number }) => window.history.replaceState(null, '', urlWith(patch));
+  /** Name and location load a new list (ClanResults fetches it); the rest only filter it. */
+  const push = (patch: { q?: string; loc?: string }) => replaceUrl(urlWith(patch));
+  const set = (patch: { type?: string; minM?: number; minW?: number }) => replaceUrl(urlWith(patch));
 
   // Debounced name search.
   useEffect(() => {
@@ -55,12 +53,6 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to typing
   }, [q]);
-
-  // Results render on the server; dim them while a filter change is loading.
-  useEffect(() => {
-    document.documentElement.toggleAttribute('data-results-busy', pending);
-    return () => document.documentElement.removeAttribute('data-results-busy');
-  }, [pending]);
 
   const tagLike = q.trim() && checkTag(q).kind === 'valid';
   const type = params.get('type') ?? 'all';
@@ -110,7 +102,6 @@ export function ClanFilters({ locations }: { locations: Loc[] }) {
             <span aria-hidden style={{ position: 'absolute', left: 0, width: 11, height: 22, background: 'var(--blue-hi)', animation: 'oaBlink 1.05s steps(1) infinite' }} />
           )}
         </span>
-        {pending ? <Portal size={22} /> : null}
         <span style={{ font: '500 10px/1 var(--mono)', letterSpacing: '.12em', color: tagLike ? 'var(--blue-hi)' : 'var(--text-3)', whiteSpace: 'nowrap' }}>
           {!q ? 'NAME OR #TAG' : tagLike ? 'TAG? PRESS ENTER' : q.trim().length < 3 ? '3+ LETTERS' : 'SEARCHING NAME'}
         </span>

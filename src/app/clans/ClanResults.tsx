@@ -1,59 +1,55 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { Suspense, use, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { EmptyState } from '@/components/EmptyState';
-import { ClanCard, type ClanDetails, type ClanRow } from './ClanCard';
+import { useUrlQuery } from '@/lib/urlQuery';
+import { ClanCard } from './ClanCard';
+import type { ClanList } from './data';
 import s from './clans.module.css';
 
-type Props = { rows: ClanRow[]; details: Promise<ClanDetails>[] | null; title: string; failed: boolean };
-
 /**
- * The clan list. The server only fetches clans for the name and location; type, members and war
- * trophies filter here, from the URL, so changing or clearing them needs no round trip.
+ * The clan list. The page comes with the world's top war clans; a name (?q=, 3+ characters) or a
+ * location (?loc=) loads its list from /api/clans. Type, members and war trophies filter here,
+ * from the URL, so changing or clearing them needs no round trip.
  */
-export function ClanResults(props: Props) {
-  const params = useSearchParams();
+export function ClanResults({ initial }: { initial: ClanList }) {
+  const params = useUrlQuery();
+  const q = (params.get('q') ?? '').trim();
+  const loc = Number(params.get('loc')) || null;
+  const key = q.length >= 3 || loc ? `q=${encodeURIComponent(q.length >= 3 ? q : '')}&loc=${loc ?? ''}` : '';
+  const [got, setGot] = useState<{ key: string; list: ClanList } | null>(null);
+  useEffect(() => {
+    if (!key) return;
+    let live = true;
+    fetch(`/api/clans?${key}`)
+      .then((r) => (r.ok ? (r.json() as Promise<ClanList>) : null))
+      .catch(() => null)
+      .then((list) => live && setGot({ key, list: list ?? { rows: [], title: 'Clans', failed: true } }));
+    return () => {
+      live = false;
+    };
+  }, [key]);
+  const list = !key ? initial : got?.key === key ? got.list : null;
+
   const type = params.get('type') ?? 'all';
   const minM = Number(params.get('minM')) || 0;
   const minW = Number(params.get('minW')) || 0;
-  // Ranking rows have no type until each clan's own record arrives (it streams in on page load).
-  const all = useMemo(() => (props.details ? Promise.all(props.details) : null), [props.details]);
-  if (type !== 'all' && all)
-    return (
-      <Suspense fallback={<List {...props} items={[]} waiting />}>
-        <Typed {...props} all={all} type={type} minM={minM} minW={minW} />
-      </Suspense>
-    );
-  const items = props.rows
-    .map((c, i) => ({ c, d: props.details?.[i] }))
-    .filter(({ c }) => (c.clanWarTrophies ?? 0) >= minW && c.members >= minM && (type === 'all' || c.type === type));
-  return <List {...props} items={items} />;
-}
+  const rows = (list?.rows ?? []).filter((c) => (c.clanWarTrophies ?? 0) >= minW && c.members >= minM && (type === 'all' || c.type === type));
 
-function Typed({ all, type, minM, minW, ...props }: Props & { all: Promise<ClanDetails[]>; type: string; minM: number; minW: number }) {
-  const got = use(all);
-  const items = props.rows
-    .map((c, i) => ({ c: { ...c, ...(got[i] ?? {}), location: got[i]?.location ?? c.location } }))
-    .filter(({ c }) => c.type === type && c.members >= minM && (c.clanWarTrophies ?? 0) >= minW);
-  return <List {...props} items={items} />;
-}
-
-function List({ title, failed, items, waiting = false }: Props & { items: { c: ClanRow; d?: Promise<ClanDetails> }[]; waiting?: boolean }) {
   return (
     <section data-results="" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-        <span className="label">{title}</span>
-        <span className="label">{waiting ? 'Checking clan types…' : `${items.length} results`}</span>
+        <span className="label">{list?.title ?? 'Loading clans…'}</span>
+        <span className="label">{list ? `${rows.length} results` : ''}</span>
       </div>
-      {failed ? (
-        <EmptyState text="The Clash Royale API did not answer. Try again in a minute." />
-      ) : waiting ? (
+      {!list ? (
         <span className="skeleton" style={{ height: 320 }} />
-      ) : items.length ? (
+      ) : list.failed ? (
+        <EmptyState text="The Clash Royale API did not answer. Try again in a minute." />
+      ) : rows.length ? (
         <div className={s.grid}>
-          {items.map(({ c, d }) => (
-            <ClanCard key={c.tag} c={c} details={d} />
+          {rows.map((c) => (
+            <ClanCard key={c.tag} c={c} />
           ))}
         </div>
       ) : (
