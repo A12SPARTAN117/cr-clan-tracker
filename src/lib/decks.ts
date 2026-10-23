@@ -30,9 +30,11 @@ export function toDeckCard(c: ApiCard): DeckCard {
   const evo = playedAsEvo(c.evolutionLevel);
   const hero = playedAsHero(c.evolutionLevel);
   const slug = info?.slug ?? slugify(c.name);
-  const img = (evo ? c.iconUrls.evolutionMedium : hero ? c.iconUrls.heroMedium : null) ?? c.iconUrls.medium ?? info?.icons.normal ?? null;
-  // Pages carry thousands of these cards (meta decks, battles), so the URL only travels when
-  // it differs from the art the card table already has.
+  // The card table's art first; the API's own URL only for a card the table doesn't know (battle
+  // logs are cached without the URLs of known cards, see cr/api). Pages carry thousands of these
+  // cards, so the URL only travels when it isn't the table's.
+  const table = cardArt(slug, evo, hero);
+  const img = table ?? (evo ? c.iconUrls?.evolutionMedium : hero ? c.iconUrls?.heroMedium : null) ?? c.iconUrls?.medium ?? null;
   return {
     id: c.id,
     slug,
@@ -41,7 +43,7 @@ export function toDeckCard(c: ApiCard): DeckCard {
     elixir: info?.elixir ?? c.elixirCost ?? null,
     evo,
     hero,
-    ...(img !== cardArt(slug, evo, hero) ? { img } : {}),
+    ...(img !== table ? { img } : {}),
   };
 }
 
