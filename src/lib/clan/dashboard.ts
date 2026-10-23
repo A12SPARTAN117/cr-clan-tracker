@@ -1,6 +1,6 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
-import { anyFailed, getBattleLog, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags } from '../cr/api';
+import { anyFailed, getBattleLog, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags, unlessBusy } from '../cr/api';
 import type { ApiRole, Battle, Clan, CurrentRiverRace, RiverRaceLogEntry } from '../cr/types';
 import { outcome } from '../battle';
 import type { ClanHistory, RosterEvent } from '../history';
@@ -206,7 +206,8 @@ async function build(tag: string): Promise<{ data: Dashboard; failed: boolean } 
   const war = raceInfo(race, ourTag, now);
 
   const memberTags = clan.memberList.map((m) => bare(m.tag));
-  const [players, logs] = await Promise.all([pool(memberTags, 16, (t) => getPlayer(t)), pool(memberTags, 16, (t) => getBattleLog(t))]);
+  // Per-member calls give way when the API is busy (unlessBusy); the dashboard shows what it has.
+  const [players, logs] = await Promise.all([pool(memberTags, 16, (t) => unlessBusy(() => getPlayer(t))), pool(memberTags, 16, (t) => unlessBusy(() => getBattleLog(t)))]);
 
   const ourRaceClan = race ? (race.clans.find((c) => bare(c.tag) === ourTag) ?? race.clan) : null;
   const curParts = new Map((ourRaceClan?.participants ?? []).map((p) => [bare(p.tag), p]));

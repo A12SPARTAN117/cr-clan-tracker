@@ -7,7 +7,7 @@
  * - When the API answers 429, every caller's next start moves past the pause (Retry-After, or
  *   `backoffMs`) and the call is retried once.
  *
- * - Under overload a visitor's call that would wait more than `maxWaitMs` isn't queued: it answers
+ * - Under overload a visitor's call that would wait more than `maxWaitMs` (5 s) isn't queued: it answers
  *   "busy" at once (`onBusy`), so pages say so instead of hanging while the queue grows. Cached data
  *   keeps being served (stale entries while they refresh); only never-seen tags need a call.
  * - Background work (`background: true`: the cron jobs) waits until the queue is short, so it
@@ -75,4 +75,4 @@ export function createLimiter({ perSecond = 20, burst = 10, backoffMs = 2000, ma
 /** The process-wide gate the API client uses (kept across hot reloads in development). */
 const g = globalThis as unknown as { __crLimiter3?: ReturnType<typeof createLimiter> };
 // CR_API_RATE: calls a second for this server (default 20), for when the key's real limit is known.
-export const limiter = (g.__crLimiter3 ??= createLimiter({ perSecond: Number(process.env.CR_API_RATE) || 20, maxWaitMs: 8000 }));
+export const limiter = (g.__crLimiter3 ??= createLimiter({ perSecond: Number(process.env.CR_API_RATE) || 20, maxWaitMs: 5000 }));

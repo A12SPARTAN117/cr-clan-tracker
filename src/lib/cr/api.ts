@@ -45,6 +45,17 @@ const background = (g.__crBackground ??= new AsyncLocalStorage<true>());
 export const inBackground = <T>(work: () => Promise<T>): Promise<T> => background.run(true, work);
 
 const BUSY = { ok: false, status: 503, reason: 'The Clash Royale API is busy; try again in a moment' } as const;
+const SKIPPED = { ok: false, status: 503, reason: 'Skipped while the Clash Royale API is busy' } as const;
+
+/**
+ * For the optional per-member calls behind clan pages (member levels, the dashboard's 50 profiles
+ * and battle logs): skipped while visitors' calls are queued more than a second deep, so a new
+ * clan can't take the whole budget from everyone else. A skip is never cached (the call isn't
+ * made); the page shows what it has, and its own short error lifetime retries soon.
+ */
+export function unlessBusy<T>(call: () => Promise<ApiResult<T>>): Promise<ApiResult<T>> {
+  return limiter.backlog() > 1000 ? Promise.resolve(SKIPPED) : call();
+}
 
 async function request<T>(path: string): Promise<ApiResult<T>> {
   const key = process.env.CR_API_KEY?.trim();
