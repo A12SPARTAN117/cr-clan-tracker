@@ -1,11 +1,11 @@
 'use client';
 
 import { HoverLink } from '@/components/ui/HoverLink';
-import { Suspense, use } from 'react';
+import { Suspense } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Reveal } from '@/components/fx/Reveal';
 import { LeagueIcon, PolRating } from '@/components/ui/primitives';
-import type { EventRank } from '@/lib/events';
+import { useEventRanks } from '@/lib/eventRanksClient';
 import { agoShort, dstr, fmt } from '@/lib/format';
 import { polLabel } from '@/lib/leagues';
 import { setRival, useMyRivals } from '@/lib/myRivals';
@@ -47,8 +47,9 @@ function PolLine({ k, x }: { k: string; x: Pol }) {
   );
 }
 
-function EventLines({ ranks }: { ranks: Promise<EventRank[]> }) {
-  const list = use(ranks);
+function EventLines({ tag }: { tag: string }) {
+  const list = useEventRanks(tag);
+  if (!list) return <span className={s.muted}>Loading live event ranks…</span>;
   if (!list.length) return <span className={s.muted}>No live event leaderboards.</span>;
   // Only the boards they're on; one line covers the rest.
   const on = list.filter((e) => e.rank != null);
@@ -68,7 +69,7 @@ function EventLines({ ranks }: { ranks: Promise<EventRank[]> }) {
   );
 }
 
-function PlayerCard({ p, ranks, us }: { p: Side; ranks: Promise<EventRank[]>; us: boolean }) {
+function PlayerCard({ p, us }: { p: Side; us: boolean }) {
   return (
     <section className={s.card} data-us={us}>
       <HoverLink href={`/player/${p.tag}`} className={s.who}>
@@ -88,7 +89,7 @@ function PlayerCard({ p, ranks, us }: { p: Side; ranks: Promise<EventRank[]>; us
       <PolLine k="Path of Legends · best season" x={p.pol.best} />
       <span className={s.sub}>Live events</span>
       <Suspense fallback={<span className={`skeleton ${s.wait}`} />}>
-        <EventLines ranks={ranks} />
+        <EventLines tag={p.tag} />
       </Suspense>
       <span className={s.sub}>Recent matches</span>
       <ol className={s.recent}>
@@ -111,7 +112,7 @@ function PlayerCard({ p, ranks, us }: { p: Side; ranks: Promise<EventRank[]>; us
  * Two players side by side: who's ahead in their 1v1 games, trophies, Path of Legends, live
  * event ranks and recent form. `a` is the player whose rivals these are.
  */
-export function HeadToHeadView({ a, b, games, ranksA, ranksB, at }: { a: Side; b: Side; games: H2HGame[]; ranksA: Promise<EventRank[]>; ranksB: Promise<EventRank[]>; at: number }) {
+export function HeadToHeadView({ a, b, games, at }: { a: Side; b: Side; games: H2HGame[]; at: number }) {
   const mine = useMyRivals(a.tag);
   const added = mine.includes(b.tag);
   const wins = games.filter((g) => g.result > 0).length;
@@ -164,8 +165,8 @@ export function HeadToHeadView({ a, b, games, ranksA, ranksB, at }: { a: Side; b
 
       <main className={s.main}>
         <div className={s.sides}>
-          <PlayerCard p={a} ranks={ranksA} us />
-          <PlayerCard p={b} ranks={ranksB} us={false} />
+          <PlayerCard p={a} us />
+          <PlayerCard p={b} us={false} />
         </div>
 
         <section className={s.block}>

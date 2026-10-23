@@ -1,15 +1,21 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { after, connection } from 'next/server';
-import { onceEvery, VIEW_WRITE_MS } from '@/lib/throttle';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
-import { getBattleLog, getPlayer } from '@/lib/cr/api';
-import { getRivals, saveBattles } from '@/lib/history/battles';
-import { trackPlayer } from '@/lib/history/snapshot';
-import { getPlayerProfile } from '@/lib/player/profile';
+import { SeenBeacon } from '@/components/SeenBeacon';
+import { getPlayer } from '@/lib/cr/api';
 import { checkTag } from '@/lib/tags';
+import { rivalsPage } from './data';
 import { RivalsView } from './RivalsView';
+
+/**
+ * Rendered on the first visit and then served from the page cache (refreshed at most once a
+ * minute, see ./data). Cache Components needs one param to check that at build time; this
+ * placeholder renders the not-found scene.
+ */
+export function generateStaticParams() {
+  return [{ tag: '_' }];
+}
 
 export async function generateMetadata({ params }: PageProps<'/player/[tag]/rivals'>): Promise<Metadata> {
   const c = checkTag(decodeURIComponent((await params).tag));
@@ -22,16 +28,15 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   const raw = decodeURIComponent((await params).tag);
   const c = checkTag(raw);
   if (c.kind !== 'valid') return <LostScene variant="player" tag={raw.replace(/^#/, '').toUpperCase()} />;
-  const r = await getPlayer(c.tag);
-  if (!r.ok) return <LostScene variant={r.status === 404 ? 'player' : 'error'} tag={c.tag} />;
-  // Background work below reads the clock, so it must run at request time, not in a prerender.
-  await connection();
-  const [p, rivals, log] = await Promise.all([getPlayerProfile(c.tag), getRivals(c.tag, 50), getBattleLog(c.tag)]);
-  if (!p) return <LostScene variant="error" tag={c.tag} />;
-  // Opening Rivals keeps the player tracked and stores their latest games, like the profile does.
-  after(() => trackPlayer(r.data));
-  if (log.ok && onceEvery(`seen:${c.tag}`, VIEW_WRITE_MS)) after(() => saveBattles(c.tag, log.data));
-  return <RivalsView name={p.name} tag={p.tag} character={p.favourite?.render ?? null} rivals={rivals} logSize={p.battles.length} at={Date.parse(p.generatedAt)} />;
+  const page = await rivalsPage(c.tag);
+  if (!page.ok) return <LostScene variant={page.status === 404 ? 'player' : 'error'} tag={c.tag} />;
+  return (
+    <>
+      <RivalsView name={page.name} tag={page.tag} character={page.character} rivals={page.rivals} logSize={page.logSize} at={page.at} />
+      {/* Opening Rivals keeps the player tracked and stores their latest games, like the profile does. */}
+      <SeenBeacon kind="player" tag={c.tag} />
+    </>
+  );
 }
 
 export default function RivalsPage({ params }: PageProps<'/player/[tag]/rivals'>) {

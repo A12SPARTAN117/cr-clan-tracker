@@ -50,6 +50,13 @@ export async function POST(req: Request) {
       // Their 1v1 games are kept past the API's ~40, so head-to-head records keep growing.
       if (log.ok) await saveBattles(tag, log.data);
     });
+  } else if (body.kind === 'games') {
+    // A head-to-head: both players' latest games are stored (without tracking either).
+    after(async () => {
+      if (!onceEvery(`seen:${tag}`, VIEW_WRITE_MS)) return;
+      const log = await getBattleLog(tag);
+      if (log.ok) await saveBattles(tag, log.data);
+    });
   } else if (body.kind === 'clan' || body.kind === 'manage') {
     const manage = body.kind === 'manage';
     after(async () => {
