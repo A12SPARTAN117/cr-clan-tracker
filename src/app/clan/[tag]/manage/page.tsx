@@ -3,14 +3,19 @@ import { Suspense } from 'react';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getClan } from '@/lib/cr/api';
-import { after, connection } from 'next/server';
-import { onceEvery, TRACK_MS } from '@/lib/throttle';
-import { applyHistory, getDashboard } from '@/lib/clan/dashboard';
-import { getClanHistory } from '@/lib/history';
-import { indexClanMembers } from '@/lib/directory';
-import { trackClan } from '@/lib/history/snapshot';
+import { SeenBeacon } from '@/components/SeenBeacon';
 import { checkTag } from '@/lib/tags';
 import { ClanDashboard } from './ClanDashboard';
+import { dashboardPage } from './data';
+
+/**
+ * Rendered on a clan's first visit and then served from the page cache (refreshed at most once a
+ * minute, see ./data): nothing here is read per request. Cache Components needs one param to check
+ * that at build time; this placeholder renders the not-found scene.
+ */
+export function generateStaticParams() {
+  return [{ tag: '_' }];
+}
 
 export async function generateMetadata({ params }: PageProps<'/clan/[tag]/manage'>): Promise<Metadata> {
   const c = checkTag(decodeURIComponent((await params).tag));
@@ -34,16 +39,14 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   const raw = decodeURIComponent((await params).tag);
   const c = checkTag(raw);
   if (c.kind !== 'valid') return <LostScene variant="clan" tag={raw.replace(/^#/, '').toUpperCase()} />;
-  const clan = await getClan(c.tag);
-  if (!clan.ok) return <LostScene variant={clan.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
-  // Background work below reads the clock, so it must run at request time, not in a prerender.
-  await connection();
-  if (onceEvery(`index-clan:${c.tag}`, TRACK_MS)) after(() => indexClanMembers(clan.data));
-  const [data, history] = await Promise.all([getDashboard(c.tag), getClanHistory(c.tag)]);
-  if (!data) return <LostScene variant="error" tag={c.tag} />;
-  // Opening a dashboard starts (or refreshes) history tracking for the clan.
-  after(() => trackClan(c.tag).catch((e) => console.error('[history] track failed:', e)));
-  return <ClanDashboard data={applyHistory(data, history)} />;
+  const page = await dashboardPage(c.tag);
+  if (!page.ok) return <LostScene variant={page.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
+  return (
+    <>
+      <ClanDashboard data={page.data} />
+      <SeenBeacon kind="manage" tag={c.tag} />
+    </>
+  );
 }
 
 export default function ManagePage({ params }: PageProps<'/clan/[tag]/manage'>) {
