@@ -756,3 +756,11 @@ a.news-card:hover {
     transition: opacity 0.2s;
   }
 }
+
+/* Icon images (components/ui/icons): one class instead of the same inline style on every icon. */
+.oa-icon {
+  flex: none;
+  display: inline-block;
+  vertical-align: middle;
+  object-fit: contain;
+}

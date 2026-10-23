@@ -1,26 +1,33 @@
 import { useId, type CSSProperties, type ReactNode } from 'react';
 
 /**
- * Small game-styled stat icons, drawn as inline SVG so they stay crisp at any size and work
- * in both themes. Each takes a pixel `size` (height; width follows the viewBox) and an
- * optional `title` (otherwise decorative / aria-hidden).
+ * Small game-styled stat icons. Each takes a pixel `size` (height; width follows the viewBox) and
+ * an optional `title` (otherwise decorative / aria-hidden).
+ *
+ * The drawings below are the source; pages show each one as a static file (public/icons/<name>.svg,
+ * written from these by tests/unit/icons.test.ts with UPDATE_ICONS=1) in an <img>. Lists show the
+ * same icon on every row, and inline SVG repeated its whole drawing each time, in the HTML and again
+ * in the page data: the search page carried 205 of them. A file is downloaded once and cached.
  */
 
 type P = { size?: number; title?: string; style?: CSSProperties };
 
-function Svg({ size = 16, title, style, vb = '0 0 24 24', children }: P & { vb?: string; children: ReactNode }) {
+/** For the icon file generator only: render the drawing itself instead of the <img>. */
+let drawInline = false;
+export const setDrawInline = (on: boolean) => {
+  drawInline = on;
+};
+
+function Svg({ name, size = 16, title, style, vb = '0 0 24 24', children }: P & { name: string; vb?: string; children: ReactNode }) {
   const [, , w, h] = vb.split(' ').map(Number);
+  const width = Math.round((size * w) / h);
+  if (!drawInline)
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- a static icon file, cached by the browser
+      <img src={`/icons/${name}.svg`} alt={title ?? ''} title={title} width={width} height={size} aria-hidden={title ? undefined : true} className="oa-icon" style={style} />
+    );
   return (
-    <svg
-      width={Math.round((size * w) / h)}
-      height={size}
-      viewBox={vb}
-      role={title ? 'img' : undefined}
-      aria-label={title}
-      aria-hidden={title ? undefined : true}
-      style={{ flex: 'none', display: 'inline-block', verticalAlign: 'middle', ...style }}
-    >
-      {title && <title>{title}</title>}
+    <svg xmlns="http://www.w3.org/2000/svg" width={width} height={size} viewBox={vb}>
       {children}
     </svg>
   );
@@ -30,7 +37,7 @@ function Svg({ size = 16, title, style, vb = '0 0 24 24', children }: P & { vb?:
 export function ElixirIcon(p: P) {
   const id = useId();
   return (
-    <Svg {...p} vb="0 0 20 24">
+    <Svg {...p} name="elixir" vb="0 0 20 24">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#F38BF6" />
@@ -47,7 +54,7 @@ export function ElixirIcon(p: P) {
 /** Pink circular arrows: the 4-card cycle. */
 export function CycleIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="cycle">
       <g fill="none" stroke="#D45ADB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M19.5 9.5A8 8 0 0 0 5.2 7.4" />
         <path d="M4.5 14.5A8 8 0 0 0 18.8 16.6" />
@@ -62,7 +69,7 @@ export function CycleIcon(p: P) {
 export function TrophyIcon(p: P) {
   const id = useId();
   return (
-    <Svg {...p}>
+    <Svg {...p} name="trophy">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#FFE9A3" />
@@ -82,7 +89,7 @@ export function TrophyIcon(p: P) {
 /** Clan war trophy: a cup with crossed swords behind it. */
 export function WarTrophyIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="war-trophy">
       <g stroke="#A4A9B4" strokeWidth="1.8" strokeLinecap="round">
         <path d="M3 3L20 20" />
         <path d="M21 3L4 20" />
@@ -100,7 +107,7 @@ export function WarTrophyIcon(p: P) {
 export function MedalIcon(p: P) {
   const id = useId();
   return (
-    <Svg {...p} vb="0 0 22 24">
+    <Svg {...p} name="medal" vb="0 0 22 24">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#E7D2FF" />
@@ -124,7 +131,7 @@ export function MedalIcon(p: P) {
 /** Blue crown (crowns / three-crown wins). */
 export function CrownIcon(p: P) {
   return (
-    <Svg {...p} vb="0 0 24 20">
+    <Svg {...p} name="crown" vb="0 0 24 20">
       <path d="M2 6L7 10L12 2L17 10L22 6L20 17H4Z" fill="#3AA0FF" stroke="#0A48C9" strokeWidth="1.2" strokeLinejoin="round" />
       <rect x="4" y="15.5" width="16" height="3" rx="1" fill="#E6B34A" stroke="#7A4A08" strokeWidth=".8" />
       <circle cx="12" cy="2.6" r="1.3" fill="#F5D58A" />
@@ -135,7 +142,7 @@ export function CrownIcon(p: P) {
 /** Two cards with an arrow: cards donated. */
 export function DonationIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="donation">
       <rect x="3" y="4" width="10" height="14" rx="2" fill="#262930" stroke="#8CCBFF" strokeWidth="1.4" transform="rotate(-10 8 11)" />
       <rect x="9" y="5" width="10" height="14" rx="2" fill="#1A1C20" stroke="#8CCBFF" strokeWidth="1.4" transform="rotate(8 14 12)" />
       <path d="M12 21.5H20M17.5 19L20 21.5L17.5 24" fill="none" stroke="#3AA0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" transform="translate(0 -2)" />
@@ -146,7 +153,7 @@ export function DonationIcon(p: P) {
 /** Two people: clan members. */
 export function MembersIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="members">
       <circle cx="9" cy="8" r="3.6" fill="#A4A9B4" />
       <path d="M2.5 20C2.5 15.5 5.5 13.5 9 13.5S15.5 15.5 15.5 20Z" fill="#A4A9B4" />
       <circle cx="16.5" cy="7" r="3" fill="#62676F" />
@@ -169,7 +176,8 @@ function Art({ src, size = 16, title, style }: P & { src: string }) {
       height={size}
       width={size}
       aria-hidden={title ? undefined : true}
-      style={{ flex: 'none', display: 'inline-block', verticalAlign: 'middle', objectFit: 'contain', ...style }}
+      className="oa-icon"
+      style={style}
     />
   );
 }
@@ -209,7 +217,7 @@ export function KingLevel({ level, size = 28, title }: { level: number | null | 
 /** Crossed swords: battles / wins. */
 export function SwordsIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="swords">
       <g strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 4L15.5 15.5" stroke="#D7DBE2" strokeWidth="2.4" />
         <path d="M20 4L8.5 15.5" stroke="#D7DBE2" strokeWidth="2.4" />
@@ -223,7 +231,7 @@ export function SwordsIcon(p: P) {
 /** River race fame: a pennant flag. */
 export function FameIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="fame">
       <path d="M5 2.5V22" stroke="#A4A9B4" strokeWidth="1.8" strokeLinecap="round" />
       <path d="M6 3.5H19L16 8L19 12.5H6Z" fill="#E6B34A" stroke="#7A4A08" strokeWidth="1" strokeLinejoin="round" />
     </Svg>
@@ -233,7 +241,7 @@ export function FameIcon(p: P) {
 /** A single card: decks used / cards. */
 export function CardsIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="cards">
       <rect x="5" y="2.5" width="14" height="19" rx="2.5" fill="#1A1C20" stroke="#A35BFF" strokeWidth="1.6" />
       <path d="M12 7.5L14.5 12L12 16.5L9.5 12Z" fill="#C79BFF" />
     </Svg>
@@ -243,7 +251,7 @@ export function CardsIcon(p: P) {
 /** Cards received. */
 export function ReceivedIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="received">
       <rect x="6" y="2.5" width="12" height="16" rx="2" fill="#1A1C20" stroke="#A4A9B4" strokeWidth="1.4" />
       <path d="M12 12V22M8.5 18.5L12 22L15.5 18.5" fill="none" stroke="#3AA0FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
@@ -253,7 +261,7 @@ export function ReceivedIcon(p: P) {
 /** Clock: last seen / time. */
 export function ClockIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="clock">
       <circle cx="12" cy="12" r="9" fill="none" stroke="#A4A9B4" strokeWidth="1.8" />
       <path d="M12 7V12L15.5 14" fill="none" stroke="#8CCBFF" strokeWidth="1.8" strokeLinecap="round" />
     </Svg>
@@ -263,7 +271,7 @@ export function ClockIcon(p: P) {
 /** Percentage gauge: win rate / usage. */
 export function WinRateIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="win-rate">
       <circle cx="12" cy="12" r="9" fill="none" stroke="#262930" strokeWidth="3" />
       <path d="M12 3A9 9 0 1 1 3.4 14.7" fill="none" stroke="#3AA0FF" strokeWidth="3" strokeLinecap="round" />
     </Svg>
@@ -278,7 +286,7 @@ export function ChestIcon(p: P) {
 /** Badge / achievement star. */
 export function BadgeIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="badge">
       <path d="M12 2L20 6V12C20 17 16.5 20.5 12 22C7.5 20.5 4 17 4 12V6Z" fill="#262930" stroke="#E6B34A" strokeWidth="1.6" />
       <path d="M12 7.5L13.4 10.4L16.5 10.8L14.2 12.9L14.8 16L12 14.5L9.2 16L9.8 12.9L7.5 10.8L10.6 10.4Z" fill="#F5D58A" />
     </Svg>
@@ -288,7 +296,7 @@ export function BadgeIcon(p: P) {
 /** Up/down arrows: rank movement or streak. */
 export function StreakIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="streak">
       <path d="M12 3C14 7 18 8.5 18 13.5A6 6 0 0 1 6 13.5C6 11 7.5 9.5 8.5 8.5C8.5 11 10 12 10.8 12C10.8 9 11 6 12 3Z" fill="#FF7A3D" stroke="#9A2E0B" strokeWidth="1" strokeLinejoin="round" />
       <path d="M12 13C13.2 14.2 14 15 14 16.5A2 2 0 0 1 10 16.5C10 15 11 14 12 13Z" fill="#FFD27A" />
     </Svg>
@@ -298,7 +306,7 @@ export function StreakIcon(p: P) {
 /** Tower troop: a small king tower. */
 export function TowerIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="tower">
       <path d="M5 4H7.5V6H10V4H14V6H16.5V4H19V10H5Z" fill="#62676F" stroke="#262930" strokeWidth=".8" />
       <path d="M6 10H18L17 21H7Z" fill="#80868F" stroke="#262930" strokeWidth=".8" />
       <path d="M10.5 21V16.5A1.5 1.5 0 0 1 13.5 16.5V21Z" fill="#262930" />
@@ -319,7 +327,7 @@ export function IconStat({ icon, children, gap = 6, style }: { icon: ReactNode; 
 /** Clan war: a shield with crossed swords. */
 export function ClanWarIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="clan-war">
       <g strokeLinecap="round">
         <path d="M3.5 3.5L18 18" stroke="#D7DBE2" strokeWidth="2" />
         <path d="M20.5 3.5L6 18" stroke="#D7DBE2" strokeWidth="2" />
@@ -333,7 +341,7 @@ export function ClanWarIcon(p: P) {
 /** 2v2: two helmets side by side. */
 export function TeamIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="team">
       <path d="M2.5 14C2.5 9.5 5 7 8.5 7S14.5 9.5 14.5 14V17H2.5Z" fill="#3AA0FF" stroke="#0A48C9" strokeWidth="1.1" />
       <path d="M9.5 14C9.5 9.5 12 7 15.5 7S21.5 9.5 21.5 14V17H9.5Z" fill="#FF5464" stroke="#8E1222" strokeWidth="1.1" />
       <path d="M4.5 12.5H12.5M11.5 12.5H19.5" stroke="#07080A" strokeWidth="1.6" />
@@ -345,7 +353,7 @@ export function TeamIcon(p: P) {
 /** Challenges: a laurel wreath around a trophy. */
 export function ChallengeIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="challenge">
       <g fill="none" stroke="#E6B34A" strokeWidth="1.6" strokeLinecap="round">
         <path d="M5 6C3 9 3 14 6.5 17.5" />
         <path d="M19 6C21 9 21 14 17.5 17.5" />
@@ -361,7 +369,7 @@ export function ChallengeIcon(p: P) {
 /** Draft: three cards fanned out. */
 export function DraftIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="draft">
       <rect x="4" y="5" width="9" height="13" rx="1.6" fill="#262930" stroke="#A4A9B4" strokeWidth="1.2" transform="rotate(-16 8.5 11.5)" />
       <rect x="11" y="5" width="9" height="13" rx="1.6" fill="#262930" stroke="#A4A9B4" strokeWidth="1.2" transform="rotate(16 15.5 11.5)" />
       <rect x="7.5" y="4" width="9" height="14" rx="1.6" fill="#1A1C20" stroke="#C79BFF" strokeWidth="1.4" />
@@ -373,7 +381,7 @@ export function DraftIcon(p: P) {
 /** Chess events: a knight piece. */
 export function ChessIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="chess">
       <path d="M7 20H17L16 17H8Z" fill="#E6B34A" stroke="#7A4A08" strokeWidth="1" />
       <path d="M8.5 17C8.5 13.5 10 12.5 9.5 11L7 12.2L5.8 10.4L10 4.5C13.5 4 17 6.5 16.8 11.5L16 17Z" fill="#A35BFF" stroke="#3A0F7A" strokeWidth="1.1" strokeLinejoin="round" />
       <circle cx="11" cy="8" r=".9" fill="#fff" />
@@ -384,7 +392,7 @@ export function ChessIcon(p: P) {
 /** Generic live event: a starburst. */
 export function EventIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="event">
       <path d="M12 2L14.2 7.2L19.8 6L16.6 10.7L21 14.3L15.4 14.8L15.6 20.5L12 16.2L8.4 20.5L8.6 14.8L3 14.3L7.4 10.7L4.2 6L9.8 7.2Z" fill="#FF5464" stroke="#8E1222" strokeWidth="1" strokeLinejoin="round" />
       <circle cx="12" cy="11.8" r="3" fill="#F5D58A" />
     </Svg>
@@ -394,7 +402,7 @@ export function EventIcon(p: P) {
 /** Warning triangle: flagged / inactive. */
 export function AlertIcon(p: P) {
   return (
-    <Svg {...p}>
+    <Svg {...p} name="alert">
       <path d="M12 3L22 20H2Z" fill="#3A1418" stroke="#FF5464" strokeWidth="1.6" strokeLinejoin="round" />
       <path d="M12 9.5V14" stroke="#FF5464" strokeWidth="2" strokeLinecap="round" />
       <circle cx="12" cy="17" r="1.2" fill="#FF5464" />

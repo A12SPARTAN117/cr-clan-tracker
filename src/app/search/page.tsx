@@ -10,25 +10,16 @@ import { KingLevel, MembersIcon, TrophyIcon, WarTrophyIcon } from '@/components/
 import { fmt } from '@/lib/format';
 import { search, type SearchClan } from '@/lib/search';
 import { ScopeChips, ScopedSearch, ScopeSection } from './ScopeControls';
+import s from './search.module.css';
 
 export const metadata: Metadata = { title: 'Search' };
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
 
-const row: React.CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '40px 1fr auto',
-  gap: 14,
-  alignItems: 'center',
-  padding: '14px 16px',
-  color: 'var(--text-1)',
-  borderBottom: '1px solid var(--hair)',
-};
-
 function Initial({ name }: { name: string }) {
   return (
-    <span style={{ width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--slate)', font: '700 14px/1 var(--mono)', color: 'var(--blue-hi)' }}>
+    <span className={s.initial}>
       {name.slice(0, 1).toUpperCase()}
     </span>
   );
@@ -36,22 +27,22 @@ function Initial({ name }: { name: string }) {
 
 function ClanRow({ c, href }: { c: SearchClan; href: string }) {
   return (
-    <HoverLink href={href} data-spot="" className="spot" style={row}>
+    <HoverLink href={href} data-spot="" className={`spot ${s.row}`}>
       <ClanBadge badgeId={c.badgeId} size={36} name={c.name} />
-      <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-        <span style={{ font: '600 15px/1.15 var(--sans)', overflowWrap: 'anywhere' }}>{c.name}</span>
-        <span className="label-sm" style={{ letterSpacing: '.1em' }}>
+      <span className={s.who}>
+        <span className={s.name}>{c.name}</span>
+        <span className={`label-sm ${s.sub}`}>
           #{c.tag}
           {c.location ? ` · ${c.location}` : ''}
         </span>
       </span>
-      <span style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'flex-end', font: '600 12px/1 var(--mono)', color: 'var(--text-2)' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+      <span className={s.stats}>
+        <span className={s.stat}>
           <MembersIcon size={14} />
           {c.members}/50
         </span>
         {c.clanWarTrophies != null && (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+          <span className={s.stat}>
             <WarTrophyIcon size={14} />
             {fmt(c.clanWarTrophies)}
           </span>
@@ -85,20 +76,20 @@ async function Results({ searchParams }: { searchParams: SP }) {
             <div className="panel" style={{ overflow: 'hidden' }}>
               {r.tagPlayer && (
                 <ScopeSection kind="player">
-                  <HoverLink href={playerHref(r.tagPlayer.tag)} data-spot="" className="spot" style={row}>
+                  <HoverLink href={playerHref(r.tagPlayer.tag)} data-spot="" className={`spot ${s.row}`}>
                     <Initial name={r.tagPlayer.name} />
-                    <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-                      <span style={{ font: '600 15px/1.15 var(--sans)' }}>{r.tagPlayer.name}</span>
-                      <span className="label-sm" style={{ letterSpacing: '.1em' }}>
+                    <span className={s.who}>
+                      <span className={s.name}>{r.tagPlayer.name}</span>
+                      <span className={`label-sm ${s.sub}`}>
                         Player · #{r.tagPlayer.tag}
                         {r.tagPlayer.clanName ? ` · ${r.tagPlayer.clanName}` : ''}
                       </span>
                     </span>
-                    <span style={{ display: 'flex', gap: 14, font: '600 12px/1 var(--mono)', color: 'var(--text-2)' }}>
+                    <span className={s.stats}>
                       {r.tagPlayer.expLevel != null && (
                         <KingLevel level={r.tagPlayer.expLevel} size={24} />
                       )}
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <span className={s.stat}>
                         <TrophyIcon size={14} />
                         {fmt(r.tagPlayer.trophies)}
                       </span>
@@ -122,17 +113,17 @@ async function Results({ searchParams }: { searchParams: SP }) {
           {r.players.length ? (
             <div className="panel" style={{ overflow: 'hidden' }}>
               {r.players.map((p) => (
-                <HoverLink key={p.tag} href={playerHref(p.tag)} data-spot="" className="spot" style={row}>
+                <HoverLink key={p.tag} href={playerHref(p.tag)} data-spot="" className={`spot ${s.row}`}>
                   <Initial name={p.name} />
-                  <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-                    <span style={{ font: '600 15px/1.15 var(--sans)', overflowWrap: 'anywhere' }}>{p.name}</span>
-                    <span className="label-sm" style={{ letterSpacing: '.1em' }}>
+                  <span className={s.who}>
+                    <span className={s.name}>{p.name}</span>
+                    <span className={`label-sm ${s.sub}`}>
                       #{p.tag}
                       {p.clanName ? ` · ${p.clanName}` : ' · No clan'}
                     </span>
                   </span>
                   {p.trophies != null ? (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '600 12px/1 var(--mono)', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>
+                    <span className={`${s.stats} ${s.stat}`}>
                       <TrophyIcon size={14} />
                       {fmt(p.trophies)}
                     </span>

@@ -1,0 +1,48 @@
+/* Search result rows. These were inline styles repeated on every row. */
+.row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  color: var(--text-1);
+  border-bottom: 1px solid var(--hair);
+}
+.initial {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--slate);
+  font: 700 14px/1 var(--mono);
+  color: var(--blue-hi);
+}
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.name {
+  font: 600 15px/1.15 var(--sans);
+  overflow-wrap: anywhere;
+}
+.sub {
+  letter-spacing: 0.1em;
+}
+.stats {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  font: 600 12px/1 var(--mono);
+  color: var(--text-2);
+}
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
