@@ -38,8 +38,11 @@ const securityHeaders = [
   { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
 ];
 
-/** Game art in public/: fresh for a day, then served stale while the browser re-checks. */
-const artCache = 'public, max-age=86400, stale-while-revalidate=604800';
+/**
+ * Game art in public/: fresh for a week, then served stale for a month while the browser
+ * re-checks. Art almost never changes, and each re-check is a request (a billed one on a CDN).
+ */
+const artCache = 'public, max-age=604800, stale-while-revalidate=2592000';
 
 /** Paths that keep working while SITE_DOWN=1 (the down page itself, its worker, build assets, cron). */
 const ALWAYS_UP = '(?!down\\.html$|down-scene\\.js$|sw\\.js$|_next/|api/cron/|favicon\\.ico$)';
@@ -69,6 +72,9 @@ const nextConfig: NextConfig = {
     crLive: { stale: 30, revalidate: 60, expire: 900 },
     // Failed upstream calls: retry soon instead of caching the error.
     crError: { stale: 30, revalidate: 15, expire: 60 },
+    // Per-member facts behind clan pages (levels, league, battle-log win rates): 100 calls per
+    // clan to rebuild, and none of them moves fast. War decks come from the race (crLive).
+    members: { stale: 300, revalidate: 1800, expire: 86400 },
     // Stored snapshots the cron job rebuilds about hourly (meta decks): re-read every 10 minutes.
     meta: { stale: 300, revalidate: 600, expire: 86400 },
   },

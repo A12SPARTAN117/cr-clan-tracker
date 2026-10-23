@@ -1,12 +1,13 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
-import { anyFailed, getBattleLog, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags, unlessBusy } from '../cr/api';
+import { anyFailed, fetchBattleLog, getClan, getCurrentRiverRace, getRiverRaceLog, tags, unlessBusy, type ApiResult } from '../cr/api';
 import type { ApiRole, Battle, Clan, CurrentRiverRace, RiverRaceLogEntry } from '../cr/types';
 import { outcome } from '../battle';
 import type { ClanHistory, RosterEvent } from '../history';
 import { parseApiDate } from '../format';
 import { pool } from '../pool';
 import { nextWarStart, riverBattleKind, warDay, warWeekKey } from '../war';
+import { memberProfile } from './members';
 import { factorScores, type FactorScores, type ScoreInputs } from './score';
 
 /** A war-day cell: decks used, null = not in clan, 'pending' = day not played yet, 'untracked' = no per-day snapshot. */
@@ -155,6 +156,26 @@ function battleStats(log: Battle[] | null, selfTag: string) {
   };
 }
 
+type BattleStats = ReturnType<typeof battleStats>;
+
+/**
+ * A member's battle-log numbers, cached per member for 30 minutes (the `members` profile) instead
+ * of the whole log: rebuilding a dashboard used to re-read 50 logs every 5 minutes. Callers wrap
+ * this in unlessBusy, so a skip is never cached.
+ */
+async function memberLog(tag: string): Promise<ApiResult<BattleStats>> {
+  'use cache';
+  cacheTag(tags.player(tag));
+  const r = await fetchBattleLog(tag);
+  if (!r.ok) {
+    if (r.status === 404) cacheLife('members');
+    else cacheLife('crError');
+    return r;
+  }
+  cacheLife('members');
+  return { ok: true, data: battleStats(r.data, tag) };
+}
+
 function raceInfo(race: CurrentRiverRace | null, ourTag: string, now: Date) {
   const cal = warDay(now);
   if (!race) return null;
@@ -206,8 +227,9 @@ async function build(tag: string): Promise<{ data: Dashboard; failed: boolean } 
   const war = raceInfo(race, ourTag, now);
 
   const memberTags = clan.memberList.map((m) => bare(m.tag));
-  // Per-member calls give way when the API is busy (unlessBusy); the dashboard shows what it has.
-  const [players, logs] = await Promise.all([pool(memberTags, 16, (t) => unlessBusy(() => getPlayer(t))), pool(memberTags, 16, (t) => unlessBusy(() => getBattleLog(t)))]);
+  // Per-member facts (cached for 30 minutes each) give way when the API is busy (unlessBusy); the
+  // dashboard shows what it has.
+  const [players, logs] = await Promise.all([pool(memberTags, 16, (t) => unlessBusy(() => memberProfile(t))), pool(memberTags, 16, (t) => unlessBusy(() => memberLog(t)))]);
 
   const ourRaceClan = race ? (race.clans.find((c) => bare(c.tag) === ourTag) ?? race.clan) : null;
   const curParts = new Map((ourRaceClan?.participants ?? []).map((p) => [bare(p.tag), p]));
@@ -247,9 +269,9 @@ async function build(tag: string): Promise<{ data: Dashboard; failed: boolean } 
     // Tenure from the race log: consecutive recent races (a lower bound). applyHistory refines it.
     const tenureDays = raceStreak(hist) * 7;
 
-    const pl = players[i];
-    const pol = pl.ok ? pl.data.currentPathOfLegendSeasonResult : undefined;
-    const bs = battleStats(logs[i].ok ? logs[i].data : null, t);
+    const pl = players[i].ok ? players[i].data : null;
+    const lg = logs[i];
+    const bs = lg.ok ? lg.data : battleStats(null, t);
     const last = logParts[0]?.parts.get(t);
     const inputs: ScoreInputs = {
       decks,
@@ -268,8 +290,8 @@ async function build(tag: string): Promise<{ data: Dashboard; failed: boolean } 
       clanRank: m.clanRank,
       rankMove: m.previousClanRank > 0 ? m.previousClanRank - m.clanRank : 0,
       trophies: m.trophies,
-      league: pol?.leagueNumber ?? null,
-      rating: pol && pol.leagueNumber >= 7 ? pol.trophies : null,
+      league: pl?.league ?? null,
+      rating: pl?.league != null && pl.league >= 7 ? pl.polTrophies : null,
       lastSeen: seen?.toISOString() ?? '',
       hours,
       donations: m.donations,

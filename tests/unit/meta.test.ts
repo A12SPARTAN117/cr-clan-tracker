@@ -41,7 +41,7 @@ vi.mock('@/lib/cr/api', () => ({
   getPolLeaderboard: async () => ({ ok: true, data: { items: [{ tag: '#A', name: 'A', expLevel: 70, eloRating: 2500, rank: 1 }, { tag: '#B', name: 'B', expLevel: 70, eloRating: 2450, rank: 2 }] } }),
   getClanWarRankings: async () => ({ ok: true, data: { items: [{ tag: '#CLAN', name: 'Clan', rank: 1, previousRank: 1, members: 1, badgeId: 1 }] } }),
   getClan: async () => ({ ok: true, data: { tag: '#CLAN', name: 'Clan', memberList: [{ tag: '#D', name: 'D' }] } as unknown as Clan }),
-  getBattleLog: async (tag: string) => ({ ok: true, data: logs[tag] ?? [] }),
+  fetchBattleLog: async (tag: string) => ({ ok: true, data: logs[tag] ?? [] }),
 }));
 
 // Set the clock now: buildMeta runs while the suite is collected, before any hooks.

@@ -1,6 +1,6 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getBattleLog, getClan, getClanWarRankings, getPolLeaderboard } from './cr/api';
+import { fetchBattleLog, getClan, getClanWarRankings, getPolLeaderboard } from './cr/api';
 import type { BattleSide } from './cr/types';
 import { cardArt, cardById, slugify, type Rarity } from './cards';
 import { deckKey, deckName, deckStats, toDeckCard, winConOf, type DeckCard } from './decks';
@@ -133,7 +133,8 @@ export async function buildMeta(sampleSize = 100): Promise<MetaSnapshot | null> 
   const clans = warTop.ok ? await Promise.all(warTop.data.items.map((c) => getClan(c.tag.replace('#', '')))) : [];
   const tags = [...new Set([...top.data.items.map((p) => p.tag), ...clans.flatMap((c) => (c.ok ? c.data.memberList.map((m) => m.tag) : []))])];
   // The shared API gate (cr/limiter) paces these; 10 at a time leaves room for visitors' pages.
-  const logs = await pool(tags, 10, (t) => getBattleLog(t.replace('#', '')));
+  // Uncached: about 10 MB of logs that nothing reads again would push pages out of the cache.
+  const logs = await pool(tags, 10, (t) => fetchBattleLog(t.replace('#', '')));
 
   const now = Date.now();
   const seen = new Set<string>();
