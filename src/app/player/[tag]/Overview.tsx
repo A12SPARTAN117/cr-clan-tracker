@@ -6,7 +6,7 @@ import { EmberField } from '@/components/fx/EmberField';
 import { BadgeIcon, CardsIcon, ChestIcon, CrownIcon, DonationIcon, SwordsIcon, TrophyIcon, WinRateIcon, ClanWarIcon } from '@/components/ui/icons';
 import { FitValue } from '@/components/ui/primitives';
 import { agoShort, fmt } from '@/lib/format';
-import type { PlayerProfile } from '@/lib/player/profile';
+import type { PlayerLite } from '@/lib/player/lite';
 import type { Rivals } from '@/lib/player/rivals';
 import type { Insights } from '@/lib/player/insights';
 import { InsightsStrip, TiltWarning } from './Insights';
@@ -14,7 +14,7 @@ import { HoverLink } from '@/components/ui/HoverLink';
 import { BattleKindIcon, KIND_LABEL } from './BattleKindIcon';
 import s from './overview.module.css';
 
-function StreakPanel({ p }: { p: PlayerProfile }) {
+function StreakPanel({ p }: { p: PlayerLite }) {
   const st = { ...p.streakRun, battles: p.battles.filter((b) => p.streakRun.ids.includes(b.id)) };
   const hot = st.kind === 'win';
   const form = p.battles.slice(0, 30);
@@ -62,7 +62,7 @@ function StreakPanel({ p }: { p: PlayerProfile }) {
   );
 }
 
-function Enemies({ p }: { p: PlayerProfile }) {
+function Enemies({ p }: { p: PlayerLite }) {
   if (!p.enemies.length) return null;
   const [worst, ...rest] = p.enemies;
   return (
@@ -123,9 +123,8 @@ function RivalsTeaser({ tag, r }: { tag: string; r: Rivals }) {
   );
 }
 
-export function OverviewTab({ p, rivals, insights, onInsights, onCopy }: { p: PlayerProfile; rivals: Rivals; insights: Insights; onInsights: () => void; onCopy: (t: string) => void }) {
+export function OverviewTab({ p, rivals, insights, onInsights, onCopy }: { p: PlayerLite; rivals: Rivals; insights: Insights; onInsights: () => void; onCopy: (t: string) => void }) {
   const t = p.totals;
-  const owned = p.collection.filter((c) => c.owned);
   const tiles: [string, string, string, React.ReactNode][] = [
     ['Wins', fmt(t.wins), '', <CrownIcon key="i" />],
     ['Losses', fmt(t.losses), '', <SwordsIcon key="i" />],
@@ -133,7 +132,7 @@ export function OverviewTab({ p, rivals, insights, onInsights, onCopy }: { p: Pl
     ['3-crown wins', fmt(t.threeCrown), '', <CrownIcon key="i" />],
     ['Battles', fmt(t.battleCount), '', <SwordsIcon key="i" />],
     ['Collection level', fmt(p.collectionLevel), '', <CardsIcon key="i" />],
-    ['Cards found', String(owned.length), `/${p.collection.length}`, <CardsIcon key="i" />],
+    ['Cards found', String(p.cards.owned), `/${p.cards.total}`, <CardsIcon key="i" />],
     // The API only keeps this season's best on the seasonal road; below 14,000 it is the Trophy Road best.
     [p.seasonal ? 'Season best' : 'Best trophies', fmt(p.seasonal?.best ?? p.bestTrophies), '', <TrophyIcon key="i" />],
     ['Star points', fmt(t.starPoints), '', <BadgeIcon key="i" />],

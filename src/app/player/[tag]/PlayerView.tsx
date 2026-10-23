@@ -1,7 +1,7 @@
 'use client';
 
 import { HoverLink } from '@/components/ui/HoverLink';
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { SceneHeader } from '@/components/SceneHeader';
 import { ShareRecap } from '@/components/ShareRecap';
 import { Decode, Reveal } from '@/components/fx/Reveal';
@@ -11,7 +11,9 @@ import { Tabs } from '@/components/ui/Tabs';
 import { agoShort, fmt } from '@/lib/format';
 import { setPin, usePins } from '@/lib/pins';
 import { setRival, useMyRivals } from '@/lib/myRivals';
+import type { PlayerLite } from '@/lib/player/lite';
 import type { PlayerProfile } from '@/lib/player/profile';
+import { EmptyState } from '@/components/EmptyState';
 import type { PlayerHistory } from '@/lib/history';
 import type { Rivals } from '@/lib/player/rivals';
 import { unpackCards, type Packed } from '@/lib/cardPack';
@@ -30,12 +32,37 @@ type Tab = 'overview' | 'collection' | 'badges' | 'stats' | 'insights' | 'battle
 /** A player's names and clans over time (null without a database). */
 export type NameHistory = { name: string; clanTag: string | null; clanName: string | null; from: string; to: string }[] | null;
 
-/** Everything the profile shows, sent with its cards packed (see lib/cardPack). */
-export type PlayerData = { p: PlayerProfile; history: PlayerHistory | null; rivals: Rivals; insights: Insights; names: NameHistory };
+/**
+ * The full profile, loaded the first time a tab other than Overview or Insights opens (the page
+ * only carries what those show). Failed: null with `failed`, and the tab offers a retry.
+ */
+function useFullProfile(tag: string, want: boolean) {
+  const [got, setGot] = useState<{ tag: string; p: PlayerProfile | null; failed: boolean } | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (!want || (got?.tag === tag && !got.failed)) return;
+    let live = true;
+    fetch(`/api/player/${encodeURIComponent(tag)}`)
+      .then((r) => (r.ok ? (r.json() as Promise<Packed<PlayerProfile>>) : null))
+      .catch(() => null)
+      .then((d) => live && setGot({ tag, p: d ? unpackCards(d) : null, failed: !d }));
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `got` only gates the first load; `attempt` retries
+  }, [tag, want, attempt]);
+  const mine = got?.tag === tag ? got : null;
+  return { full: mine?.p ?? null, failed: !!mine?.failed, retry: () => setAttempt((n) => n + 1) };
+}
+
+/** Everything the profile page shows at first, sent with its cards packed (see lib/cardPack). */
+export type PlayerData = { p: PlayerLite; history: PlayerHistory | null; rivals: Rivals; insights: Insights; names: NameHistory };
 
 export function PlayerView({ data }: { data: Packed<PlayerData> }) {
   const { p, history, rivals, insights, names } = useMemo(() => unpackCards(data), [data]);
   const [tab, setTab] = useState<Tab>('overview');
+  const needsFull = tab !== 'overview' && tab !== 'insights';
+  const { full, failed, retry } = useFullProfile(p.tag, needsFull);
   const [toast, setToast] = useState('');
   const [syncing, startSync] = useTransition();
   const pins = usePins();
@@ -222,12 +249,22 @@ export function PlayerView({ data }: { data: Packed<PlayerData> }) {
         />
         {tab === 'overview' && <OverviewTab p={p} rivals={rivals} insights={insights} onInsights={() => setTab('insights')} onCopy={flash} />}
         {tab === 'insights' && <InsightsTab x={insights} />}
-        {tab === 'collection' && <CollectionTab p={p} />}
-        {tab === 'badges' && <BadgesTab p={p} />}
-        {tab === 'stats' && <StatsTab p={p} />}
-        {tab === 'battles' && <BattlesTab p={p} />}
-        {tab === 'decks' && <DecksTab p={p} />}
-        {tab === 'history' && <HistoryTab p={p} h={history} names={names} />}
+        {needsFull && !full && (failed ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' }}>
+            <EmptyState text="This tab didn't load. The Clash Royale API may be busy." />
+            <button type="button" className="btn btn-secondary btn-sm" onClick={retry}>
+              Try again
+            </button>
+          </div>
+        ) : (
+          <span className="skeleton" style={{ height: 420 }} aria-label="Loading" />
+        ))}
+        {full && tab === 'collection' && <CollectionTab p={full} />}
+        {full && tab === 'badges' && <BadgesTab p={full} />}
+        {full && tab === 'stats' && <StatsTab p={full} />}
+        {full && tab === 'battles' && <BattlesTab p={full} />}
+        {full && tab === 'decks' && <DecksTab p={full} />}
+        {full && tab === 'history' && <HistoryTab p={full} h={history} names={names} />}
       </main>
 
       {toast && (
