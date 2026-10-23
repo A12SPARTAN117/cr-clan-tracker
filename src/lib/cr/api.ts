@@ -57,11 +57,18 @@ export function unlessBusy<T>(call: () => Promise<ApiResult<T>>): Promise<ApiRes
   return limiter.backlog() > 1000 ? Promise.resolve(SKIPPED) : call();
 }
 
+/**
+ * Answers worth one more try: the proxy's Cloudflare front fails 1–2% of calls at any pace (520,
+ * 525…, measured 2026-10-23), and plain 5xx or network blips. Not 429 (the limiter handles it).
+ */
+const TRANSIENT = (status: number) => status === 0 || status === 500 || status === 502 || status === 504 || (status >= 520 && status <= 527);
+
 async function request<T>(path: string): Promise<ApiResult<T>> {
   const key = process.env.CR_API_KEY?.trim();
   if (!key) return { ok: false, status: 0, reason: 'CR_API_KEY is not set' };
+  const opts = { background: background.getStore() === true, onBusy: () => ({ status: 503, result: BUSY as ApiResult<T> }) };
   // Every call goes through the shared gate (rate, visitor-first, 429 back-off, shedding when busy).
-  const r = await limiter.run(async () => {
+  const once = () => limiter.run(async () => {
     try {
       const res = await fetch(BASE + path, {
         headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' },
@@ -77,7 +84,12 @@ async function request<T>(path: string): Promise<ApiResult<T>> {
     } catch (e) {
       return { status: 0, result: { ok: false, status: 0, reason: e instanceof Error ? e.message : 'network error' } as ApiResult<T> };
     }
-  }, { background: background.getStore() === true, onBusy: () => ({ status: 503, result: BUSY as ApiResult<T> }) });
+  }, opts);
+  let r = await once();
+  if (TRANSIENT(r.status)) {
+    await new Promise((ok) => setTimeout(ok, 300));
+    r = await once();
+  }
   return r.result;
 }
 
