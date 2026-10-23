@@ -118,34 +118,46 @@ export async function liveEventBoards(): Promise<EventBoard[]> {
 }
 
 /** A board's tag → [rank, score] index: the stored one, or (no database) the API's. */
-async function rankIndex(id: number): Promise<Record<string, [number, number]> | null> {
-  'use cache';
-  cacheTag('events');
+async function loadIndex(id: number): Promise<Record<string, [number, number]> | null> {
   const stored = await readSnapshot<Record<string, [number, number]>>(indexKind(id));
-  if (stored) {
-    cacheLife('meta');
-    return stored.data;
-  }
-  const idx = await getEventRankIndex(id);
-  if (idx) cacheLife('cr');
-  else cacheLife('crError');
-  return idx;
+  return stored ? stored.data : getEventRankIndex(id);
+}
+
+type RankTable = { id: number; name: string; idx: Map<string, [number, number]> }[];
+const RANKS_MS = 10 * 60_000;
+const g = globalThis as unknown as { __crRanks?: { at: number; table: Promise<RankTable> } };
+
+async function loadRankTable(): Promise<RankTable> {
+  const live = await liveEventBoards();
+  const boards = await Promise.all(live.map(async (b) => ({ id: b.id, name: b.name, idx: await loadIndex(b.id) })));
+  return boards.flatMap((b) => (b.idx ? [{ id: b.id, name: b.name, idx: new Map(Object.entries(b.idx)) }] : []));
+}
+
+/**
+ * Every live board's index as plain maps, kept in this server's memory for 10 minutes and shared
+ * by all requests. Not a 'use cache' entry: those are stored serialized and decoded on every hit,
+ * and decoding seven 10,000-entry indexes on each player view was most of that page's CPU.
+ */
+function rankTable(): Promise<RankTable> {
+  const now = Date.now();
+  if (g.__crRanks && now - g.__crRanks.at < RANKS_MS) return g.__crRanks.table;
+  const table = loadRankTable();
+  g.__crRanks = { at: now, table };
+  // A failed load is tried again on the next view.
+  table.catch(() => {
+    if (g.__crRanks?.table === table) g.__crRanks = undefined;
+  });
+  return table;
 }
 
 /** A player's place on a live event leaderboard; rank null when they're past the ~10,000 the API lists. */
 export type EventRank = { id: number; name: string; rank: number | null; score: number | null; listed: number };
 
-/** Where a player stands on every event leaderboard that is live right now. */
+/** Where a player stands on every event leaderboard that is live right now. Request time only. */
 export async function eventRanksOf(tagRaw: string): Promise<EventRank[]> {
   const tag = tagRaw.replace(/^#/, '').toUpperCase();
-  const live = await liveEventBoards();
-  const out = await Promise.all(
-    live.map(async (b): Promise<EventRank | null> => {
-      const idx = await rankIndex(b.id);
-      if (!idx) return null;
-      const hit = idx[tag];
-      return { id: b.id, name: b.name, rank: hit?.[0] ?? null, score: hit?.[1] ?? null, listed: Object.keys(idx).length };
-    }),
-  );
-  return out.filter((x): x is EventRank => !!x);
+  return (await rankTable()).map((b) => {
+    const hit = b.idx.get(tag);
+    return { id: b.id, name: b.name, rank: hit?.[0] ?? null, score: hit?.[1] ?? null, listed: b.idx.size };
+  });
 }

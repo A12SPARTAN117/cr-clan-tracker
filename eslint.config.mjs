@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Generated and reference files, not app code:
     "scripts/down-page/scene.bundle.js",
+    "public/down-scene.js",
     "design-kit/**",
   ]),
 ]);

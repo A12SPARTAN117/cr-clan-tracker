@@ -1,5 +1,5 @@
-/* A card tile. These were inline styles: about 700 bytes of HTML per card, and pages show up to
-   900 cards (the Pro tracker), so they moved here. */
+/* A card tile. These were inline styles: about 700 bytes of HTML per card, and pages show
+   hundreds of cards, so they moved here. */
 
 .tile {
   position: relative;
