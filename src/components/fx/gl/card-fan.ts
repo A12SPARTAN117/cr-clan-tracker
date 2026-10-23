@@ -1,10 +1,14 @@
 'use client';
 
 import { Group, Mesh, MeshBasicMaterial, PlaneGeometry, SRGBColorSpace, TextureLoader, type Texture } from 'three';
+import { localArt } from '@/lib/cards';
 import { mountThree } from './three';
 
 /** Same-origin URL for official art (see /api/art); local art is used as-is. */
 const artUrl = (src: string) => (src.startsWith('/') ? src : `/api/art?src=${encodeURIComponent(src)}`);
+
+/** Our small copy first (scripts/card-art.mjs), then the official art through /api/art. */
+const artUrls = (src: string) => [localArt(src)?.full, artUrl(src)].filter((u): u is string => !!u);
 
 /** Mounts the card fan scene into `el` (see ../CardFan3D). Returns a cleanup function. */
 export function mountCardFan(el: HTMLElement, srcs: string[]) {
@@ -28,18 +32,23 @@ export function mountCardFan(el: HTMLElement, srcs: string[]) {
       const n = srcs.length;
       srcs.forEach((src, i) => {
         const mat = new MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false });
-        loader.load(
-          artUrl(src),
-          (tex) => {
-            tex.colorSpace = SRGBColorSpace;
-            tex.anisotropy = 4;
-            textures.push(tex);
-            mat.map = tex;
-            mat.needsUpdate = true;
-          },
-          undefined,
-          () => {},
-        );
+        const urls = artUrls(src);
+        const load = (k: number) =>
+          loader.load(
+            urls[k],
+            (tex) => {
+              tex.colorSpace = SRGBColorSpace;
+              tex.anisotropy = 4;
+              textures.push(tex);
+              mat.map = tex;
+              mat.needsUpdate = true;
+            },
+            undefined,
+            () => {
+              if (k + 1 < urls.length) load(k + 1);
+            },
+          );
+        load(0);
         const mesh = new Mesh(geo, mat);
         // A wide arc, the middle cards a little higher, like a hand of cards.
         const k = n > 1 ? i / (n - 1) - 0.5 : 0;
