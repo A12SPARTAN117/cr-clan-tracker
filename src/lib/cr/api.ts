@@ -1,4 +1,5 @@
 import 'server-only';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { cacheLife, cacheTag } from 'next/cache';
 import type {
   Battle,
@@ -36,10 +37,30 @@ export const tags = {
   clan: (tag: string) => `clan:${tag.replace(/^#/, '').toUpperCase()}`,
 };
 
+// On globalThis: each route is bundled on its own, and module state isn't shared between bundles.
+const g = globalThis as unknown as { __crBackground?: AsyncLocalStorage<true> };
+const background = (g.__crBackground ??= new AsyncLocalStorage<true>());
+
+/** Runs `work` as background work (the cron jobs): its API calls wait until visitors' calls are through. */
+export const inBackground = <T>(work: () => Promise<T>): Promise<T> => background.run(true, work);
+
+const BUSY = { ok: false, status: 503, reason: 'The Clash Royale API is busy; try again in a moment' } as const;
+const SKIPPED = { ok: false, status: 503, reason: 'Skipped while the Clash Royale API is busy' } as const;
+
+/**
+ * For the optional per-member calls behind clan pages (member levels, the dashboard's 50 profiles
+ * and battle logs): skipped while visitors' calls are queued more than a second deep, so a new
+ * clan can't take the whole budget from everyone else. A skip is never cached (the call isn't
+ * made); the page shows what it has, and its own short error lifetime retries soon.
+ */
+export function unlessBusy<T>(call: () => Promise<ApiResult<T>>): Promise<ApiResult<T>> {
+  return limiter.backlog() > 1000 ? Promise.resolve(SKIPPED) : call();
+}
+
 async function request<T>(path: string): Promise<ApiResult<T>> {
   const key = process.env.CR_API_KEY?.trim();
   if (!key) return { ok: false, status: 0, reason: 'CR_API_KEY is not set' };
-  // Every call goes through the shared gate (rate, concurrency, visitor-first, 429 back-off).
+  // Every call goes through the shared gate (rate, visitor-first, 429 back-off, shedding when busy).
   const r = await limiter.run(async () => {
     try {
       const res = await fetch(BASE + path, {
@@ -56,7 +77,7 @@ async function request<T>(path: string): Promise<ApiResult<T>> {
     } catch (e) {
       return { status: 0, result: { ok: false, status: 0, reason: e instanceof Error ? e.message : 'network error' } as ApiResult<T> };
     }
-  });
+  }, { background: background.getStore() === true, onBusy: () => ({ status: 503, result: BUSY as ApiResult<T> }) });
   return r.result;
 }
 

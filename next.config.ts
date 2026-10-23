@@ -46,6 +46,10 @@ const ALWAYS_UP = '(?!down\\.html$|down-scene\\.js$|sw\\.js$|_next/|api/cron/|fa
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // In-memory page and 'use cache' storage per server (Next's default is 50 MB). A rush of
+  // different players fills 50 MB in about a hundred profiles and then thrashes; servers have far
+  // more memory than that. CACHE_MEMORY_MB overrides the 256 MB default.
+  cacheMaxMemorySize: (Number(process.env.CACHE_MEMORY_MB) || 256) * 1024 * 1024,
   partialPrefetching: true,
   poweredByHeader: false,
   // Embedded Postgres ships WASM + data files; load it from node_modules at runtime.

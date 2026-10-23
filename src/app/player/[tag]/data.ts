@@ -6,6 +6,7 @@ import { getPlayerHistory } from '@/lib/history';
 import { getGames } from '@/lib/history/battles';
 import { getIdentityHistory } from '@/lib/history/snapshot';
 import { insightsOf } from '@/lib/player/insights';
+import { liteOf } from '@/lib/player/lite';
 import { getPlayerProfile } from '@/lib/player/profile';
 import { rivalsOf } from '@/lib/player/rivals';
 import type { PlayerData } from './PlayerView';
@@ -34,5 +35,6 @@ export async function playerPage(tag: string): Promise<PlayerPage> {
   }
   cacheLife('crLive');
   // Rivals, elixir, close games, playstyle, tilt and achievements all come from the same games.
-  return { ok: true, data: packCards({ p, history, rivals: rivalsOf(games), insights: insightsOf(games, p.war), names }) };
+  // The page carries what Overview shows; the other tabs load the full profile (/api/player/[tag]).
+  return { ok: true, data: packCards({ p: liteOf(p), history, rivals: rivalsOf(games), insights: insightsOf(games, p.war), names }) };
 }

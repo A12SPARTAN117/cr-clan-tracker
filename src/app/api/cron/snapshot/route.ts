@@ -1,5 +1,6 @@
 import { and, asc, gte, isNull, lt, or, sql } from 'drizzle-orm';
 import { connection } from 'next/server';
+import { inBackground } from '@/lib/cr/api';
 import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb, schema } from '@/lib/db';
 import { snapshotClan, snapshotPlayer, type SnapshotResult } from '@/lib/history/snapshot';
@@ -16,7 +17,12 @@ const PLAYER_PACE_MS = 250;
  * `Authorization: Bearer $CRON_SECRET`. War days need at least one snapshot shortly
  * before each daily reset (~09:40 UTC) to capture full per-day deck counts.
  */
-export async function GET(req: Request) {
+/** Background work: every API call here waits until visitors' calls are through. */
+export function GET(req: Request) {
+  return inBackground(() => run(req));
+}
+
+async function run(req: Request) {
   await connection();
   if (!cronAuthorized(req)) return Response.json({ error: 'unauthorized' }, { status: 401 });
   const db = await getDb();
