@@ -128,6 +128,38 @@
   color-scheme: light;
 }
 
+/* Scene art as AVIF (40-60% smaller) where the browser can pick a format; the JPEGs above stay
+   for the rest. Made by scripts/optimize-images.mjs. */
+@supports (background-image: image-set(url('/scenes/obelisk.avif') type('image/avif'))) {
+  :root {
+    --art-arena: image-set(url('/scenes/arena.avif') type('image/avif'), url('/scenes/arena.jpg') type('image/jpeg'));
+    --art-leaders-war-room: image-set(url('/scenes/leaders-war-room.avif') type('image/avif'), url('/scenes/leaders-war-room.jpg') type('image/jpeg'));
+    --art-player-knight: image-set(url('/scenes/player-knight.avif') type('image/avif'), url('/scenes/player-knight.jpg') type('image/jpeg'));
+    --art-deck-slot: image-set(url('/scenes/deck-slot.avif') type('image/avif'), url('/scenes/deck-slot.jpg') type('image/jpeg'));
+    --art-podium: image-set(url('/scenes/podium.avif') type('image/avif'), url('/scenes/podium.jpg') type('image/jpeg'));
+    --art-shields: image-set(url('/scenes/shields.avif') type('image/avif'), url('/scenes/shields.jpg') type('image/jpeg'));
+    --art-obelisk: image-set(url('/scenes/obelisk.avif') type('image/avif'), url('/scenes/obelisk.jpg') type('image/jpeg'));
+    --art-chest: image-set(url('/scenes/chest.avif') type('image/avif'), url('/scenes/chest.jpg') type('image/jpeg'));
+    --art-portal: image-set(url('/scenes/portal.avif') type('image/avif'), url('/scenes/portal.jpg') type('image/jpeg'));
+    --art-throne: image-set(url('/scenes/throne.avif') type('image/avif'), url('/scenes/throne.jpg') type('image/jpeg'));
+    --art-tower: image-set(url('/scenes/tower.avif') type('image/avif'), url('/scenes/tower.jpg') type('image/jpeg'));
+    --art-castle: image-set(url('/scenes/castle.avif') type('image/avif'), url('/scenes/castle.jpg') type('image/jpeg'));
+  }
+  [data-theme='light'] {
+    --art-arena: image-set(url('/scenes/light/arena.avif') type('image/avif'), url('/scenes/light/arena.jpg') type('image/jpeg'));
+    --art-leaders-war-room: image-set(url('/scenes/light/leaders-war-room.avif') type('image/avif'), url('/scenes/light/leaders-war-room.jpg') type('image/jpeg'));
+    --art-player-knight: image-set(url('/scenes/light/player-knight.avif') type('image/avif'), url('/scenes/light/player-knight.jpg') type('image/jpeg'));
+    --art-deck-slot: image-set(url('/scenes/light/deck-slot.avif') type('image/avif'), url('/scenes/light/deck-slot.jpg') type('image/jpeg'));
+    --art-podium: image-set(url('/scenes/light/podium.avif') type('image/avif'), url('/scenes/light/podium.jpg') type('image/jpeg'));
+    --art-shields: image-set(url('/scenes/light/shields.avif') type('image/avif'), url('/scenes/light/shields.jpg') type('image/jpeg'));
+    --art-obelisk: image-set(url('/scenes/light/obelisk.avif') type('image/avif'), url('/scenes/light/obelisk.jpg') type('image/jpeg'));
+    --art-chest: image-set(url('/scenes/light/chest.avif') type('image/avif'), url('/scenes/light/chest.jpg') type('image/jpeg'));
+    --art-portal: image-set(url('/scenes/light/portal.avif') type('image/avif'), url('/scenes/light/portal.jpg') type('image/jpeg'));
+    --art-throne: image-set(url('/scenes/light/throne.avif') type('image/avif'), url('/scenes/light/throne.jpg') type('image/jpeg'));
+    --art-tower: image-set(url('/scenes/light/tower.avif') type('image/avif'), url('/scenes/light/tower.jpg') type('image/jpeg'));
+  }
+}
+
 *,
 *::before,
 *::after {
@@ -723,4 +755,12 @@ a.news-card:hover {
     transform: none;
     transition: opacity 0.2s;
   }
+}
+
+/* Icon images (components/ui/icons): one class instead of the same inline style on every icon. */
+.oa-icon {
+  flex: none;
+  display: inline-block;
+  vertical-align: middle;
+  object-fit: contain;
 }

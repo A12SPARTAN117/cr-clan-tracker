@@ -97,7 +97,7 @@ describe('ratings and leagues', () => {
     render(<PolRating rating={2635} />);
     const el = screen.getByTitle(/Ultimate Champion medals/);
     expect(el).toHaveTextContent('2,635');
-    expect(el.querySelector('svg')).not.toBeNull();
+    expect(el.querySelector('img[src="/icons/medal.svg"]')).not.toBeNull();
   });
 
   it('maps API leagues to league art', () => {

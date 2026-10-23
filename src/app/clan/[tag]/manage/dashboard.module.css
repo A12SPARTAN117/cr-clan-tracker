@@ -868,3 +868,86 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Member rows and cards: these were inline styles repeated for each of up to 50 members. */
+.trend {
+  padding: 10px 14px 10px 12px;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+.trend[data-dir='up'] {
+  color: var(--blue);
+}
+.trend[data-dir='down'] {
+  color: var(--ember);
+}
+.checkCell {
+  padding: 0 0 0 14px;
+}
+.check {
+  accent-color: var(--blue);
+}
+.checkBig {
+  width: 18px;
+  height: 18px;
+}
+.small {
+  font-size: 12px;
+}
+.tiny {
+  font-size: 10px;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.nameCell {
+  min-width: 170px;
+}
+.leagueCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.decksCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.heatRow {
+  display: flex;
+  gap: 2px;
+}
+.decksCount {
+  font-size: 12px;
+  min-width: 38px;
+  text-align: right;
+}
+.cardWho {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.cardName {
+  font: 600 15px/1.1 var(--sans);
+}
+.newChipGap {
+  margin-left: 6px;
+}
+.cardSub {
+  letter-spacing: 0.1em;
+  font-size: 10px;
+}
+.cardSeen {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-1);
+}
+.cardSeen[data-inactive] {
+  color: var(--ember);
+}

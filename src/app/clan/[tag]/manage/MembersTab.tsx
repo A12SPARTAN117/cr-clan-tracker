@@ -112,8 +112,8 @@ function Trend({ m }: { m: Scored }) {
   const v = m.trophyTrend ?? m.rankMove;
   return (
     <td
-      className={s.right}
-      style={{ padding: '10px 14px 10px 12px', fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap', color: v > 0 ? 'var(--blue)' : v < 0 ? 'var(--ember)' : 'var(--text-3)' }}
+      className={`${s.right} ${s.trend}`}
+      data-dir={v > 0 ? 'up' : v < 0 ? 'down' : undefined}
       title={m.trophyTrend != null ? 'Trophy change over the last 7 days' : 'Clan rank change since the weekly reset'}
     >
       {v > 0 ? `▲ ${v}` : v < 0 ? `▼ ${-v}` : '— 0'}
@@ -309,13 +309,13 @@ export function MembersTab({
           <tbody>
             {rows.map((m) => (
               <tr key={m.tag} tabIndex={0} className={s.row} data-open={openTag === m.tag} onClick={() => onOpen(m.tag)} onKeyDown={key(m.tag)}>
-                <td className={s.stick0} style={{ padding: '0 0 0 14px' }} onClick={(e) => e.stopPropagation()}>
-                  <input type="checkbox" checked={sel.has(m.tag)} onChange={() => toggleSel(m.tag)} aria-label={`Select ${m.name}`} style={{ accentColor: 'var(--blue)' }} />
+                <td className={`${s.stick0} ${s.checkCell}`} onClick={(e) => e.stopPropagation()}>
+                  <input type="checkbox" className={s.check} checked={sel.has(m.tag)} onChange={() => toggleSel(m.tag)} aria-label={`Select ${m.name}`} />
                 </td>
-                <td className={`${s.faint} ${STICKY.rank}`} style={{ fontSize: 12 }}>
+                <td className={`${s.faint} ${STICKY.rank} ${s.small}`}>
                   {String(m.rank).padStart(2, '0')}
                 </td>
-                <td className={STICKY.name} style={{ minWidth: 170 }}>
+                <td className={`${STICKY.name} ${s.nameCell}`}>
                   <div className={s.memberName}>
                     {m.name}
                     <MvpBadge x={mvp.get(m.tag)} />
@@ -328,33 +328,35 @@ export function MembersTab({
                 </td>
                 <td className={s.right}>{fmt(m.trophies)}</td>
                 <td>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span className={s.leagueCell}>
                     <LeagueIcon league={m.league} />
-                    {m.rating ? <PolRating rating={m.rating} size={14} style={{ fontSize: 12 }} /> : <span className={s.muted}>—</span>}
+                    {m.rating ? <PolRating rating={m.rating} size={14} /> : <span className={s.muted}>—</span>}
                   </span>
                 </td>
-                <td style={{ whiteSpace: 'nowrap' }}>
+                <td className={s.nowrap}>
                   <LastSeen hours={m.hours} />
                 </td>
                 <td className={s.right}>{fmt(m.donations)}</td>
                 <td className={`${s.right} ${s.muted}`}>{fmt(m.received)}</td>
                 <td className={s.right}>{fmt(m.fame)}</td>
                 <td>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
-                    <span style={{ display: 'flex', gap: 2 }}>
+                  <span className={s.decksCell}>
+                    <span className={s.heatRow}>
                       {m.days.map((d, i) => (
                         <HeatCell key={i} value={d} width={9} height={14} showText={false} />
                       ))}
                     </span>
-                    <span style={{ fontSize: 12, color: decksFg(m), minWidth: 38, textAlign: 'right' }}>{m.decks}/16</span>
+                    <span className={s.decksCount} style={{ color: decksFg(m) }}>
+                      {m.decks}/16
+                    </span>
                   </span>
                 </td>
                 <td className={s.right} title={m.warGames ? `Based on ${m.warGames} war battles` : 'No war battles in the battle log'}>
                   {m.warWin == null ? <span className={s.faint}>—</span> : `${m.warWin}%`}
                 </td>
-                <td className={s.right} style={{ whiteSpace: 'nowrap', fontSize: 12 }} title={`Clan 1v1 friendlies, based on ${m.fGames} games`}>
+                <td className={`${s.right} ${s.nowrap} ${s.small}`} title={`Clan 1v1 friendlies, based on ${m.fGames} games`}>
                   {m.fWin == null ? '—' : `${m.fWin}%`}
-                  <span className={s.faint} style={{ fontSize: 10 }}>
+                  <span className={`${s.faint} ${s.tiny}`}>
                     {m.fGames ? ` ${m.fGames}g` : ''}
                   </span>
                 </td>
@@ -395,25 +397,25 @@ export function MembersTab({
               onChange={() => toggleSel(m.tag)}
               onClick={(e) => e.stopPropagation()}
               aria-label={`Select ${m.name}`}
-              style={{ accentColor: 'var(--blue)', width: 18, height: 18 }}
+              className={`${s.check} ${s.checkBig}`}
             />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-              <span style={{ font: '600 15px/1.1 var(--sans)' }}>
+            <div className={s.cardWho}>
+              <span className={s.cardName}>
                 {String(m.rank).padStart(2, '0')} · {m.name}
                 <MvpBadge x={mvp.get(m.tag)} />
                 {m.isNew && (
-                  <span className={s.newChip} style={{ marginLeft: 6 }}>
+                  <span className={`${s.newChip} ${s.newChipGap}`}>
                     NEW
                   </span>
                 )}
               </span>
-              <span className="label-sm" style={{ letterSpacing: '.1em', fontSize: 10 }}>
+              <span className={`label-sm ${s.cardSub}`}>
                 {ROLE_LABEL[m.role]} · {fmt(m.trophies)} · {tenureText(m)}
               </span>
             </div>
             <ScoreGauge score={m.score} size={40} />
             <div className={s.cardStats}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: activityOf(m.hours) === 'inactive' ? 'var(--ember)' : 'var(--text-1)' }}>
+              <span className={s.cardSeen} data-inactive={activityOf(m.hours) === 'inactive' || undefined}>
                 <ActivityDot hours={m.hours} />
                 {agoShort(m.hours)}
               </span>
