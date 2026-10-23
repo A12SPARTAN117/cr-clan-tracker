@@ -1,6 +1,7 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { setUrlQuery, useUrlQuery } from '@/lib/urlQuery';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { HoverLink } from '@/components/ui/HoverLink';
@@ -19,15 +20,6 @@ import s from './decks.module.css';
 
 const pct = (n: number) => n.toFixed(1);
 
-function setUrl(patch: Record<string, string | null>) {
-  const u = new URL(window.location.href);
-  for (const [k, v] of Object.entries(patch)) {
-    if (v) u.searchParams.set(k, v);
-    else u.searchParams.delete(k);
-  }
-  window.history.replaceState(null, '', u);
-}
-
 /** What the page sends: every mode's header facts, Ranked's list, and the deck of the day. */
 export type DecksMeta = {
   players: number;
@@ -39,10 +31,12 @@ export type DecksMeta = {
 const EMPTY: ModeList = { decks: [], cards: [] };
 
 export function DecksView({ meta, trends }: { meta: DecksMeta; trends: Promise<Record<string, ModeTrends>> }) {
-  const params = useSearchParams();
+  const params = useUrlQuery();
   const router = useRouter();
-  const [mode, setMode] = useState<MetaMode>(() => (meta.modes[params.get('mode') ?? ''] ? (params.get('mode') as MetaMode) : 'pol'));
-  const [view, setView] = useState<'decks' | 'cards'>(params.get('view') === 'cards' ? 'cards' : 'decks');
+  // Mode and view live in the URL (?mode=, ?view=): Ranked's decks are in the page's HTML, and a
+  // link to another mode switches to it once the page is running.
+  const mode: MetaMode = meta.modes[params.get('mode') ?? ''] ? (params.get('mode') as MetaMode) : 'pol';
+  const view: 'decks' | 'cards' = params.get('view') === 'cards' ? 'cards' : 'decks';
   const [sort, setSort] = useState<'use' | 'win'>('use');
   const [inc, setInc] = useState('');
   const [exc, setExc] = useState('');
@@ -127,8 +121,7 @@ export function DecksView({ meta, trends }: { meta: DecksMeta; trends: Promise<R
           <ModeFilter
             value={mode}
             onChange={(k) => {
-              setMode(k);
-              setUrl({ mode: k === 'pol' ? null : k });
+              setUrlQuery({ mode: k === 'pol' ? null : k });
             }}
             modes={meta.order.map((k) => ({ key: k, label: meta.modes[k].label, kind: meta.modes[k].kind, count: meta.modes[k].count }))}
           />
@@ -155,8 +148,7 @@ export function DecksView({ meta, trends }: { meta: DecksMeta; trends: Promise<R
                     style={{ height: 30 }}
                     aria-pressed={view === k}
                     onClick={() => {
-                      setView(k);
-                      setUrl({ view: k === 'cards' ? 'cards' : null });
+                      setUrlQuery({ view: k === 'cards' ? 'cards' : null });
                     }}
                   >
                     {l}

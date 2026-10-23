@@ -1,7 +1,8 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
+import { replaceUrl } from '@/lib/urlQuery';
 import { Portal } from '@/components/fx/Portal';
 import { Tabs } from '@/components/ui/Tabs';
 import type { Tab } from './BoardView';
@@ -20,18 +21,17 @@ export function BoardControls({
   events: { id: number; name: string }[];
 }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [pending, start] = useTransition();
   const go = (next: { tab?: Tab; loc?: string; ev?: number | null }) => {
     const p = new URLSearchParams();
     const t = next.tab ?? tab;
     const l = next.loc ?? loc;
     if (t !== 'pol') p.set('tab', t);
-    if (l !== 'global') p.set('loc', l);
     if (t === 'events' && (next.ev ?? ev)) p.set('ev', String(next.ev ?? ev));
-    const url = `${pathname}${p.size ? `?${p}` : ''}`;
+    // The location is in the path, so each location's boards are their own cached page.
+    const url = `/leaderboards${l === 'global' ? '' : `/${l}`}${p.size ? `?${p}` : ''}`;
     // Tabs and events are already on the page (BoardView); only a new location loads.
-    if (l === loc) window.history.replaceState(null, '', url);
+    if (l === loc) replaceUrl(url);
     else start(() => router.replace(url, { scroll: false }));
   };
   return (
