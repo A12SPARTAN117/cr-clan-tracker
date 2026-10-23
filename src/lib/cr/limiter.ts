@@ -74,4 +74,5 @@ export function createLimiter({ perSecond = 20, burst = 10, backoffMs = 2000, ma
 
 /** The process-wide gate the API client uses (kept across hot reloads in development). */
 const g = globalThis as unknown as { __crLimiter3?: ReturnType<typeof createLimiter> };
-export const limiter = (g.__crLimiter3 ??= createLimiter({ maxWaitMs: 8000 }));
+// CR_API_RATE: calls a second for this server (default 20), for when the key's real limit is known.
+export const limiter = (g.__crLimiter3 ??= createLimiter({ perSecond: Number(process.env.CR_API_RATE) || 20, maxWaitMs: 8000 }));
