@@ -46,8 +46,8 @@ function standIn(b: Badge): { src: string; year?: string } | null {
     return card?.icons.normal ? { src: card.icons.normal } : null;
   }
   const year = /^(\d{4})YearBadge$/.exec(b.id);
-  if (year) return { src: '/ui/experience.png', year: year[1] };
-  if (/Completion$/.test(b.id)) return { src: /Draft/.test(b.id) ? '/ui/chest-draft.png' : '/ui/chest-kinglegendary.png' };
+  if (year) return { src: '/ui/experience.webp', year: year[1] };
+  if (/Completion$/.test(b.id)) return { src: /Draft/.test(b.id) ? '/ui/chest-draft.webp' : '/ui/chest-kinglegendary.webp' };
   return null;
 }
 

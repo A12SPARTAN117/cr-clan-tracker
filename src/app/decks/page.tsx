@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
+import { packCards } from '@/lib/cardPack';
 import { getMeta, listOf } from '@/lib/meta';
 import { getMetaTrends } from '@/lib/metaHistory';
 import { DecksView, type DecksMeta } from './DecksView';
@@ -30,7 +31,7 @@ async function Content() {
   const best = [...pool].filter((d) => d.games >= min).sort((a, b) => b.win - a.win || b.games - a.games)[0];
   const dotd = best ? { mode: dotdMode, deck: { ...best, matchups: [], players: [], crowns: [] } } : null;
   // Trends come from stored daily snapshots (cached for an hour); they stream in under the mode picker.
-  return <DecksView meta={{ players: meta.players, order: meta.order, modes, dotd }} trends={getMetaTrends()} />;
+  return <DecksView meta={packCards<DecksMeta>({ players: meta.players, order: meta.order, modes, dotd })} trends={getMetaTrends()} />;
 }
 
 export default function DecksPage() {

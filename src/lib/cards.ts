@@ -39,6 +39,21 @@ export const TOWER_TROOPS: CardInfo[] = (raw.towerTroops ?? []).map((t) => ({
 const byId = new Map<number, CardInfo>([...CARDS, ...TOWER_TROOPS].map((c) => [c.id, c]));
 const bySlug = new Map<string, CardInfo>([...CARDS, ...TOWER_TROOPS].map((c) => [c.slug, c]));
 
+// Official art URL → our copy in public/cards/art (scripts/card-art.mjs): 5-8 KB AVIF instead
+// of the CDN's ~165 KB PNG.
+const local = new Map<string, string>();
+for (const c of [...CARDS, ...TOWER_TROOPS]) {
+  if (c.icons.normal) local.set(c.icons.normal, `/cards/art/${c.slug}`);
+  if (c.icons.evolution) local.set(c.icons.evolution, `/cards/art/${c.slug}-evo`);
+  if (c.icons.hero) local.set(c.icons.hero, `/cards/art/${c.slug}-hero`);
+}
+
+/** Our copy of an official card image: `full` is 288 px wide, `small` 192 px; null when we have none. */
+export function localArt(url: string | null | undefined): { full: string; small: string } | null {
+  const base = url ? local.get(url) : undefined;
+  return base ? { full: `${base}.avif`, small: `${base}.s.avif` } : null;
+}
+
 export const cardById = (id: number) => byId.get(id);
 export const cardBySlug = (slug: string) => bySlug.get(slug);
 

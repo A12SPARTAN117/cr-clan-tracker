@@ -11,6 +11,7 @@ import { EmberField } from '@/components/fx/EmberField';
 import { Fog } from '@/components/fx/Fog';
 import { EmptyState } from '@/components/EmptyState';
 import { ModeFilter, ModeIcon } from '@/components/ModeFilter';
+import { unpackCards, type Packed } from '@/lib/cardPack';
 import { deckHref } from '@/lib/decks';
 import { fmt } from '@/lib/format';
 import type { DeckStat, MetaMode, ModeList, ModeMeta } from '@/lib/meta';
@@ -30,7 +31,9 @@ export type DecksMeta = {
 
 const EMPTY: ModeList = { decks: [], cards: [] };
 
-export function DecksView({ meta, trends }: { meta: DecksMeta; trends: Promise<Record<string, ModeTrends>> }) {
+export function DecksView({ meta: packed, trends }: { meta: Packed<DecksMeta>; trends: Promise<Record<string, ModeTrends>> }) {
+  // Cards travel packed against the card table (lib/cardPack): about half the page's data.
+  const meta = useMemo(() => unpackCards(packed), [packed]);
   const params = useUrlQuery();
   const router = useRouter();
   // Mode and view live in the URL (?mode=, ?view=): Ranked's decks are in the page's HTML, and a
@@ -48,9 +51,9 @@ export function DecksView({ meta, trends }: { meta: DecksMeta; trends: Promise<R
     if (list) return;
     let dead = false;
     fetch(`/api/meta/${encodeURIComponent(mode)}`)
-      .then((r) => (r.ok ? (r.json() as Promise<ModeList>) : null))
+      .then((r) => (r.ok ? (r.json() as Promise<Packed<ModeList>>) : null))
       .then((d) => {
-        if (!dead && d) setLoaded((l) => ({ ...l, [mode]: d }));
+        if (!dead && d) setLoaded((l) => ({ ...l, [mode]: unpackCards(d) }));
       })
       .catch(() => {});
     return () => {

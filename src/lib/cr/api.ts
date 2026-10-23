@@ -111,10 +111,18 @@ export function anyFailed(rs: readonly (ApiResult<unknown> | null)[]): boolean {
   return rs.some((r) => r !== null && !r.ok && r.status !== 404);
 }
 
+/**
+ * Uncached profile and battle-log calls, for callers that keep only a few facts from each answer
+ * in their own longer cache (the clan pages' per-member facts, see clan/members). Caching the
+ * whole answers too would hold about 2 MB per clan in memory for no reader.
+ */
+export const fetchPlayer = (tag: string) => request<Player>(`/players/${enc(tag)}`);
+export const fetchBattleLog = (tag: string) => request<Battle[]>(`/players/${enc(tag)}/battlelog`);
+
 export async function getPlayer(tag: string) {
   'use cache';
   cacheTag(tags.player(tag));
-  return settle(await request<Player>(`/players/${enc(tag)}`), 'cr');
+  return settle(await fetchPlayer(tag), 'cr');
 }
 
 /**
@@ -132,7 +140,7 @@ function slimLog(log: Battle[]): Battle[] {
 export async function getBattleLog(tag: string) {
   'use cache';
   cacheTag(tags.player(tag));
-  const r = await request<Battle[]>(`/players/${enc(tag)}/battlelog`);
+  const r = await fetchBattleLog(tag);
   return settle(r.ok ? { ...r, data: slimLog(r.data) } : r, 'crLive');
 }
 

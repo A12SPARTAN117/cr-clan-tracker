@@ -184,7 +184,7 @@ function Art({ src, size = 16, title, style }: P & { src: string }) {
 
 /** King level: the game's blue experience star. */
 export function ExpIcon(p: P) {
-  return <Art src="/ui/experience.png" {...p} />;
+  return <Art src="/ui/experience.webp" {...p} />;
 }
 
 /** The king level as the game shows it: the number on the experience star. */
@@ -195,7 +195,7 @@ export function KingLevel({ level, size = 28, title }: { level: number | null | 
       aria-label={title ?? `King level ${level ?? '—'}`}
       style={{ position: 'relative', display: 'inline-grid', placeItems: 'center', width: size, height: size, flex: 'none', verticalAlign: 'middle' }}
     >
-      <Art src="/ui/experience.png" size={size} style={{ position: 'absolute', inset: 0 }} />
+      <Art src="/ui/experience.webp" size={size} style={{ position: 'absolute', inset: 0 }} />
       <span
         aria-hidden
         style={{
@@ -280,7 +280,7 @@ export function WinRateIcon(p: P) {
 
 /** Chest: challenge / tournament cards won. The game's magical chest. */
 export function ChestIcon(p: P) {
-  return <Art src="/ui/chest-magical.png" {...p} />;
+  return <Art src="/ui/chest-magical.webp" {...p} />;
 }
 
 /** Badge / achievement star. */

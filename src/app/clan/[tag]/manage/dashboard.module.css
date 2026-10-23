@@ -5,7 +5,7 @@
   bottom: 0;
   width: min(44vw, 560px);
   height: 82%;
-  background: url('/characters/pekka.png') bottom center / contain no-repeat;
+  background: url('/characters/pekka.webp') bottom center / contain no-repeat;
   filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.75)) drop-shadow(0 0 30px rgba(var(--glow-rgb), 0.45));
   transition: filter 0.6s ease-out;
   /* The render is a bust: its cut-off base fades into the scene instead of ending in a hard edge. */

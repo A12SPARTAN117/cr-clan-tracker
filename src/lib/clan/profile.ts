@@ -1,6 +1,7 @@
 import 'server-only';
 import { cacheLife, cacheTag } from 'next/cache';
-import { anyFailed, getClan, getCurrentRiverRace, getPlayer, getRiverRaceLog, tags, unlessBusy } from '../cr/api';
+import { anyFailed, getClan, getCurrentRiverRace, getRiverRaceLog, tags, unlessBusy } from '../cr/api';
+import { memberProfile } from './members';
 import type { ApiRole, Clan } from '../cr/types';
 import type { RosterEvent } from '../history';
 import { parseApiDate } from '../format';
@@ -106,9 +107,9 @@ export async function getClanProfile(tag: string): Promise<ClanProfile | null> {
 export type MemberLevels = Record<string, { exp: number; coll: number | null }>;
 
 /**
- * Member levels for a clan: one profile call per member (about 50), so pages stream this in
- * after the roster instead of waiting for it. The same cached profiles back the dashboard and
- * player pages.
+ * Member levels for a clan: one profile per member (about 50), so pages stream this in after the
+ * roster instead of waiting for it. The same per-member facts (clan/members, kept 30 minutes)
+ * back the dashboard.
  */
 export async function getMemberLevels(tag: string): Promise<MemberLevels> {
   'use cache';
@@ -119,13 +120,13 @@ export async function getMemberLevels(tag: string): Promise<MemberLevels> {
     return {};
   }
   const list = c.data.memberList;
-  const profiles = await pool(list, 16, (m) => unlessBusy(() => getPlayer(bare(m.tag))));
+  const profiles = await pool(list, 16, (m) => unlessBusy(() => memberProfile(bare(m.tag))));
   if (anyFailed(profiles)) cacheLife('crError');
   else cacheLife('cr');
   return Object.fromEntries(
     list.map((m, i) => {
       const p = profiles[i]?.ok ? profiles[i].data : null;
-      return [bare(m.tag), { exp: m.expLevel || (p?.expLevel ?? 0), coll: p?.collectionLevel ?? null }];
+      return [bare(m.tag), { exp: m.expLevel || (p?.exp ?? 0), coll: p?.coll ?? null }];
     }),
   );
 }

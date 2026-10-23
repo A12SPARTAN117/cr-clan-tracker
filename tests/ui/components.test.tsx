@@ -88,7 +88,7 @@ describe('ModeFilter', () => {
 
   it('uses the Ultimate Champion league art for its icon', () => {
     const { container } = render(<ModeFilter modes={modes} value="pol" onChange={() => {}} />);
-    expect(container.querySelector('[data-mode="uc"] img')).toHaveAttribute('src', '/leagues/league10.png');
+    expect(container.querySelector('[data-mode="uc"] img')).toHaveAttribute('src', '/leagues/league10.webp');
   });
 });
 
@@ -102,7 +102,7 @@ describe('ratings and leagues', () => {
 
   it('maps API leagues to league art', () => {
     render(<LeagueIcon league={7} />);
-    expect(screen.getByRole('img', { name: 'Ultimate Champion' })).toHaveAttribute('src', '/leagues/league10.png');
+    expect(screen.getByRole('img', { name: 'Ultimate Champion' })).toHaveAttribute('src', '/leagues/league10.webp');
   });
 });
 

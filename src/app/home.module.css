@@ -43,7 +43,7 @@
 .champImg {
   position: absolute;
   inset: 0;
-  background: url('/characters/champion_hires_golden_knight.png') bottom center / contain no-repeat;
+  background: url('/characters/champion_hires_golden_knight.webp') bottom center / contain no-repeat;
   filter: grayscale(1) brightness(0.85) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), 0.75)) drop-shadow(0 0 30px rgba(var(--glow-rgb), 0.45));
   transition: filter 0.6s ease-out;
 }
