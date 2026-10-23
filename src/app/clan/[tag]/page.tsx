@@ -3,13 +3,20 @@ import { Suspense } from 'react';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getClan } from '@/lib/cr/api';
-import { getClanProfile, getMemberLevels } from '@/lib/clan/profile';
-import { getClanHistory } from '@/lib/history';
-import { indexClanMembers } from '@/lib/directory';
-import { after, connection } from 'next/server';
-import { onceEvery, TRACK_MS } from '@/lib/throttle';
+import { SeenBeacon } from '@/components/SeenBeacon';
+import { getMemberLevels } from '@/lib/clan/profile';
 import { checkTag } from '@/lib/tags';
 import { ClanProfileView } from './ClanProfileView';
+import { clanPage } from './data';
+
+/**
+ * Rendered on a clan's first visit and then served from the page cache (refreshed at most once a
+ * minute, see ./data): nothing here is read per request. Cache Components needs one param to check
+ * that at build time; this placeholder renders the not-found scene.
+ */
+export function generateStaticParams() {
+  return [{ tag: '_' }];
+}
 
 export async function generateMetadata({ params }: PageProps<'/clan/[tag]'>): Promise<Metadata> {
   const c = checkTag(decodeURIComponent((await params).tag));
@@ -22,16 +29,15 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
   const raw = decodeURIComponent((await params).tag);
   const c = checkTag(raw);
   if (c.kind !== 'valid') return <LostScene variant="clan" tag={raw.replace(/^#/, '').toUpperCase()} />;
-  const r = await getClan(c.tag);
-  if (!r.ok) return <LostScene variant={r.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
-  // Background work below reads the clock, so it must run at request time, not in a prerender.
-  await connection();
-  // The roster goes into name search at most hourly per clan.
-  if (onceEvery(`index-clan:${c.tag}`, TRACK_MS)) after(() => indexClanMembers(r.data));
-  const [data, history] = await Promise.all([getClanProfile(c.tag), getClanHistory(c.tag)]);
-  if (!data) return <LostScene variant="error" tag={c.tag} />;
+  const page = await clanPage(c.tag);
+  if (!page.ok) return <LostScene variant={page.status === 404 ? 'clan' : 'error'} tag={c.tag} />;
   // Member levels take ~50 profile calls on a cold cache: the page shows now and they stream in.
-  return <ClanProfileView c={history ? { ...data, history: { trackedSince: history.trackedSince, events: history.rosterEvents } } : data} levels={getMemberLevels(c.tag)} />;
+  return (
+    <>
+      <ClanProfileView c={page.c} levels={getMemberLevels(c.tag)} />
+      <SeenBeacon kind="clan" tag={c.tag} />
+    </>
+  );
 }
 
 export default function ClanPage({ params }: PageProps<'/clan/[tag]'>) {
