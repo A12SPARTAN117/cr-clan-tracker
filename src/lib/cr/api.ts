@@ -15,6 +15,7 @@ import type {
   PolRankedPlayer,
   RiverRaceLogEntry,
 } from './types';
+import { cardById } from '../cards';
 import { limiter } from './limiter';
 
 /**
@@ -116,10 +117,23 @@ export async function getPlayer(tag: string) {
   return settle(await request<Player>(`/players/${enc(tag)}`), 'cr');
 }
 
+/**
+ * Cached entries are stored serialized and decoded on every read, so the two biggest answers are
+ * slimmed first. A battle log's deck cards drop their image URLs when the card table has the
+ * card (about half the log's size; toDeckCard takes the table's art); tower troops keep theirs.
+ */
+function slimLog(log: Battle[]): Battle[] {
+  for (const b of log)
+    for (const side of [...b.team, ...b.opponent])
+      for (const c of side.cards ?? []) if (cardById(c.id)) c.iconUrls = {} as typeof c.iconUrls;
+  return log;
+}
+
 export async function getBattleLog(tag: string) {
   'use cache';
   cacheTag(tags.player(tag));
-  return settle(await request<Battle[]>(`/players/${enc(tag)}/battlelog`), 'crLive');
+  const r = await request<Battle[]>(`/players/${enc(tag)}/battlelog`);
+  return settle(r.ok ? { ...r, data: slimLog(r.data) } : r, 'crLive');
 }
 
 export async function getClan(tag: string) {
@@ -134,10 +148,20 @@ export async function getCurrentRiverRace(tag: string) {
   return settle(await request<CurrentRiverRace>(`/clans/${enc(tag)}/currentriverrace`), 'crLive');
 }
 
+/**
+ * A race log lists every clan's participants in every race (about 300 KB); only the asking
+ * clan's are ever read (dashboard, profile, recap, player war history). Other clans keep their
+ * standing, without the participant lists.
+ */
 export async function getRiverRaceLog(tag: string, limit = 10) {
   'use cache';
   cacheTag(tags.clan(tag));
-  return settle(await request<Paged<RiverRaceLogEntry>>(`/clans/${enc(tag)}/riverracelog?limit=${limit}`), 'cr');
+  const r = await request<Paged<RiverRaceLogEntry>>(`/clans/${enc(tag)}/riverracelog?limit=${limit}`);
+  if (r.ok) {
+    const ours = enc(tag);
+    for (const e of r.data.items) for (const s of e.standings) if (encodeURIComponent(s.clan.tag) !== ours) s.clan.participants = [];
+  }
+  return settle(r, 'cr');
 }
 
 /** Clan search. The API needs at least one filter; a name must be 3+ characters. */
