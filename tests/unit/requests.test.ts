@@ -64,6 +64,36 @@ describe('Clash Royale API gate (cr/limiter)', () => {
     expect(call).toHaveBeenCalledTimes(2);
   });
 
+  it('answers busy at once instead of queueing a visitor past maxWaitMs', async () => {
+    let t = 0;
+    const lim = createLimiter({ perSecond: 10, burst: 1, maxWaitMs: 1000, now: () => t });
+    // Fill the queue 1.5 s deep.
+    for (let i = 0; i < 16; i++) lim.reserve();
+    const call = vi.fn(async () => ({ status: 200 }));
+    const r = await lim.run(call, { onBusy: () => ({ status: 503 }) });
+    expect(r.status).toBe(503);
+    expect(call).not.toHaveBeenCalled();
+    expect(lim.stats.shed).toBe(1);
+    // Once the queue drains, calls go through again.
+    t = 2000;
+    expect((await lim.run(call, { onBusy: () => ({ status: 503 }) })).status).toBe(200);
+  });
+
+  it('holds background calls until the queue is short, and never sheds them', async () => {
+    vi.useFakeTimers();
+    let t = 0;
+    const lim = createLimiter({ perSecond: 10, burst: 1, maxWaitMs: 500, now: () => t });
+    for (let i = 0; i < 31; i++) lim.reserve(); // 3 s of visitors queued
+    const call = vi.fn(async () => ({ status: 200 }));
+    const p = lim.run(call, { background: true, onBusy: () => ({ status: 503 }) });
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(call).not.toHaveBeenCalled();
+    t = 2500; // the queue is now under a second deep
+    await vi.advanceTimersByTimeAsync(2000);
+    expect((await p).status).toBe(200);
+    vi.useRealTimers();
+  });
+
   it('waits only on its own timer, never on another call finishing (required inside "use cache")', async () => {
     const lim = createLimiter({ perSecond: 1000, burst: 2 });
     // A call that never finishes must not hold anyone else up.

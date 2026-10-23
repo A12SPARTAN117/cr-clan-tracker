@@ -1,5 +1,5 @@
 import { connection } from 'next/server';
-import { getClan, getClanWarRankings, getLocations, getPolLeaderboard } from '@/lib/cr/api';
+import { getClan, getClanWarRankings, getLocations, getPolLeaderboard, inBackground } from '@/lib/cr/api';
 import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb } from '@/lib/db';
 import { indexClanMembers, indexPlayers } from '@/lib/directory';
@@ -14,7 +14,12 @@ const SLICE = 25;
  * each) into the player directory, for name search on hosts where memory doesn't persist
  * (serverless), plus the rosters of each location's top 5 war clans. Same auth as the snapshot job: `Authorization: Bearer $CRON_SECRET`.
  */
-export async function GET(req: Request) {
+/** Background work: every API call here waits until visitors' calls are through. */
+export function GET(req: Request) {
+  return inBackground(() => run(req));
+}
+
+async function run(req: Request) {
   await connection();
   if (!cronAuthorized(req)) return Response.json({ error: 'unauthorized' }, { status: 401 });
   if (!(await getDb())) return Response.json({ error: 'DATABASE_URL is not set' }, { status: 503 });

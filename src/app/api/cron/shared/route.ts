@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache';
 import { connection } from 'next/server';
+import { inBackground } from '@/lib/cr/api';
 import { cronAuthorized } from '@/lib/cron-auth';
 import { getDb } from '@/lib/db';
 import { refreshEventBoards } from '@/lib/events';
@@ -17,7 +18,12 @@ const META_EVERY_MS = 50 * 60_000;
  * calling the Clash Royale API: the meta decks (about 250 battle logs, hourly) and the live event
  * boards with each one's full listing (every run). Same auth as the other jobs: `Authorization: Bearer $CRON_SECRET`. `?force=1` rebuilds even when the stored copy is fresh.
  */
-export async function GET(req: Request) {
+/** Background work: every API call here waits until visitors' calls are through. */
+export function GET(req: Request) {
+  return inBackground(() => run(req));
+}
+
+async function run(req: Request) {
   await connection();
   if (!cronAuthorized(req)) return Response.json({ error: 'unauthorized' }, { status: 401 });
   if (!(await getDb())) return Response.json({ error: 'DATABASE_URL is not set' }, { status: 503 });

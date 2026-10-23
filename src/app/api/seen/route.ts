@@ -1,6 +1,6 @@
 import { after } from 'next/server';
 import { recordBadgeArt } from '@/lib/badgeArt';
-import { getBattleLog, getClan, getPlayer } from '@/lib/cr/api';
+import { getBattleLog, getClan, getPlayer, inBackground } from '@/lib/cr/api';
 import { indexClanMembers, indexPlayers } from '@/lib/directory';
 import { saveBattles } from '@/lib/history/battles';
 import { trackClan, trackPlayer } from '@/lib/history/snapshot';
@@ -14,7 +14,8 @@ import { onceEvery, TRACK_MS, VIEW_WRITE_MS } from '@/lib/throttle';
  * browser). Does what those pages did while rendering before they became cached and shared:
  * keeps the tag tracked so its history builds, and stores what was seen (games, name search,
  * badge art). Same gates as before: per player every 15 minutes, rosters and tracking hourly.
- * Reads go through the same cached API calls the page just made, so they rarely cost a call.
+ * Reads go through the same cached API calls the page just made, so they rarely cost a call, and
+ * run as background work (behind visitors' calls).
  */
 export async function POST(req: Request) {
   const limited = limitRequest(req, 'route');
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
   const tag = c.tag;
 
   if (body.kind === 'player') {
-    after(async () => {
+    after(() => inBackground(async () => {
       const r = await getPlayer(tag);
       if (!r.ok) return;
       // Opening a profile starts (or keeps up) its daily snapshots, so history builds from here on.
@@ -49,23 +50,23 @@ export async function POST(req: Request) {
       }
       // Their 1v1 games are kept past the API's ~40, so head-to-head records keep growing.
       if (log.ok) await saveBattles(tag, log.data);
-    });
+    }));
   } else if (body.kind === 'games') {
     // A head-to-head: both players' latest games are stored (without tracking either).
-    after(async () => {
+    after(() => inBackground(async () => {
       if (!onceEvery(`seen:${tag}`, VIEW_WRITE_MS)) return;
       const log = await getBattleLog(tag);
       if (log.ok) await saveBattles(tag, log.data);
-    });
+    }));
   } else if (body.kind === 'clan' || body.kind === 'manage') {
     const manage = body.kind === 'manage';
-    after(async () => {
+    after(() => inBackground(async () => {
       // Opening a dashboard starts (or refreshes) history tracking for the clan.
       if (manage) await trackClan(tag).catch((e) => console.error('[history] track failed:', e));
       if (!onceEvery(`index-clan:${tag}`, TRACK_MS)) return;
       const r = await getClan(tag);
       if (r.ok) await indexClanMembers(r.data);
-    });
+    }));
   } else return new Response(null, { status: 400 });
   return new Response(null, { status: 204 });
 }
