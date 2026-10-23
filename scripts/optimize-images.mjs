@@ -1,5 +1,6 @@
 // Shrinks the game art in public/ in place: PNGs become 8-bit palette PNGs (transparency kept,
-// no visible change at the sizes the site shows them), JPEGs are re-encoded with mozjpeg.
+// no visible change at the sizes the site shows them), JPEGs are re-encoded with mozjpeg, and
+// scene stills get an AVIF twin.
 // A file is only replaced when that saves at least 10%, so running it again is harmless.
 //   node scripts/optimize-images.mjs            all art folders
 //   node scripts/optimize-images.mjs public/x   just one folder
@@ -31,3 +32,15 @@ for (const dir of dirs) {
   }
 }
 console.log(`images: ${(before / 1048576).toFixed(1)} MB -> ${(after / 1048576).toFixed(1)} MB`);
+
+// Scene stills also get an AVIF twin (about 40-60% smaller); globals.css serves it to browsers that
+// can pick a format (image-set with type()), and the JPEG to the rest.
+for (const dir of ['public/scenes', 'public/scenes/light']) {
+  for (const name of readdirSync(path.join(root, dir))) {
+    if (!/\.jpe?g$/i.test(name)) continue;
+    const file = path.join(root, dir, name);
+    const out = file.replace(/\.jpe?g$/i, '.avif');
+    writeFileSync(out, await sharp(readFileSync(file)).avif({ quality: 45, effort: 6 }).toBuffer());
+  }
+}
+console.log('scene AVIFs written');

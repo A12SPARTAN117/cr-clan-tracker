@@ -1,11 +1,12 @@
 'use client';
 
-import { AdditiveBlending, BufferAttribute, BufferGeometry, NormalBlending, Points, ShaderMaterial } from 'three';
 import { fxLevel } from '../budget';
 import { getTheme } from '../motion';
-import { mountThree } from './three';
+import { modelView, mountPoints, perspective, setBlend } from './points';
 
 const vertex = /* glsl */ `
+  uniform mat4 modelViewMatrix;
+  uniform mat4 projectionMatrix;
   attribute vec4 aSeed;   // x, z, phase, speed
   attribute float aGold;
   uniform float uTime;
@@ -58,42 +59,31 @@ export function mountEmbers(el: HTMLElement, { count, gold, intensity, fps }: { 
     cy = e.clientY;
   };
   addEventListener('pointermove', onMove, { passive: true });
-  const stop = mountThree(
+  const seed = new Float32Array(n * 4);
+  const tint = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    seed.set([(Math.random() - 0.5) * 9, (Math.random() - 0.5) * 3, Math.random(), 0.02 + Math.random() * 0.06], i * 4);
+    tint[i] = Math.random() < gold ? 1 : 0;
+  }
+  const mv = modelView(4);
+  const stop = mountPoints(
     el,
-    ({ scene, dpr }) => {
-      const seed = new Float32Array(n * 4);
-      const tint = new Float32Array(n);
-      for (let i = 0; i < n; i++) {
-        seed.set([(Math.random() - 0.5) * 9, (Math.random() - 0.5) * 3, Math.random(), 0.02 + Math.random() * 0.06], i * 4);
-        tint[i] = Math.random() < gold ? 1 : 0;
-      }
-      const geo = new BufferGeometry();
-      geo.setAttribute('position', new BufferAttribute(new Float32Array(n * 3), 3));
-      geo.setAttribute('aSeed', new BufferAttribute(seed, 4));
-      geo.setAttribute('aGold', new BufferAttribute(tint, 1));
-      const mat = new ShaderMaterial({
-        vertexShader: vertex,
-        fragmentShader: fragment,
-        uniforms: { uTime: { value: 0 }, uPixelRatio: { value: dpr }, uPointer: { value: [9, 9] }, uIntensity: { value: intensity }, uLight: { value: 0 } },
-        transparent: true,
-        depthWrite: false,
-        blending: AdditiveBlending,
-        premultipliedAlpha: true,
-      });
-      const pts = new Points(geo, mat);
-      pts.frustumCulled = false;
-      scene.add(pts);
+    { vertex, fragment },
+    { aSeed: { data: seed, size: 4 }, aGold: { data: tint, size: 1 } },
+    ({ gl, dpr, u }) => {
+      gl.uniform1f(u('uPixelRatio'), dpr);
+      gl.uniform1f(u('uIntensity'), intensity);
+      gl.uniformMatrix4fv(u('modelViewMatrix'), false, mv);
       let px = 9;
       let py = 9;
       return {
-        frame: (t, _dt, still) => {
+        frame: (t, _dt, still, size) => {
+          // Marble Day: normal blending so the sparks show on pale art; additive glow otherwise.
           const light = getTheme() === 'light';
-          if (light !== mat.uniforms.uLight.value > 0.5) {
-            mat.uniforms.uLight.value = light ? 1 : 0;
-            mat.blending = light ? NormalBlending : AdditiveBlending;
-            mat.needsUpdate = true;
-          }
-          mat.uniforms.uTime.value = still ? 12 : t;
+          setBlend(gl, !light);
+          gl.uniform1f(u('uLight'), light ? 1 : 0);
+          gl.uniform1f(u('uTime'), still ? 12 : t);
+          gl.uniformMatrix4fv(u('projectionMatrix'), false, perspective(50, size.w / size.h, 0.1, 100));
           if (cx !== null) {
             const r = el.getBoundingClientRect();
             pointer = { x: ((cx - r.left) / r.width - 0.5) * 2, y: -((cy - r.top) / r.height - 0.5) * 2 };
@@ -101,15 +91,11 @@ export function mountEmbers(el: HTMLElement, { count, gold, intensity, fps }: { 
           }
           px += (pointer.x - px) * 0.08;
           py += (pointer.y - py) * 0.08;
-          mat.uniforms.uPointer.value = [px, py];
-        },
-        dispose: () => {
-          geo.dispose();
-          mat.dispose();
+          gl.uniform2f(u('uPointer'), px, py);
         },
       };
     },
-    { fov: 50, z: 4, fps },
+    { fps },
   );
   return () => {
     removeEventListener('pointermove', onMove);
