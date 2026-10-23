@@ -10,7 +10,7 @@ const EVERY_MS = 3600_000;
  * what it saw (history, games, name search). The pages themselves are cached and shared, so they
  * can't do it while rendering. Sent once an hour per tag per browser, after the page has loaded.
  */
-export function SeenBeacon({ kind, tag }: { kind: 'player' | 'clan' | 'manage'; tag: string }) {
+export function SeenBeacon({ kind, tag }: { kind: 'player' | 'games' | 'clan' | 'manage'; tag: string }) {
   useEffect(() => {
     const key = `oa-seen:${kind}:${tag}`;
     try {

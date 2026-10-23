@@ -1,18 +1,28 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { after, connection } from 'next/server';
-import { onceEvery, VIEW_WRITE_MS } from '@/lib/throttle';
+import { cacheLife, cacheTag } from 'next/cache';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
-import { getBattleLog, getPlayer } from '@/lib/cr/api';
-import { eventRanksOf } from '@/lib/events';
-import { getHeadToHead, saveBattles } from '@/lib/history/battles';
+import { SeenBeacon } from '@/components/SeenBeacon';
+import { getPlayer, tags } from '@/lib/cr/api';
+import { getHeadToHead } from '@/lib/history/battles';
+import type { H2HGame } from '@/lib/player/rivals';
 import { getPlayerProfile } from '@/lib/player/profile';
 import { checkTag } from '@/lib/tags';
 import { HeadToHeadView, type Side } from './HeadToHeadView';
 import type { PlayerProfile } from '@/lib/player/profile';
 
 type Params = Promise<{ tag: string; rival: string }>;
+
+/**
+ * Rendered on the first visit and then served from the page cache (refreshed at most once a
+ * minute, see ./data). Cache Components needs one param to check that at build time; this
+ * placeholder renders the not-found scene.
+ */
+export function generateStaticParams() {
+  return [{ tag: '_', rival: '_' }];
+}
+
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { tag, rival } = await params;
@@ -38,24 +48,37 @@ function side(p: PlayerProfile): Side {
   };
 }
 
+type H2HPage = { ok: true; a: Side; b: Side; games: H2HGame[]; at: number } | { ok: false; missing: string };
+
+/** Both sides and every game between them, cached per pair for a minute. */
+async function h2hPage(a: string, b: string): Promise<H2HPage> {
+  'use cache';
+  cacheTag(tags.player(a), tags.player(b));
+  const [pa, pb, games] = await Promise.all([getPlayerProfile(a), getPlayerProfile(b), getHeadToHead(a, b)]);
+  if (!pa || !pb) {
+    cacheLife('crError');
+    return { ok: false, missing: pa ? b : a };
+  }
+  cacheLife('crLive');
+  return { ok: true, a: side(pa), b: side(pb), games, at: Date.parse(pa.generatedAt) };
+}
+
 async function Content({ params }: { params: Params }) {
   const { tag, rival } = await params;
   const a = checkTag(decodeURIComponent(tag));
   const b = checkTag(decodeURIComponent(rival));
   if (a.kind !== 'valid') return <LostScene variant="player" tag={decodeURIComponent(tag).replace(/^#/, '').toUpperCase()} />;
   if (b.kind !== 'valid') return <LostScene variant="player" tag={decodeURIComponent(rival).replace(/^#/, '').toUpperCase()} />;
-  // Background work and live event ranks read the clock, so this runs at request time.
-  await connection();
-  const [pa, pb, games, logA, logB] = await Promise.all([getPlayerProfile(a.tag), getPlayerProfile(b.tag), getHeadToHead(a.tag, b.tag), getBattleLog(a.tag), getBattleLog(b.tag)]);
-  if (!pa) return <LostScene variant="player" tag={a.tag} />;
-  if (!pb) return <LostScene variant="player" tag={b.tag} />;
-  // Both players' latest games are stored, so the head-to-head keeps growing.
-  if (logA.ok && onceEvery(`seen:${a.tag}`, VIEW_WRITE_MS)) after(() => saveBattles(a.tag, logA.data));
-  if (logB.ok && onceEvery(`seen:${b.tag}`, VIEW_WRITE_MS)) after(() => saveBattles(b.tag, logB.data));
-  // Live event ranks need each board's full listing; they stream in.
-  const ranksA = eventRanksOf(a.tag).catch(() => []);
-  const ranksB = eventRanksOf(b.tag).catch(() => []);
-  return <HeadToHeadView a={side(pa)} b={side(pb)} games={games} ranksA={ranksA} ranksB={ranksB} at={Date.parse(pa.generatedAt)} />;
+  const page = await h2hPage(a.tag, b.tag);
+  if (!page.ok) return <LostScene variant="player" tag={page.missing} />;
+  return (
+    <>
+      <HeadToHeadView a={page.a} b={page.b} games={page.games} at={page.at} />
+      {/* Both players' latest games are stored, so the head-to-head keeps growing. */}
+      <SeenBeacon kind="games" tag={a.tag} />
+      <SeenBeacon kind="games" tag={b.tag} />
+    </>
+  );
 }
 
 export default function HeadToHeadPage({ params }: { params: Params }) {

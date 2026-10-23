@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, use, useState } from 'react';
+import { useState } from 'react';
 import {
   BadgeIcon,
   CardsIcon,
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/icons';
 import { CARDS } from '@/lib/cards';
 import { fmt } from '@/lib/format';
-import type { EventRank } from '@/lib/events';
+import { useEventRanks } from '@/lib/eventRanksClient';
 import { polLabel } from '@/lib/leagues';
 import type { Badge, BadgeGroup, PlayerProfile } from '@/lib/player/profile';
 import extraBadges from '../../../../data/badge-art.json';
@@ -142,21 +142,10 @@ function AchievementIcon({ name }: { name: string }) {
  */
 const RANK_BADGE = /(Top1000|Rank(_vd+)?)$/;
 
-/** Each player's live event ranks, fetched once per page visit when the Badges tab first opens. */
-const rankRequests = new Map<string, Promise<EventRank[]>>();
-const ranksOf = (tag: string) => {
-  let r = rankRequests.get(tag);
-  if (!r) {
-    r = fetch(`/api/ranks/${encodeURIComponent(tag)}`)
-      .then((res) => (res.ok ? (res.json() as Promise<EventRank[]>) : []))
-      .catch(() => []);
-    rankRequests.set(tag, r);
-  }
-  return r;
-};
-
+/** Live event ranks, loaded when the Badges tab first opens. */
 function EventRanks({ tag }: { tag: string }) {
-  const list = use(ranksOf(tag));
+  const list = useEventRanks(tag);
+  if (!list) return <div className={`${s.rankCard} skeleton`} style={{ minHeight: 86 }} />;
   if (!list.length) return <span className={s.rankNote}>No event leaderboards are live right now.</span>;
   return (
     <>
@@ -192,9 +181,7 @@ function Rankings({ p }: { p: PlayerProfile }) {
             <small>{x!.league >= 7 && x!.rating ? `${polLabel(x!)} · ${fmt(x!.rating)}` : polLabel(x!)}</small>
           </div>
         ))}
-        <Suspense fallback={<div className={`${s.rankCard} skeleton`} style={{ minHeight: 86 }} />}>
-          <EventRanks tag={p.tag} />
-        </Suspense>
+        <EventRanks tag={p.tag} />
       </div>
       {finishes.length > 0 && (
         <div className={s.finishes}>
