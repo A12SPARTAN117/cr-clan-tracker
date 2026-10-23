@@ -78,9 +78,14 @@ const nextConfig: NextConfig = {
       { source: '/down-scene.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }] },
     ];
   },
-  // The Pro tracker was removed; its old links land on the meta decks.
+  // Old links: the Pro tracker was removed (its links land on the meta decks), and leaderboard
+  // locations moved into the path.
   async redirects() {
-    return [{ source: '/pros', destination: '/decks', permanent: true }];
+    return [
+      { source: '/pros', destination: '/decks', permanent: true },
+      // Leaderboard locations moved from ?loc= into the path (each is its own cached page).
+      { source: '/leaderboards', has: [{ type: 'query', key: 'loc', value: '(?<loc>\\d+)' }], destination: '/leaderboards/:loc', permanent: true },
+    ];
   },
   // Maintenance switch: with SITE_DOWN=1 every page shows the site-down page (rebuild to apply).
   async rewrites() {

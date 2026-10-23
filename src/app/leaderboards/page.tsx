@@ -44,10 +44,11 @@ async function clanBoard(kind: 'clans' | 'war', loc: string): Promise<Board> {
   };
 }
 
-async function Boards({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const sp = await searchParams;
-  const loc = (Array.isArray(sp.loc) ? sp.loc[0] : sp.loc) || 'global';
-
+/**
+ * One location's boards. Everything comes from cached API calls, so each location's page is
+ * rendered once per refresh and served from the page cache: '/' for global, '/[loc]' for the rest.
+ */
+export async function Boards({ loc }: { loc: string }) {
   const [locs, pol, clans, war, live] = await Promise.all([getLocations(), polBoard(loc), clanBoard('clans', loc), clanBoard('war', loc), liveEventBoards()]);
   const locations = locs.ok ? locs.data.items.map((l) => ({ id: String(l.id), name: l.name, isCountry: l.isCountry })) : [];
   // Event boards load when their tab is opened (/api/events/[id]): seven of them doubled the page.
@@ -63,10 +64,10 @@ async function Boards({ searchParams }: { searchParams: Promise<Record<string, s
   );
 }
 
-export default function LeaderboardsPage(props: PageProps<'/leaderboards'>) {
+export default function LeaderboardsPage() {
   return (
     <Suspense fallback={<PodiumScene rows={[]} label="Global" isClan={false} />}>
-      <Boards searchParams={props.searchParams} />
+      <Boards loc="global" />
     </Suspense>
   );
 }
