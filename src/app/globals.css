@@ -764,3 +764,13 @@ a.news-card:hover {
   vertical-align: middle;
   object-fit: contain;
 }
+/* League art and clan badges (one per leaderboard / member row). */
+.oa-art {
+  flex: none;
+  object-fit: contain;
+}
+.oa-badge {
+  flex: none;
+  object-fit: contain;
+  display: block;
+}

@@ -10,7 +10,7 @@ export type ModeOption = { key: string; label: string; kind: ModeKind; count?: n
 export function ModeIcon({ kind, size = 26 }: { kind: ModeKind; size?: number }) {
   if (kind === 'ranked' || kind === 'uc')
     // eslint-disable-next-line @next/next/no-img-element -- static league art
-    return <img src={kind === 'uc' ? '/leagues/league10.png' : '/leagues/league9.png'} alt="" width={size} height={size} style={{ flex: 'none', objectFit: 'contain' }} />;
+    return <img src={kind === 'uc' ? '/leagues/league10.webp' : '/leagues/league9.webp'} alt="" width={size} height={size} style={{ flex: 'none', objectFit: 'contain' }} />;
   const Icon = { ladder: SwordsIcon, war: ClanWarIcon, '2v2': TeamIcon, challenge: ChallengeIcon, draft: DraftIcon, chess: ChessIcon, event: EventIcon }[kind];
   return <Icon size={size} />;
 }

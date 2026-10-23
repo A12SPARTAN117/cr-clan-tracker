@@ -259,7 +259,7 @@ export function LeagueIcon({ league, size = 22 }: { league: number | null | unde
   const art = Math.min(10, Math.max(1, league + 3));
   return (
     // eslint-disable-next-line @next/next/no-img-element -- static league art
-    <img src={`/leagues/league${art}.png`} alt={leagueName(league)} title={`Path of Legends · ${leagueName(league)}`} width={size} height={size} style={{ flex: 'none', objectFit: 'contain' }} />
+    <img src={`/leagues/league${art}.webp`} alt={leagueName(league)} title={`Path of Legends · ${leagueName(league)}`} width={size} height={size} className="oa-art" />
   );
 }
 

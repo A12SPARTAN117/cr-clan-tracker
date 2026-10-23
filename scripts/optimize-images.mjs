@@ -44,3 +44,20 @@ for (const dir of ['public/scenes', 'public/scenes/light']) {
   }
 }
 console.log('scene AVIFs written');
+
+// Transparent art also gets a WebP twin (badges about half the size, the chest and XP art a sixth),
+// which the site shows; the PNGs stay for the recap image renderer, which can't read WebP.
+let png = 0;
+let webp = 0;
+for (const dir of ['characters', 'badges', 'ui', 'leagues']) {
+  for (const name of readdirSync(path.join(root, 'public', dir))) {
+    if (!/\.png$/i.test(name)) continue;
+    const file = path.join(root, 'public', dir, name);
+    const input = readFileSync(file);
+    const out = await sharp(input).webp({ quality: 80, alphaQuality: 90, effort: 6 }).toBuffer();
+    writeFileSync(file.replace(/\.png$/i, '.webp'), out);
+    png += input.length;
+    webp += out.length;
+  }
+}
+console.log(`art WebPs: ${(png / 1024).toFixed(0)} KB of PNG -> ${(webp / 1024).toFixed(0)} KB`);

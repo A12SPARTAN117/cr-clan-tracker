@@ -13,7 +13,8 @@ export function characterFor(slug: string | null | undefined): string | null {
   if (!slug) return null;
   const u = ALIAS[slug] ?? slug.replace(/-/g, '_');
   for (const f of ['champion_hires_' + u + '.png', 'champion_hires_' + u + '_dl.png', u + '.png', u + '_dl.png']) {
-    if (FILES.has(f)) return '/characters/' + f;
+    // The WebP twin (scripts/optimize-images.mjs); the recap renderer reads the PNG beside it.
+    if (FILES.has(f)) return '/characters/' + f.replace(/\.png$/, '.webp');
   }
   return null;
 }

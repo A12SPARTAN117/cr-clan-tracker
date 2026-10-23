@@ -147,7 +147,7 @@ export function ClanProfileView({ c, levels }: { c: ClanProfile; levels?: Promis
           style={{ position: 'absolute', left: 0, right: 0, bottom: '8%', height: '30%', display: 'flex', justifyContent: 'center', gap: '6%', filter: 'grayscale(1) brightness(.5) drop-shadow(0 0 20px rgba(var(--glow-rgb), .4))', opacity: 0.7, pointerEvents: 'none' }}
         >
           {troops.map((t) => (
-            <div key={t} style={{ width: '12%', height: '100%', background: `url(/characters/${t}.png) bottom center/contain no-repeat` }} />
+            <div key={t} style={{ width: '12%', height: '100%', background: `url(/characters/${t}.webp) bottom center/contain no-repeat` }} />
           ))}
         </div>
         <Fog density={1.2} />

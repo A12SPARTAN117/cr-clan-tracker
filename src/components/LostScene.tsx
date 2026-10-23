@@ -72,7 +72,7 @@ export function LostScene({ variant = 'route', tag, retry, children }: { variant
           width: 'min(22vw,200px)',
           height: '38%',
           transform: 'translateX(-50%)',
-          background: 'url(/characters/skeletons.png) bottom center/contain no-repeat',
+          background: 'url(/characters/skeletons.webp) bottom center/contain no-repeat',
           filter: 'grayscale(1) brightness(.8) drop-shadow(-2px 0 0 rgba(var(--glow-hi-rgb), .75)) drop-shadow(0 0 26px rgba(var(--glow-rgb), .45))',
         }}
       />

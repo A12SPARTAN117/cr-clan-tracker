@@ -53,7 +53,8 @@ async function art(src: string | null | undefined): Promise<string | null> {
   if (!src) return null;
   try {
     if (src.startsWith('/') && !src.includes('..')) {
-      const buf = await readFile(join(process.cwd(), 'public', src));
+      // The site shows WebP twins; Satori only reads PNG, which sits beside each one.
+      const buf = await readFile(join(process.cwd(), 'public', src.replace(/\.webp$/, '.png')));
       return `data:image/png;base64,${buf.toString('base64')}`;
     }
     const u = new URL(src);
