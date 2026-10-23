@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { agoShort } from '@/lib/format';
 import { Decode } from '../fx/Reveal';
 import { MedalIcon } from './icons';
+import st from './primitives.module.css';
 
 /* ---------- roles ---------- */
 import type { ApiRole } from '@/lib/cr/types';
@@ -37,31 +38,8 @@ export function RoleIcon({ role }: { role: ApiRole }) {
 }
 
 export function RoleChip({ role }: { role: ApiRole }) {
-  const sty: CSSProperties =
-    role === 'leader'
-      ? { borderColor: 'rgba(var(--gold-rgb), .6)', color: 'var(--gold)' }
-      : role === 'coLeader'
-        ? { borderColor: 'var(--frame)', color: 'var(--text-1)' }
-        : role === 'elder'
-          ? { borderColor: 'var(--hair)', color: 'var(--text-1)' }
-          : { borderColor: 'var(--hair)', color: 'var(--text-2)' };
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        height: 22,
-        padding: '0 8px',
-        border: '1px solid',
-        borderRadius: 4,
-        font: '500 9px/1 var(--mono)',
-        letterSpacing: '.12em',
-        textTransform: 'uppercase',
-        whiteSpace: 'nowrap',
-        ...sty,
-      }}
-    >
+    <span className={st.chip} data-role={role}>
       <RoleIcon role={role} />
       {ROLE_LABEL[role]}
     </span>
@@ -74,41 +52,17 @@ export const activityOf = (hours: number): Activity => (hours < 24 ? 'active' : 
 export const ACTIVITY_LABEL: Record<Activity, string> = { active: 'ACTIVE', risk: 'AT RISK', inactive: 'INACTIVE' };
 
 export function ActivityDot({ hours }: { hours: number }) {
-  const a = activityOf(hours);
-  const c = a === 'active' ? 'var(--blue)' : a === 'risk' ? 'var(--text-2)' : 'var(--ember)';
-  return (
-    <span
-      aria-hidden
-      style={{
-        flex: 'none',
-        width: 7,
-        height: 7,
-        borderRadius: '50%',
-        background: a === 'active' ? c : 'transparent',
-        border: `1.5px solid ${c}`,
-        boxShadow: a === 'active' ? '0 0 6px rgba(var(--glow-rgb), .8)' : 'none',
-      }}
-    />
-  );
+  return <span aria-hidden className={st.dot} data-a={activityOf(hours)} />;
 }
 
 /** Filled blue dot + ACTIVE (<24h), hollow grey + AT RISK (1–3d), hollow ember + INACTIVE (>3d). */
 export function LastSeen({ hours, label = true, size = 12 }: { hours: number; label?: boolean; size?: number }) {
   const a = activityOf(hours);
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 7,
-        font: `500 ${size}px/1 var(--mono)`,
-        whiteSpace: 'nowrap',
-        color: a === 'active' ? 'var(--text-1)' : a === 'risk' ? 'var(--text-2)' : 'var(--ember)',
-      }}
-    >
+    <span className={st.seen} data-a={a} style={size !== 12 ? { fontSize: size } : undefined}>
       <ActivityDot hours={hours} />
       {agoShort(hours)}
-      {label && <span style={{ fontSize: 9, letterSpacing: '.12em', color: 'var(--text-3)' }}>{ACTIVITY_LABEL[a]}</span>}
+      {label && <span className={st.seenLabel}>{ACTIVITY_LABEL[a]}</span>}
     </span>
   );
 }
@@ -167,7 +121,7 @@ export function ScoreGauge({ score, size = 32, big = false, label }: { score: nu
           transform="rotate(-90 18 18)"
         />
       </svg>
-      <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', font: `700 ${size >= 40 ? 11 : 10}px/1 var(--mono)` }}>
+      <span className={st.gaugeNum} data-big={size >= 40 || undefined}>
         {score}
       </span>
     </span>
@@ -202,21 +156,9 @@ export function heatStyle(n: HeatValue): { style: CSSProperties; text: string; t
 /** One war day: recessed "0", blue at rising alpha for 1–4, dashed when pending, hatched when not in clan. */
 export function HeatCell({ value, width = 40, height = 26, fontSize = 11, showText = true }: { value: HeatValue; width?: number | string; height?: number; fontSize?: number; showText?: boolean }) {
   const h = heatStyle(value);
+  const v = value == null ? 'none' : typeof value === 'number' ? String(Math.max(0, Math.min(4, value))) : value;
   return (
-    <span
-      title={h.title}
-      style={{
-        width,
-        height,
-        borderRadius: height < 16 ? 2 : 4,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        font: `600 ${fontSize}px/1 var(--mono)`,
-        flex: 'none',
-        ...h.style,
-      }}
-    >
+    <span title={h.title} className={st.heat} data-v={v} data-small={height < 16 ? '' : undefined} style={{ width, height, fontSize: fontSize === 11 ? undefined : fontSize }}>
       {showText ? h.text : null}
     </span>
   );
@@ -325,7 +267,7 @@ export function LeagueIcon({ league, size = 22 }: { league: number | null | unde
 export function PolRating({ rating, size = 16, style }: { rating: number | null | undefined; size?: number; style?: CSSProperties }) {
   if (rating == null) return <span style={style}>—</span>;
   return (
-    <span title="Ultimate Champion medals (Path of Legends rating)" style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(size * 0.4), whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', ...style }}>
+    <span title="Ultimate Champion medals (Path of Legends rating)" className={st.rating} style={{ gap: Math.round(size * 0.4), ...style }}>
       <MedalIcon size={size} />
       {rating.toLocaleString('en-US')}
     </span>
