@@ -40,6 +40,35 @@ export function riverBattleKind(type: string, at: Date | null): 'war' | 'trainin
   return warDay(at).kind === 'war' ? 'war' : 'training';
 }
 
+/**
+ * Completes a member's finished war days from their deck total over those days. Snapshots only
+ * see each day's decks up to the moment they ran, so one taken hours before a reset misses that
+ * day's last decks; the total doesn't. During a race the total is decksUsed minus
+ * decksUsedToday (decksUsed counts war days only), and after it the race log's decksUsed.
+ *
+ * `days` holds the stored count per day (null = no snapshot); the first `finished` are over.
+ * The last finished day, or the one missing day, takes what the total leaves after the others;
+ * several missing days are only filled when the total settles them (all 0 or all 4).
+ */
+export function finishDays(days: readonly (number | null)[], finished: number, total: number): (number | null)[] {
+  const out = days.slice();
+  const n = Math.min(finished, out.length);
+  if (n <= 0) return out;
+  const missing = [...Array(n).keys()].filter((i) => out[i] == null);
+  const known = out.slice(0, n).reduce<number>((a, c) => a + (c ?? 0), 0);
+  if (missing.length === 0) {
+    const last = n - 1;
+    const left = total - (known - out[last]!);
+    if (left > out[last]!) out[last] = Math.min(4, left);
+  } else if (missing.length === 1) {
+    const left = total - known;
+    if (left >= 0) out[missing[0]] = Math.min(4, left);
+  } else if (total === known || total === known + 4 * missing.length) {
+    for (const i of missing) out[i] = total === known ? 0 : 4;
+  }
+  return out;
+}
+
 /** When the next war day (Thursday reset) begins; `now` itself if a war day is running. */
 export function nextWarStart(now: Date): Date {
   const d = warDay(now);

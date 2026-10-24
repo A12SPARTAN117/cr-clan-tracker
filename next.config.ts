@@ -77,6 +77,10 @@ const nextConfig: NextConfig = {
     members: { stale: 300, revalidate: 1800, expire: 86400 },
     // Stored snapshots the cron job rebuilds about hourly (meta decks): re-read every 10 minutes.
     meta: { stale: 300, revalidate: 600, expire: 86400 },
+    // Page lifetimes for routes rendered per param (components/PageLife). Stale is 5 minutes so
+    // they count in the route's shell, which is where Vercel takes every such page's lifetime.
+    pageMinute: { stale: 300, revalidate: 60, expire: 900 },
+    pageFiveMinutes: { stale: 300, revalidate: 300, expire: 3600 },
   },
   async headers() {
     return [

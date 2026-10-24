@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { PageLife } from '@/components/PageLife';
 import { LostScene } from '@/components/LostScene';
 import { SeenBeacon } from '@/components/SeenBeacon';
 import { Portal } from '@/components/fx/Portal';
@@ -40,15 +41,18 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
 
 export default function PlayerPage({ params }: PageProps<'/player/[tag]'>) {
   return (
-    <Suspense
-      fallback={
-        <div style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-          <Portal size={72} label="Loading player" />
-          <span className="label">Loading card data</span>
-        </div>
-      }
-    >
-      <Content params={params} />
-    </Suspense>
+    <>
+      <PageLife every="minute" />
+      <Suspense
+        fallback={
+          <div style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+            <Portal size={72} label="Loading player" />
+            <span className="label">Loading card data</span>
+          </div>
+        }
+      >
+        <Content params={params} />
+      </Suspense>
+    </>
   );
 }

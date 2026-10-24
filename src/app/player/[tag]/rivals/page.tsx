@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { PageLife } from '@/components/PageLife';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
 import { SeenBeacon } from '@/components/SeenBeacon';
@@ -41,8 +42,11 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
 
 export default function RivalsPage({ params }: PageProps<'/player/[tag]/rivals'>) {
   return (
-    <Suspense fallback={<PageLoading label="Loading rivals" />}>
-      <Content params={params} />
-    </Suspense>
+    <>
+      <PageLife every="minute" />
+      <Suspense fallback={<PageLoading label="Loading rivals" />}>
+        <Content params={params} />
+      </Suspense>
+    </>
   );
 }
