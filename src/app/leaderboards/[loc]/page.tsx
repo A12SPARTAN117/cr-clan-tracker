@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
+import { PageLife } from '@/components/PageLife';
 import { Boards } from '../page';
 import { PodiumScene } from '../PodiumScene';
 
@@ -23,8 +24,11 @@ async function Location({ params }: { params: Promise<{ loc: string }> }) {
 
 export default function LocationBoardsPage({ params }: PageProps<'/leaderboards/[loc]'>) {
   return (
-    <Suspense fallback={<PodiumScene rows={[]} label="" isClan={false} />}>
-      <Location params={params} />
-    </Suspense>
+    <>
+      <PageLife every="fiveMinutes" />
+      <Suspense fallback={<PodiumScene rows={[]} label="" isClan={false} />}>
+        <Location params={params} />
+      </Suspense>
+    </>
   );
 }

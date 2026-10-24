@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { PageLife } from '@/components/PageLife';
 import { cacheLife, cacheTag } from 'next/cache';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
@@ -83,8 +84,11 @@ async function Content({ params }: { params: Params }) {
 
 export default function HeadToHeadPage({ params }: { params: Params }) {
   return (
-    <Suspense fallback={<PageLoading label="Loading head to head" />}>
-      <Content params={params} />
-    </Suspense>
+    <>
+      <PageLife every="minute" />
+      <Suspense fallback={<PageLoading label="Loading head to head" />}>
+        <Content params={params} />
+      </Suspense>
+    </>
   );
 }

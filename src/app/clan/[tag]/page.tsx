@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { PageLife } from '@/components/PageLife';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getClan } from '@/lib/cr/api';
@@ -42,14 +43,17 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
 
 export default function ClanPage({ params }: PageProps<'/clan/[tag]'>) {
   return (
-    <Suspense
-      fallback={
-        <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Portal size={64} label="Loading clan" />
-        </div>
-      }
-    >
-      <Content params={params} />
-    </Suspense>
+    <>
+      <PageLife every="minute" />
+      <Suspense
+        fallback={
+          <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Portal size={64} label="Loading clan" />
+          </div>
+        }
+      >
+        <Content params={params} />
+      </Suspense>
+    </>
   );
 }

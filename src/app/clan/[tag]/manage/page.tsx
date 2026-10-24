@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { PageLife } from '@/components/PageLife';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
 import { getClan } from '@/lib/cr/api';
@@ -51,8 +52,11 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
 
 export default function ManagePage({ params }: PageProps<'/clan/[tag]/manage'>) {
   return (
-    <Suspense fallback={<Loading />}>
-      <Content params={params} />
-    </Suspense>
+    <>
+      <PageLife every="minute" />
+      <Suspense fallback={<Loading />}>
+        <Content params={params} />
+      </Suspense>
+    </>
   );
 }
