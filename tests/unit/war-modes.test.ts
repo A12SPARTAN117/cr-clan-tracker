@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { humanizeMode, modesOfBattle, UC_LEAGUE } from '@/lib/modes';
-import { nextWarStart, riverBattleKind, warDay, warWeekKey } from '@/lib/war';
+import { finishDays, nextWarStart, riverBattleKind, warDay, warWeekKey } from '@/lib/war';
 import { battle, cards, DECKS, MODES, side } from '../fixtures/battles';
 
 const at = (iso: string) => new Date(iso);
@@ -24,6 +24,23 @@ describe('river race calendar', () => {
     expect(warWeekKey(at('2026-10-16T12:00:00Z'))).toBe('2026-10-15');
     // A race-log entry is created when the race ends on Monday's reset.
     expect(warWeekKey(at('2026-10-19T09:40:30Z'))).toBe('2026-10-15');
+  });
+
+  it('completes finished war days from the deck total', () => {
+    // The last snapshot of day 2 ran before its last 2 decks: the total before today has them.
+    expect(finishDays([4, 2], 2, 8)).toEqual([4, 4]);
+    // One day without a snapshot is what the total leaves.
+    expect(finishDays([null], 1, 3)).toEqual([3]);
+    expect(finishDays([4, null, 1], 3, 9)).toEqual([4, 4, 1]);
+    // Several missing days only when the total settles them.
+    expect(finishDays([null, null, null, null], 4, 0)).toEqual([0, 0, 0, 0]);
+    expect(finishDays([null, null, 3, null], 4, 15)).toEqual([4, 4, 3, 4]);
+    expect(finishDays([null, null], 2, 5)).toEqual([null, null]);
+    // Never lowers what a snapshot saw, never goes past 4 a day, ignores unfinished days.
+    expect(finishDays([4, 3], 2, 6)).toEqual([4, 3]);
+    expect(finishDays([2, 1], 2, 9)).toEqual([2, 4]);
+    expect(finishDays([4, 1, 2, 'x' as never], 2, 8)).toEqual([4, 4, 2, 'x']);
+    expect(finishDays([1, 1], 0, 8)).toEqual([1, 1]);
   });
 
   it('knows when war starts', () => {

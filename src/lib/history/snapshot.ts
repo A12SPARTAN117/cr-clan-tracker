@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { getBattleLog, getClan, getCurrentRiverRace, getPlayer } from '../cr/api';
 import type { ApiRole, Player } from '../cr/types';
 import { enqueue, getDb, schema } from '../db';
-import { warWeekKey } from '../war';
+import { finishDays, warWeekKey } from '../war';
 import { indexClanMembers } from '../directory';
 import { saveBattles } from './battles';
 import { playerDayOf } from './playerDaily';
@@ -166,7 +166,28 @@ export async function snapshotClan(tagRaw: string): Promise<SnapshotResult> {
     const day = Math.max(1, Math.min(4, (race.periodIndex % 7) - 2));
     const week = warWeekKey(now);
     const ours = race.clans.find((c) => bare(c.tag) === tag) ?? race.clan;
-    const rows = ours.participants.filter((p) => roster.has(bare(p.tag))).map((p) => ({ clanTag: tag, playerTag: bare(p.tag), week, day, decks: p.decksUsedToday }));
+    const playing = ours.participants.filter((p) => roster.has(bare(p.tag)));
+    const rows = playing.map((p) => ({ clanTag: tag, playerTag: bare(p.tag), week, day, decks: p.decksUsedToday }));
+    // Earlier days of this week, completed from each member's total before today (finishDays):
+    // the last snapshot before a reset can be hours early, and it misses that day's last decks.
+    if (day > 1) {
+      const stored = await db.select().from(warDays).where(and(eq(warDays.clanTag, tag), eq(warDays.week, week)));
+      const byPlayer = new Map<string, (number | null)[]>();
+      for (const r of stored) {
+        if (r.day >= day) continue;
+        const had = byPlayer.get(r.playerTag) ?? [null, null, null];
+        had[r.day - 1] = r.decks;
+        byPlayer.set(r.playerTag, had);
+      }
+      for (const p of playing) {
+        const pt = bare(p.tag);
+        const had = byPlayer.get(pt) ?? [null, null, null];
+        const done = finishDays(had.slice(0, day - 1), day - 1, p.decksUsed - p.decksUsedToday);
+        done.forEach((decks, i) => {
+          if (decks != null && decks !== had[i]) rows.push({ clanTag: tag, playerTag: pt, week, day: i + 1, decks });
+        });
+      }
+    }
     if (rows.length) {
       await db
         .insert(warDays)

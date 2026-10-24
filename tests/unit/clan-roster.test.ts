@@ -49,3 +49,25 @@ describe('pendingRoster', () => {
     expect(v.isNew).toBe(true);
   });
 });
+
+describe('applyHistory war days', () => {
+  // War day 3: days 1 and 2 are over. A has 4 today and 12 this week, so 8 before today.
+  const member = { tag: 'A', name: 'PA', decks: 12, decksToday: 4, days: ['untracked', 'untracked', 4, 'pending'], inputs: {}, trophies: 0, isNew: false };
+  const week = (wk: string, decks: number) => ({ key: wk, label: wk, decks, fame: 0, days: null });
+  const d = (hist: unknown[] = []) =>
+    ({ ...dash(['A']), war: { kind: 'war', day: 3 }, members: [{ ...member, hist }] }) as unknown as Dashboard;
+
+  it("completes this week's finished days that snapshots caught early", () => {
+    // The day-2 snapshot ran before the last 3 decks.
+    const out = applyHistory(d(), hist({ dailyDecks: { '2026-10-15': { A: [4, 1, null, null] } } }));
+    expect(out.members[0].days).toEqual([4, 4, 4, 'pending']);
+  });
+
+  it('fills a past week from the race log total', () => {
+    const out = applyHistory(d([week('2026-10-08', 16), week('2026-10-01', 14)]), hist({ dailyDecks: { '2026-10-01': { A: [4, 4, 4, 1] } } }));
+    expect(out.members[0].hist.map((w) => w?.days)).toEqual([
+      [4, 4, 4, 4],
+      [4, 4, 4, 2],
+    ]);
+  });
+});

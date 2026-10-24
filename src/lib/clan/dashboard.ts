@@ -6,7 +6,7 @@ import { outcome } from '../battle';
 import type { ClanHistory, RosterEvent } from '../history';
 import { parseApiDate } from '../format';
 import { pool } from '../pool';
-import { nextWarStart, riverBattleKind, warDay, warWeekKey } from '../war';
+import { finishDays, nextWarStart, riverBattleKind, warDay, warWeekKey } from '../war';
 import { memberProfile } from './members';
 import { factorScores, type FactorScores, type ScoreInputs } from './score';
 
@@ -210,6 +210,18 @@ function raceInfo(race: CurrentRiverRace | null, ourTag: string, now: Date) {
   };
 }
 
+/**
+ * This week's cells with the finished days completed from the member's deck total (finishDays):
+ * today's count is live, so the days before it add up to decks minus today's.
+ */
+function finishWeek(days: DayCell[], finished: number, total: number): DayCell[] {
+  const done = finishDays(days.slice(0, finished).map((c) => (typeof c === 'number' ? c : null)), finished, total);
+  return days.map((c, i) => (i < finished ? (done[i] ?? c) : c));
+}
+
+/** The days a member is done with this week: those before today, on war days only. */
+const finishedDays = (war: Dashboard['war']) => (war && war.kind !== 'training' ? war.day - 1 : 0);
+
 function raceStreak(hist: WeekHistory[]): number {
   let n = 0;
   while (n < hist.length && hist[n]) n++;
@@ -251,17 +263,21 @@ async function build(tag: string): Promise<{ data: Dashboard; failed: boolean } 
     const decksToday = training ? 0 : (cp?.decksUsedToday ?? 0);
     const trainingToday = training ? (cp?.decksUsedToday ?? 0) : 0;
 
-    // Per-day cells for this week: today is exact; earlier days come from snapshots (applyHistory).
-    const days: DayCell[] = [0, 1, 2, 3].map((d) => {
+    // Per-day cells for this week: today is exact; earlier days come from snapshots (applyHistory)
+    // and, where the week's total settles them, from that total.
+    const cells: DayCell[] = [0, 1, 2, 3].map((d) => {
       if (war?.kind === 'training' || d + 1 > warDayNum) return 'pending';
       if (d + 1 === warDayNum) return decksToday;
       return 'untracked';
     });
+    const days = finishWeek(cells, finishedDays(war), decks - decksToday);
 
     const hist: WeekHistory[] = logParts.map(({ entry, parts }) => {
       const p = parts.get(t);
       if (!p) return null;
-      return { key: raceKey(entry), label: raceLabel(entry), decks: p.decksUsed, fame: p.fame, days: null };
+      // Without snapshots a week's days are only known when its total settles them (0 or 16).
+      const settled = finishDays([null, null, null, null], 4, p.decksUsed);
+      return { key: raceKey(entry), label: raceLabel(entry), decks: p.decksUsed, fame: p.fame, days: settled[0] == null ? null : settled };
     });
     const present = hist.filter((h): h is NonNullable<WeekHistory> => !!h);
     const participation = present.length ? present.reduce((a, h) => a + h.decks, 0) / (present.length * 16) : null;
@@ -391,8 +407,16 @@ export function applyHistory(d: Dashboard, h: ClanHistory | null): Dashboard {
   const fresh = new Set(joins.map((e) => e.tag));
   const members = d.members.map((m) => {
     const snap = h.dailyDecks[week]?.[m.tag];
-    const days = m.days.map((c, i) => (c === 'untracked' ? (snap?.[i] ?? 'untracked') : c));
-    const hist = m.hist.map((w) => (w ? { ...w, days: h.dailyDecks[w.key]?.[m.tag] ?? null } : null));
+    // Snapshot counts are lower bounds (decks played after the last one before a reset are
+    // missing); the deck totals complete them: this week's live, past weeks' from the race log.
+    const merged = m.days.map((c, i) => (c === 'untracked' ? (snap?.[i] ?? 'untracked') : c));
+    const days = finishWeek(merged, finishedDays(d.war), m.decks - m.decksToday);
+    const hist = m.hist.map((w) => {
+      if (!w) return null;
+      const stored = h.dailyDecks[w.key]?.[m.tag] ?? [null, null, null, null];
+      const full = finishDays(stored, 4, w.decks);
+      return { ...w, days: full.some((c) => c != null) ? full : null };
+    });
     // Joined since the last snapshot: on the live roster, not yet in history.
     const first = h.firstSeen[m.tag] ?? (fresh.has(m.tag) ? d.generatedAt : undefined);
     const streakDays = raceStreak(hist) * 7;
