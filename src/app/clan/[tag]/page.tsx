@@ -11,8 +11,8 @@ import { ClanProfileView } from './ClanProfileView';
 import { clanPage } from './data';
 
 /**
- * Rendered on a clan's first visit and then served from the page cache (refreshed at most once a
- * minute, see ./data): nothing here is read per request. Cache Components needs one param to check
+ * Rendered on a clan's first visit and then served from the page cache (refreshed every 10 minutes,
+ * see components/PageLife): nothing here is read per request. Cache Components needs one param to check
  * that at build time; this placeholder renders the not-found scene.
  */
 export function generateStaticParams() {
@@ -44,7 +44,7 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
 export default function ClanPage({ params }: PageProps<'/clan/[tag]'>) {
   return (
     <>
-      <PageLife every="minute" />
+      <PageLife every="tenMinutes" />
       <Suspense
         fallback={
           <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

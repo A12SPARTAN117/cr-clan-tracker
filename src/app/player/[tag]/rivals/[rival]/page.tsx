@@ -16,8 +16,8 @@ import type { PlayerProfile } from '@/lib/player/profile';
 type Params = Promise<{ tag: string; rival: string }>;
 
 /**
- * Rendered on the first visit and then served from the page cache (refreshed at most once a
- * minute, see ./data). Cache Components needs one param to check that at build time; this
+ * Rendered on the first visit and then served from the page cache (refreshed every 10 minutes,
+ * see components/PageLife). Cache Components needs one param to check that at build time; this
  * placeholder renders the not-found scene.
  */
 export function generateStaticParams() {
@@ -85,7 +85,7 @@ async function Content({ params }: { params: Params }) {
 export default function HeadToHeadPage({ params }: { params: Params }) {
   return (
     <>
-      <PageLife every="minute" />
+      <PageLife every="tenMinutes" />
       <Suspense fallback={<PageLoading label="Loading head to head" />}>
         <Content params={params} />
       </Suspense>

@@ -6,10 +6,10 @@ import { cacheLife } from 'next/cache';
  * lifetime, and a shell that reads nothing never expires: every clan and player page stayed as it
  * was first rendered until the next deploy or a Refresh. Renders nothing.
  */
-export async function PageLife({ every }: { every: 'minute' | 'fiveMinutes' }) {
+export async function PageLife({ every }: { every: 'tenMinutes' | 'fiveMinutes' }) {
   'use cache';
   // Stale stays at 5 minutes in both: shorter would keep this out of the shell it is here for.
-  if (every === 'minute') cacheLife('pageMinute');
+  if (every === 'tenMinutes') cacheLife('pageTenMinutes');
   else cacheLife('pageFiveMinutes');
   return null;
 }
