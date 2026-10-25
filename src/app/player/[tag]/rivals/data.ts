@@ -7,7 +7,7 @@ import type { Rivals } from '@/lib/player/rivals';
 
 export type RivalsPage = { ok: true; name: string; tag: string; character: string | null; rivals: Rivals; logSize: number; at: number } | { ok: false; status: number };
 
-/** The rivals page's data, cached per player for a minute so the page reads nothing per request. */
+/** The rivals page's data, cached per player for 10 minutes so the page reads nothing per request. */
 export async function rivalsPage(tag: string): Promise<RivalsPage> {
   'use cache';
   cacheTag(tags.player(tag));
@@ -22,6 +22,6 @@ export async function rivalsPage(tag: string): Promise<RivalsPage> {
     cacheLife('crError');
     return { ok: false, status: 0 };
   }
-  cacheLife('crLive');
+  cacheLife('pageTenMinutes');
   return { ok: true, name: p.name, tag: p.tag, character: p.favourite?.render ?? null, rivals, logSize: p.battles.length, at: Date.parse(p.generatedAt) };
 }

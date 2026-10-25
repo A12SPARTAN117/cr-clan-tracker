@@ -4,7 +4,7 @@ import { PageLife } from '@/components/PageLife';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
 import { SeenBeacon } from '@/components/SeenBeacon';
-import { getPlayer } from '@/lib/cr/api';
+import { playerName } from '../data';
 import { checkTag } from '@/lib/tags';
 import { rivalsPage } from './data';
 import { RivalsView } from './RivalsView';
@@ -21,8 +21,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<'/player/[tag]/rivals'>): Promise<Metadata> {
   const c = checkTag(decodeURIComponent((await params).tag));
   if (c.kind !== 'valid') return { title: 'Player not found' };
-  const r = await getPlayer(c.tag);
-  return { title: r.ok ? `${r.data.name} · Rivals` : 'Player not found' };
+  const name = await playerName(c.tag);
+  return { title: name ? `${name} · Rivals` : 'Player not found' };
 }
 
 async function Content({ params }: { params: Promise<{ tag: string }> }) {

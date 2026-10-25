@@ -4,9 +4,8 @@ import { PageLife } from '@/components/PageLife';
 import { LostScene } from '@/components/LostScene';
 import { SeenBeacon } from '@/components/SeenBeacon';
 import { Portal } from '@/components/fx/Portal';
-import { getPlayer } from '@/lib/cr/api';
 import { checkTag } from '@/lib/tags';
-import { playerPage } from './data';
+import { playerName, playerPage } from './data';
 import { PlayerView } from './PlayerView';
 
 /**
@@ -21,8 +20,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<'/player/[tag]'>): Promise<Metadata> {
   const c = checkTag(decodeURIComponent((await params).tag));
   if (c.kind !== 'valid') return { title: 'Player not found' };
-  const r = await getPlayer(c.tag);
-  return { title: r.ok ? `${r.data.name} (#${c.tag})` : 'Player not found' };
+  const name = await playerName(c.tag);
+  return { title: name ? `${name} (#${c.tag})` : 'Player not found' };
 }
 
 async function Content({ params }: { params: Promise<{ tag: string }> }) {

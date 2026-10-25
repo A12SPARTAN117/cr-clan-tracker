@@ -7,7 +7,7 @@ import { getPlayerProfile } from '@/lib/player/profile';
 
 export type GoalsPage = { ok: true; name: string; tag: string; metrics: Metric[]; today: string; trackedSince: string | null } | { ok: false; status: number };
 
-/** The goals page's data, cached per player for a minute so the page reads nothing per request. */
+/** The goals page's data, cached per player for 10 minutes so the page reads nothing per request. */
 export async function goalsPage(tag: string): Promise<GoalsPage> {
   'use cache';
   cacheTag(tags.player(tag));
@@ -22,7 +22,7 @@ export async function goalsPage(tag: string): Promise<GoalsPage> {
     cacheLife('crError');
     return { ok: false, status: 0 };
   }
-  cacheLife('crLive');
+  cacheLife('pageTenMinutes');
   const metrics = metricsOf({
     trophies: p.trophies,
     seasonalTrophies: p.seasonal?.trophies ?? null,

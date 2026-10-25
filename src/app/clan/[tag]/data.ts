@@ -8,7 +8,7 @@ export type ClanPage = { ok: true; c: ClanProfile } | { ok: false; status: numbe
 
 /**
  * Everything the clan profile shows except member levels (which stream in from their own cache),
- * cached per clan for a minute, so the page reads nothing per request. Roster indexing for name
+ * cached per clan for 10 minutes, so the page reads nothing per request. Roster indexing for name
  * search goes through /api/seen.
  */
 export async function clanPage(tag: string): Promise<ClanPage> {
@@ -25,7 +25,6 @@ export async function clanPage(tag: string): Promise<ClanPage> {
     cacheLife('crError');
     return { ok: false, status: 0 };
   }
-  // A minute, so a partial build (one API call failed) doesn't stick around for long.
-  cacheLife('crLive');
+  cacheLife('pageTenMinutes');
   return { ok: true, c: history ? { ...data, history: { trackedSince: history.trackedSince, events: history.rosterEvents } } : data };
 }
