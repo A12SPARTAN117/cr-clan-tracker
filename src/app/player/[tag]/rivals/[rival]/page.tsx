@@ -5,7 +5,8 @@ import { cacheLife, cacheTag } from 'next/cache';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
 import { SeenBeacon } from '@/components/SeenBeacon';
-import { getPlayer, tags } from '@/lib/cr/api';
+import { tags } from '@/lib/cr/api';
+import { playerName } from '../../data';
 import { getHeadToHead } from '@/lib/history/battles';
 import type { H2HGame } from '@/lib/player/rivals';
 import { getPlayerProfile } from '@/lib/player/profile';
@@ -30,8 +31,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const a = checkTag(decodeURIComponent(tag));
   const b = checkTag(decodeURIComponent(rival));
   if (a.kind !== 'valid' || b.kind !== 'valid') return { title: 'Rivals' };
-  const [pa, pb] = await Promise.all([getPlayer(a.tag), getPlayer(b.tag)]);
-  return { title: pa.ok && pb.ok ? `${pa.data.name} vs ${pb.data.name}` : 'Rivals' };
+  const [na, nb] = await Promise.all([playerName(a.tag), playerName(b.tag)]);
+  return { title: na && nb ? `${na} vs ${nb}` : 'Rivals' };
 }
 
 /** What the head-to-head page shows for one player. */
@@ -51,7 +52,7 @@ function side(p: PlayerProfile): Side {
 
 type H2HPage = { ok: true; a: Side; b: Side; games: H2HGame[]; at: number } | { ok: false; missing: string };
 
-/** Both sides and every game between them, cached per pair for a minute. */
+/** Both sides and every game between them, cached per pair for 10 minutes. */
 async function h2hPage(a: string, b: string): Promise<H2HPage> {
   'use cache';
   cacheTag(tags.player(a), tags.player(b));
@@ -60,7 +61,7 @@ async function h2hPage(a: string, b: string): Promise<H2HPage> {
     cacheLife('crError');
     return { ok: false, missing: pa ? b : a };
   }
-  cacheLife('crLive');
+  cacheLife('pageTenMinutes');
   return { ok: true, a: side(pa), b: side(pb), games, at: Date.parse(pa.generatedAt) };
 }
 

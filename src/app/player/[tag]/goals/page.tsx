@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { PageLife } from '@/components/PageLife';
 import { LostScene } from '@/components/LostScene';
 import { PageLoading } from '@/components/PageLoading';
-import { getPlayer } from '@/lib/cr/api';
+import { playerName } from '../data';
 import { SeenBeacon } from '@/components/SeenBeacon';
 import { checkTag } from '@/lib/tags';
 import { goalsPage } from './data';
@@ -21,8 +21,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<'/player/[tag]/goals'>): Promise<Metadata> {
   const c = checkTag(decodeURIComponent((await params).tag));
   if (c.kind !== 'valid') return { title: 'Season goals' };
-  const r = await getPlayer(c.tag);
-  return { title: r.ok ? `${r.data.name} · Season goals` : 'Season goals' };
+  const name = await playerName(c.tag);
+  return { title: name ? `${name} · Season goals` : 'Season goals' };
 }
 
 async function Content({ params }: { params: Promise<{ tag: string }> }) {

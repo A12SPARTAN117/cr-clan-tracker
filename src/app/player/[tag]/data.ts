@@ -13,7 +13,20 @@ import { rivalsOf } from '@/lib/player/rivals';
 import { onceEvery, VIEW_WRITE_MS } from '@/lib/throttle';
 import type { PlayerData } from './PlayerView';
 
-export type PlayerPage = { ok: true; data: Packed<PlayerData> } | { ok: false; status: number };
+/**
+ * A player's name for page titles, kept as long as their pages (a shorter-lived read in a title
+ * would make the whole page refresh at its pace).
+ */
+export async function playerName(tag: string): Promise<string | null> {
+  'use cache';
+  cacheTag(tags.player(tag));
+  const r = await getPlayer(tag);
+  if (!r.ok && r.status !== 404) cacheLife('crError');
+  else cacheLife('pageTenMinutes');
+  return r.ok ? r.data.name : null;
+}
+
+export type PlayerPage ={ ok: true; data: Packed<PlayerData> } | { ok: false; status: number };
 
 /** The page's data around a profile: stored history, games (stored + the live log when it loads), names. */
 async function around(tag: string, p: PlayerLite, stale: string | null): Promise<Packed<PlayerData>> {
@@ -23,9 +36,9 @@ async function around(tag: string, p: PlayerLite, stale: string | null): Promise
 }
 
 /**
- * Everything a profile page shows, cached per player for a minute (the battle log's pace). The
- * page uses nothing else per request, so each player's page is rendered once a minute at most
- * however many people open it, and a CDN can serve it in between. Writes a view used to trigger
+ * Everything a profile page shows, cached per player for 10 minutes. The page uses nothing else
+ * per request, so each player's page is rendered once every 10 minutes at most however many
+ * people open it, and a CDN can serve it in between. Writes a view used to trigger
  * (tracking, stored games) go through /api/seen instead; live event ranks load in the Badges tab.
  *
  * While the Clash Royale API is busy or failing, a player seen before is shown from their stored
@@ -38,7 +51,7 @@ export async function playerPage(tag: string): Promise<PlayerPage> {
   if (r.ok) {
     const p = await getPlayerProfile(tag);
     if (p) {
-      cacheLife('crLive');
+      cacheLife('pageTenMinutes');
       const lite = liteOf(p);
       // The stored copy follows the live profile, at most every 15 minutes per player.
       if (onceEvery(`store:${tag}`, VIEW_WRITE_MS)) void saveStoredPlayer(tag, lite);

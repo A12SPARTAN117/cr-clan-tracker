@@ -7,7 +7,7 @@ import { getClanHistory } from '@/lib/history';
 export type DashboardPage = { ok: true; data: Dashboard } | { ok: false; status: number };
 
 /**
- * The dashboard with its stored history merged in, cached per clan for a minute, so the page
+ * The dashboard with its stored history merged in, cached per clan for 10 minutes, so the page
  * reads nothing per request. Starting history tracking and roster indexing go through /api/seen.
  */
 export async function dashboardPage(tag: string): Promise<DashboardPage> {
@@ -24,6 +24,6 @@ export async function dashboardPage(tag: string): Promise<DashboardPage> {
     cacheLife('crError');
     return { ok: false, status: 0 };
   }
-  cacheLife('crLive');
+  cacheLife('pageTenMinutes');
   return { ok: true, data: applyHistory(data, history) };
 }

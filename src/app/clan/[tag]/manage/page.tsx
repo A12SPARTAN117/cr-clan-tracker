@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import { PageLife } from '@/components/PageLife';
 import { LostScene } from '@/components/LostScene';
 import { Portal } from '@/components/fx/Portal';
-import { getClan } from '@/lib/cr/api';
 import { SeenBeacon } from '@/components/SeenBeacon';
 import { checkTag } from '@/lib/tags';
 import { ClanDashboard } from './ClanDashboard';
@@ -21,8 +20,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<'/clan/[tag]/manage'>): Promise<Metadata> {
   const c = checkTag(decodeURIComponent((await params).tag));
   if (c.kind !== 'valid') return { title: 'Clan not found' };
-  const r = await getClan(c.tag);
-  return { title: r.ok ? `${r.data.name} · Manage` : 'Clan dashboard' };
+  // The page's own cached data, so the title can't make the page refresh sooner.
+  const page = await dashboardPage(c.tag);
+  return { title: page.ok ? `${page.data.clan.name} · Manage` : 'Clan dashboard' };
 }
 
 function Loading() {

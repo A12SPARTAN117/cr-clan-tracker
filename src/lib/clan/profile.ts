@@ -122,7 +122,9 @@ export async function getMemberLevels(tag: string): Promise<MemberLevels> {
   const list = c.data.memberList;
   const profiles = await pool(list, 16, (m) => unlessBusy(() => memberProfile(bare(m.tag))));
   if (anyFailed(profiles)) cacheLife('crError');
-  else cacheLife('cr');
+  // As long as the per-member facts: levels barely move, and a shorter read here would make the
+  // whole clan page refresh at its pace.
+  else cacheLife('members');
   return Object.fromEntries(
     list.map((m, i) => {
       const p = profiles[i]?.ok ? profiles[i].data : null;
