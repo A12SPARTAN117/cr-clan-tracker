@@ -10,8 +10,8 @@ import { playerPage } from './data';
 import { PlayerView } from './PlayerView';
 
 /**
- * Profiles are rendered on a player's first visit and then served from the cache (refreshed at
- * most once a minute, see ./data), so the page reads nothing per request. Cache Components needs
+ * Profiles are rendered on a player's first visit and then served from the cache (refreshed
+ * every 10 minutes, see components/PageLife), so the page reads nothing per request. Cache Components needs
  * one param to check that at build time; this placeholder renders the not-found scene.
  */
 export function generateStaticParams() {
@@ -42,7 +42,7 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
 export default function PlayerPage({ params }: PageProps<'/player/[tag]'>) {
   return (
     <>
-      <PageLife every="minute" />
+      <PageLife every="tenMinutes" />
       <Suspense
         fallback={
           <div style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>

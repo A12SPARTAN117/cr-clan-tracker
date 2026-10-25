@@ -10,8 +10,8 @@ import { goalsPage } from './data';
 import { GoalsView } from './GoalsView';
 
 /**
- * Rendered on the first visit and then served from the page cache (refreshed at most once a
- * minute, see ./data). Cache Components needs one param to check that at build time; this
+ * Rendered on the first visit and then served from the page cache (refreshed every 10 minutes,
+ * see components/PageLife). Cache Components needs one param to check that at build time; this
  * placeholder renders the not-found scene.
  */
 export function generateStaticParams() {
@@ -43,7 +43,7 @@ async function Content({ params }: { params: Promise<{ tag: string }> }) {
 export default function GoalsPage({ params }: PageProps<'/player/[tag]/goals'>) {
   return (
     <>
-      <PageLife every="minute" />
+      <PageLife every="tenMinutes" />
       <Suspense fallback={<PageLoading label="Loading goals" />}>
         <Content params={params} />
       </Suspense>
