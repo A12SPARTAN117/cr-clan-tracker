@@ -85,7 +85,7 @@ who's active, who plays war, and who's earned a promotion.
 
 Any Node host works. Set `CR_API_KEY`, `CR_API_BASE`, `DATABASE_URL` (a hosted Postgres; use a transaction pooler on serverless hosts) and `CRON_SECRET`, then call `/api/cron/snapshot` and `/api/cron/directory` every 30 minutes with `Authorization: Bearer $CRON_SECRET`. The included GitHub Actions workflow does this once the `SITE_URL` and `CRON_SECRET` repository secrets are set.
 
-Optional: `NEXT_PUBLIC_DONATE_PAYPAL_URL`, `NEXT_PUBLIC_DONATE_PAYFAST_URL`, `NEXT_PUBLIC_DONATE_YOCO_URL` and `NEXT_PUBLIC_DONATE_URL` (any other link) each add a donate button to the support, error and outage pages, and `SITE_DOWN=1` puts the whole site into maintenance mode.
+Optional: `NEXT_PUBLIC_DONATE_PAYPAL_URL`, `NEXT_PUBLIC_DONATE_PAYFAST_URL`, `NEXT_PUBLIC_DONATE_YOCO_URL` and `NEXT_PUBLIC_DONATE_URL` (any other link) each add a donate button to the support, error and outage pages (the Yoco link also adds Apple Pay and Google Pay buttons that open its page), and `SITE_DOWN=1` puts the whole site into maintenance mode.
 
 ## Disclaimer
 

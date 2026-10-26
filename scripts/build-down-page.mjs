@@ -16,6 +16,8 @@ const LINKS = [
   ['NEXT_PUBLIC_DONATE_PAYPAL_URL', 'Donate with PayPal'],
   ['NEXT_PUBLIC_DONATE_PAYFAST_URL', 'Donate with Payfast'],
   ['NEXT_PUBLIC_DONATE_YOCO_URL', 'Donate with Yoco'],
+  ['NEXT_PUBLIC_DONATE_YOCO_URL', 'Donate with Apple Pay'],
+  ['NEXT_PUBLIC_DONATE_YOCO_URL', 'Donate with Google Pay'],
 ];
 const pageLabel = (url) => (/^https:\/\/(www\.)?ko-fi\.com\//i.test(url) ? 'Donate with Ko-fi' : 'Donate');
 const links = [];

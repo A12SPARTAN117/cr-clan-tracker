@@ -7,10 +7,13 @@
  * Every one that's set gets a button; with none set the buttons are hidden and the pages just
  * explain why the site is down. Only https links are used.
  *
+ * The Yoco link also gets Apple Pay and Google Pay buttons. They open the same Yoco page, where
+ * the wallet shows on a device that has it; Yoco has no way to take wallet payments on our own site.
+ *
  * Supercell's Fan Content Policy allows donations only if they are purely donations, not tied
  * to any features or perks, so never make a donation unlock anything on the site.
  */
-export type DonateLink = { id: 'paypal' | 'payfast' | 'yoco' | 'other'; label: string; url: string };
+export type DonateLink = { id: 'paypal' | 'payfast' | 'yoco' | 'applepay' | 'googlepay' | 'other'; label: string; url: string };
 
 /**
  * https only, nothing that could break out of an attribute (scripts/build-down-page.mjs uses the
@@ -25,6 +28,7 @@ const safe = (v: string | undefined) => {
 export const pageLabel = (url: string) => (/^https:\/\/(www\.)?ko-fi\.com\//i.test(url) ? 'Donate with Ko-fi' : 'Donate');
 
 const page = safe(process.env.NEXT_PUBLIC_DONATE_URL);
+const yoco = safe(process.env.NEXT_PUBLIC_DONATE_YOCO_URL);
 
 // The donation page (Ko-fi) leads as the main button; direct payment links follow.
 // Each variable is read by its full name so Next inlines it into the client bundles.
@@ -33,6 +37,8 @@ export const DONATE_LINKS: DonateLink[] = (
     { id: 'other', label: pageLabel(page), url: page },
     { id: 'paypal', label: 'Donate with PayPal', url: safe(process.env.NEXT_PUBLIC_DONATE_PAYPAL_URL) },
     { id: 'payfast', label: 'Donate with Payfast', url: safe(process.env.NEXT_PUBLIC_DONATE_PAYFAST_URL) },
-    { id: 'yoco', label: 'Donate with Yoco', url: safe(process.env.NEXT_PUBLIC_DONATE_YOCO_URL) },
+    { id: 'yoco', label: 'Donate with Yoco', url: yoco },
+    { id: 'applepay', label: 'Donate with Apple Pay', url: yoco },
+    { id: 'googlepay', label: 'Donate with Google Pay', url: yoco },
   ] satisfies DonateLink[]
 ).filter((l) => l.url);
