@@ -1,4 +1,5 @@
 import 'server-only';
+import { connection } from 'next/server';
 import { getDb, schema } from './db';
 
 /**
@@ -36,8 +37,9 @@ async function read(): Promise<Set<string>> {
   return off;
 }
 
-/** Every switch that is off right now. */
-export function switchesOff(): Promise<Set<string>> {
+/** Every switch that is off right now. Request-time only: a prerendered page can't follow a switch. */
+export async function switchesOff(): Promise<Set<string>> {
+  await connection();
   const now = Date.now();
   if (!g.__crSwitches || now - g.__crSwitches.at > TTL_MS) g.__crSwitches = { at: now, off: read() };
   return g.__crSwitches.off;
