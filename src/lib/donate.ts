@@ -12,8 +12,14 @@
  */
 export type DonateLink = { id: 'paypal' | 'payfast' | 'yoco' | 'other'; label: string; url: string };
 
-/** https only, nothing that could break out of an attribute (scripts/build-down-page.mjs uses the same rule). */
-const safe = (v: string | undefined) => (/^https:\/\/[^\s"'<>]+$/.test(v ?? '') ? v! : '');
+/**
+ * https only, nothing that could break out of an attribute (scripts/build-down-page.mjs uses the
+ * same rule). Trimmed first: a link pasted into a host's dashboard often brings a space or line break.
+ */
+const safe = (v: string | undefined) => {
+  const s = v?.trim() ?? '';
+  return /^https:\/\/[^\s"'<>]+$/.test(s) ? s : '';
+};
 
 // Each variable is read by its full name so Next inlines it into the client bundles.
 export const DONATE_LINKS: DonateLink[] = (

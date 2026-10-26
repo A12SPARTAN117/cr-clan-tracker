@@ -18,7 +18,8 @@ const LINKS = [
 ];
 const links = [];
 for (const [key, label] of LINKS) {
-  const raw = process.env[key] ?? '';
+  // Trimmed: a link pasted into a host's dashboard often brings a space or line break.
+  const raw = process.env[key]?.trim() ?? '';
   if (/^https:\/\/[^\s"'<>]+$/.test(raw)) links.push({ url: raw, label });
   else if (raw) console.warn(`[down-page] ${key} must be an https:// link; its Donate button is hidden.`);
 }
