@@ -162,8 +162,11 @@ describe('donate links (lib/donate)', () => {
   };
   it('accepts https links only', async () => {
     expect(await load({ NEXT_PUBLIC_DONATE_URL: 'https://ko-fi.com/crclan' })).toEqual([{ id: 'other', label: 'Donate', url: 'https://ko-fi.com/crclan' }]);
-    for (const bad of ['http://ko-fi.com/x', 'javascript:alert(1)', 'https://x.com/"onmouseover="alert(1)', 'https://x.com/ <script>', ' https://x.com', 'data:text/html,hi'])
+    for (const bad of ['http://ko-fi.com/x', 'javascript:alert(1)', 'https://x.com/"onmouseover="alert(1)', 'https://x.com/ <script>', 'ko-fi.com/x', 'data:text/html,hi'])
       for (const k of KEYS) expect(await load({ [k]: bad }), `${k}=${bad}`).toEqual([]);
+  });
+  it('trims a link pasted with spaces or a line break', async () => {
+    expect(await load({ NEXT_PUBLIC_DONATE_URL: ' https://ko-fi.com/crclan\n' })).toEqual([{ id: 'other', label: 'Donate', url: 'https://ko-fi.com/crclan' }]);
   });
   it('gives one button per link that is set, PayPal first', async () => {
     const links = await load({ NEXT_PUBLIC_DONATE_YOCO_URL: 'https://pay.yoco.com/r/abc', NEXT_PUBLIC_DONATE_PAYPAL_URL: 'https://paypal.me/crclan' });
