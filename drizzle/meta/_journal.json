@@ -85,6 +85,13 @@
       "when": 1792738870594,
       "tag": "0011_player_snapshots",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793005893461,
+      "tag": "0012_history_indexes",
+      "breakpoints": true
     }
   ]
 }

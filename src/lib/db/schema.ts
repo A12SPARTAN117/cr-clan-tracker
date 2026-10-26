@@ -6,13 +6,18 @@ import { date, index, integer, jsonb, pgTable, primaryKey, real, serial, text, t
  */
 
 /** Clans we snapshot. A clan is tracked from the first time its dashboard is opened. */
-export const trackedClans = pgTable('tracked_clans', {
-  tag: text('tag').primaryKey(),
-  name: text('name').notNull(),
-  trackedSince: timestamp('tracked_since', { withTimezone: true }).notNull().defaultNow(),
-  lastSnapshotAt: timestamp('last_snapshot_at', { withTimezone: true }),
-  lastViewedAt: timestamp('last_viewed_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const trackedClans = pgTable(
+  'tracked_clans',
+  {
+    tag: text('tag').primaryKey(),
+    name: text('name').notNull(),
+    trackedSince: timestamp('tracked_since', { withTimezone: true }).notNull().defaultNow(),
+    lastSnapshotAt: timestamp('last_snapshot_at', { withTimezone: true }),
+    lastViewedAt: timestamp('last_viewed_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  // The snapshot job picks clans viewed recently.
+  (t) => [index('tracked_clans_viewed').on(t.lastViewedAt)],
+);
 
 /** Everyone we have seen in a tracked clan. leftAt is set once they disappear from the roster. */
 export const clanMembers = pgTable(
@@ -28,7 +33,8 @@ export const clanMembers = pgTable(
     lastSeenInClanAt: timestamp('last_seen_in_clan_at', { withTimezone: true }).notNull().defaultNow(),
     leftAt: timestamp('left_at', { withTimezone: true }),
   },
-  (t) => [primaryKey({ columns: [t.clanTag, t.playerTag] })],
+  // The second index serves a player's clan history (getPlayerHistory), which has no clan tag.
+  (t) => [primaryKey({ columns: [t.clanTag, t.playerTag] }), index('clan_members_player').on(t.playerTag)],
 );
 
 /** Joins, leaves and role changes, newest first when read. */
@@ -63,13 +69,18 @@ export const memberDaily = pgTable(
  * Players we snapshot on their own, whatever clan they are in. A player is tracked from the
  * first time their profile is opened; the cron keeps a daily snapshot while it keeps being viewed.
  */
-export const trackedPlayers = pgTable('tracked_players', {
-  tag: text('tag').primaryKey(),
-  name: text('name').notNull(),
-  trackedSince: timestamp('tracked_since', { withTimezone: true }).notNull().defaultNow(),
-  lastSnapshotAt: timestamp('last_snapshot_at', { withTimezone: true }),
-  lastViewedAt: timestamp('last_viewed_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const trackedPlayers = pgTable(
+  'tracked_players',
+  {
+    tag: text('tag').primaryKey(),
+    name: text('name').notNull(),
+    trackedSince: timestamp('tracked_since', { withTimezone: true }).notNull().defaultNow(),
+    lastSnapshotAt: timestamp('last_snapshot_at', { withTimezone: true }),
+    lastViewedAt: timestamp('last_viewed_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  // The snapshot job picks players viewed recently and not snapshotted today.
+  (t) => [index('tracked_players_viewed').on(t.lastViewedAt, t.lastSnapshotAt)],
+);
 
 /** One row per tracked player per UTC day: their profile at the last snapshot of the day. */
 export const playerDaily = pgTable(
@@ -105,7 +116,7 @@ export const warDays = pgTable(
     day: integer('day').notNull(), // 1–4
     decks: integer('decks').notNull(),
   },
-  (t) => [primaryKey({ columns: [t.clanTag, t.playerTag, t.week, t.day] })],
+  (t) => [primaryKey({ columns: [t.clanTag, t.playerTag, t.week, t.day] }), index('war_days_player').on(t.playerTag, t.week)],
 );
 
 /**
