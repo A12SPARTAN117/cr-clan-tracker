@@ -235,10 +235,12 @@ describe('API routes validate their input', () => {
     expect(playerSummary).not.toHaveBeenCalled();
   });
 
-  it('badge-art says so plainly when there is no database', async () => {
+  it('badge-art needs the cron secret, then says so plainly when there is no database', async () => {
+    vi.stubEnv('CRON_SECRET', 's3cret');
     const { GET } = await import('@/app/api/badge-art/route');
-    const res = await GET(req('/api/badge-art'));
-    expect(res.status).toBe(503);
+    expect((await GET(req('/api/badge-art'))).status).toBe(401);
+    expect((await GET(req('/api/badge-art', { headers: { authorization: 'Bearer s3cret' } }))).status).toBe(503);
+    vi.unstubAllEnvs();
   });
 
   it('every API route is rate limited', async () => {
