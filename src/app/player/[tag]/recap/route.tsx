@@ -7,11 +7,13 @@ import { getPlayerProfile } from '@/lib/player/profile';
 import { playerRecap, seasonOf } from '@/lib/recap/player';
 import { playerRecapImage } from '@/lib/recap/render';
 import { recapError, recapPng } from '@/lib/recap/route';
+import { isOff } from '@/lib/switches';
 import { checkTag } from '@/lib/tags';
 
 /** The player's season recap as a shareable PNG. */
 export async function GET(req: NextRequest, ctx: RouteContext<'/player/[tag]/recap'>) {
   await connection();
+  if (await isOff('recaps')) return recapError(503, 'Recap images are switched off for a while');
   const c = checkTag(decodeURIComponent((await ctx.params).tag));
   if (c.kind !== 'valid') return recapError(404, 'Not a player tag');
   const [raw, p, h, games] = await Promise.all([getPlayer(c.tag), getPlayerProfile(c.tag), getPlayerHistory(c.tag), getGames(c.tag)]);

@@ -287,3 +287,13 @@ export const playerSnapshots = pgTable('player_snapshots', {
   data: jsonb('data').notNull(),
   savedAt: timestamp('saved_at', { withTimezone: true }).notNull(),
 });
+
+/**
+ * Kill switches (lib/switches): a row here turns that feature off within about 30 seconds,
+ * without a redeploy. Delete the row to turn it back on.
+ */
+export const siteSwitches = pgTable('site_switches', {
+  name: text('name').primaryKey(),
+  note: text('note'),
+  switchedOffAt: timestamp('switched_off_at', { withTimezone: true }).notNull().defaultNow(),
+});

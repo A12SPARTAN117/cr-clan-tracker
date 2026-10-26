@@ -4,6 +4,7 @@ import { Portal } from '@/components/fx/Portal';
 import { Reveal } from '@/components/fx/Reveal';
 import { getClanWarRankings, getPolLeaderboard } from '@/lib/cr/api';
 import { compare, type CompareKind } from '@/lib/compare';
+import { isOff } from '@/lib/switches';
 import { CompareView } from './CompareView';
 
 export const metadata: Metadata = { title: 'Compare', description: 'Compare Clash Royale players or clans side by side.' };
@@ -18,6 +19,12 @@ async function Content({ searchParams }: { searchParams: SP }) {
   const suggest = tags.length < 2 ? await suggestions() : null;
   if (!tags.length) return <CompareView data={{ kind, entities: [], missing: [], sections: [] }} suggest={suggest} />;
   if (kind === 'player') return <CompareView data={await compare(kind, tags)} suggest={suggest} />;
+  if (await isOff('compare-clans'))
+    return (
+      <p className="label" style={{ padding: '24px 0' }}>
+        Clan comparisons are switched off for a while to keep the site fast. Player comparisons still work.
+      </p>
+    );
   // Clans: everything but the two member-level rows shows at once; those fill in when every
   // member's profile has loaded.
   const quick = await compare(kind, tags, { levels: false });
