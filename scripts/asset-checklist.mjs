@@ -74,9 +74,11 @@ async function sample() {
 const S = process.argv.includes('--cached') && fs.existsSync(cacheFile) ? JSON.parse(fs.readFileSync(cacheFile, 'utf8')) : await sample();
 
 // Badge levels the site has recorded from real profile views (/api/badge-art). The site has to
-// be running; SITE_URL points at a deployed one instead of the local dev server.
+// be running; SITE_URL points at a deployed one instead of the local dev server. The route needs
+// CRON_SECRET (from .env) once one is set.
 const SITE = process.env.SITE_URL || env.SITE_URL || 'http://localhost:3000';
-const recorded = await fetch(`${SITE}/api/badge-art`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+const SECRET = process.env.CRON_SECRET || env.CRON_SECRET;
+const recorded = await fetch(`${SITE}/api/badge-art`, { headers: SECRET ? { Authorization: `Bearer ${SECRET}` } : {} }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 if (!recorded) console.warn(`[assets] couldn't read recorded badge art from ${SITE}/api/badge-art (is the site running?)`);
 const seenLevels = {}; // name -> level -> url, from profile views
 // Only official art: the record comes over the network, so never fetch anything else from it.
