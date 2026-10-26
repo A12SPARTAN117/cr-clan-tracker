@@ -21,12 +21,18 @@ const safe = (v: string | undefined) => {
   return /^https:\/\/[^\s"'<>]+$/.test(s) ? s : '';
 };
 
+/** The donation page's button names its site when we know it (scripts/build-down-page.mjs matches). */
+export const pageLabel = (url: string) => (/^https:\/\/(www\.)?ko-fi\.com\//i.test(url) ? 'Donate with Ko-fi' : 'Donate');
+
+const page = safe(process.env.NEXT_PUBLIC_DONATE_URL);
+
+// The donation page (Ko-fi) leads as the main button; direct payment links follow.
 // Each variable is read by its full name so Next inlines it into the client bundles.
 export const DONATE_LINKS: DonateLink[] = (
   [
+    { id: 'other', label: pageLabel(page), url: page },
     { id: 'paypal', label: 'Donate with PayPal', url: safe(process.env.NEXT_PUBLIC_DONATE_PAYPAL_URL) },
     { id: 'payfast', label: 'Donate with Payfast', url: safe(process.env.NEXT_PUBLIC_DONATE_PAYFAST_URL) },
     { id: 'yoco', label: 'Donate with Yoco', url: safe(process.env.NEXT_PUBLIC_DONATE_YOCO_URL) },
-    { id: 'other', label: 'Donate', url: safe(process.env.NEXT_PUBLIC_DONATE_URL) },
   ] satisfies DonateLink[]
 ).filter((l) => l.url);

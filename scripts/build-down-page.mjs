@@ -9,18 +9,20 @@ import nextEnv from '@next/env';
 const root = path.resolve(import.meta.dirname, '..');
 nextEnv.loadEnvConfig(root, process.env.npm_lifecycle_event === 'predev');
 
-// Same links, labels and rule as src/lib/donate.ts: https only, nothing that could break out of the attribute.
+// Same links, order, labels and rule as src/lib/donate.ts: https only, nothing that could break out
+// of the attribute. The donation page (Ko-fi) leads; a null label means "name it from the link".
 const LINKS = [
+  ['NEXT_PUBLIC_DONATE_URL', null],
   ['NEXT_PUBLIC_DONATE_PAYPAL_URL', 'Donate with PayPal'],
   ['NEXT_PUBLIC_DONATE_PAYFAST_URL', 'Donate with Payfast'],
   ['NEXT_PUBLIC_DONATE_YOCO_URL', 'Donate with Yoco'],
-  ['NEXT_PUBLIC_DONATE_URL', 'Donate'],
 ];
+const pageLabel = (url) => (/^https:\/\/(www\.)?ko-fi\.com\//i.test(url) ? 'Donate with Ko-fi' : 'Donate');
 const links = [];
 for (const [key, label] of LINKS) {
   // Trimmed: a link pasted into a host's dashboard often brings a space or line break.
   const raw = process.env[key]?.trim() ?? '';
-  if (/^https:\/\/[^\s"'<>]+$/.test(raw)) links.push({ url: raw, label });
+  if (/^https:\/\/[^\s"'<>]+$/.test(raw)) links.push({ url: raw, label: label ?? pageLabel(raw) });
   else if (raw) console.warn(`[down-page] ${key} must be an https:// link; its Donate button is hidden.`);
 }
 const HEART =

@@ -161,16 +161,25 @@ describe('donate links (lib/donate)', () => {
     return (await import('@/lib/donate')).DONATE_LINKS;
   };
   it('accepts https links only', async () => {
-    expect(await load({ NEXT_PUBLIC_DONATE_URL: 'https://ko-fi.com/crclan' })).toEqual([{ id: 'other', label: 'Donate', url: 'https://ko-fi.com/crclan' }]);
+    expect(await load({ NEXT_PUBLIC_DONATE_URL: 'https://ko-fi.com/crclan' })).toEqual([{ id: 'other', label: 'Donate with Ko-fi', url: 'https://ko-fi.com/crclan' }]);
     for (const bad of ['http://ko-fi.com/x', 'javascript:alert(1)', 'https://x.com/"onmouseover="alert(1)', 'https://x.com/ <script>', 'ko-fi.com/x', 'data:text/html,hi'])
       for (const k of KEYS) expect(await load({ [k]: bad }), `${k}=${bad}`).toEqual([]);
   });
   it('trims a link pasted with spaces or a line break', async () => {
-    expect(await load({ NEXT_PUBLIC_DONATE_URL: ' https://ko-fi.com/crclan\n' })).toEqual([{ id: 'other', label: 'Donate', url: 'https://ko-fi.com/crclan' }]);
+    expect(await load({ NEXT_PUBLIC_DONATE_URL: ' https://ko-fi.com/crclan\n' })).toEqual([{ id: 'other', label: 'Donate with Ko-fi', url: 'https://ko-fi.com/crclan' }]);
   });
-  it('gives one button per link that is set, PayPal first', async () => {
-    const links = await load({ NEXT_PUBLIC_DONATE_YOCO_URL: 'https://pay.yoco.com/r/abc', NEXT_PUBLIC_DONATE_PAYPAL_URL: 'https://paypal.me/crclan' });
-    expect(links.map((l) => l.id)).toEqual(['paypal', 'yoco']);
+  it('gives one button per link that is set, the donation page first', async () => {
+    const links = await load({
+      NEXT_PUBLIC_DONATE_YOCO_URL: 'https://pay.yoco.com/r/abc',
+      NEXT_PUBLIC_DONATE_PAYPAL_URL: 'https://paypal.me/crclan',
+      NEXT_PUBLIC_DONATE_URL: 'https://ko-fi.com/crclan',
+    });
+    expect(links.map((l) => l.id)).toEqual(['other', 'paypal', 'yoco']);
+    expect(links[0].label).toBe('Donate with Ko-fi');
+  });
+  it('names the donation page only when it knows the site', async () => {
+    expect((await load({ NEXT_PUBLIC_DONATE_URL: 'https://buymeacoffee.com/crclan' }))[0].label).toBe('Donate');
+    expect((await load({ NEXT_PUBLIC_DONATE_URL: 'https://notko-fi.com/x' }))[0].label).toBe('Donate');
   });
 });
 
