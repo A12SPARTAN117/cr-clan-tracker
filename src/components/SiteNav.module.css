@@ -59,6 +59,16 @@
 .brandSlash {
   color: var(--text-3);
 }
+.beta {
+  padding: 3px 5px 2px;
+  border: 1px solid rgba(var(--glow-rgb), 0.55);
+  border-radius: 3px;
+  font: 700 8px/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--blue-hi);
+  box-shadow: 0 0 8px rgba(var(--glow-rgb), 0.25);
+}
 
 .links {
   display: none;
