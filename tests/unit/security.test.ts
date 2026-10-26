@@ -174,8 +174,14 @@ describe('donate links (lib/donate)', () => {
       NEXT_PUBLIC_DONATE_PAYPAL_URL: 'https://paypal.me/crclan',
       NEXT_PUBLIC_DONATE_URL: 'https://ko-fi.com/crclan',
     });
-    expect(links.map((l) => l.id)).toEqual(['other', 'paypal', 'yoco']);
+    expect(links.map((l) => l.id)).toEqual(['other', 'paypal', 'yoco', 'applepay', 'googlepay']);
     expect(links[0].label).toBe('Donate with Ko-fi');
+  });
+  it('gives the Yoco link Apple Pay and Google Pay buttons that open the same page', async () => {
+    const links = await load({ NEXT_PUBLIC_DONATE_YOCO_URL: 'https://pay.yoco.com/r/abc' });
+    expect(links.map((l) => l.label)).toEqual(['Donate with Yoco', 'Donate with Apple Pay', 'Donate with Google Pay']);
+    expect(new Set(links.map((l) => l.url))).toEqual(new Set(['https://pay.yoco.com/r/abc']));
+    expect(await load({ NEXT_PUBLIC_DONATE_PAYPAL_URL: 'https://paypal.me/crclan' })).toHaveLength(1);
   });
   it('names the donation page only when it knows the site', async () => {
     expect((await load({ NEXT_PUBLIC_DONATE_URL: 'https://buymeacoffee.com/crclan' }))[0].label).toBe('Donate');
