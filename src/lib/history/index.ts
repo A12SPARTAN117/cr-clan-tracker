@@ -108,10 +108,14 @@ export type PlayerHistory = {
   days: PlayerDay[];
 };
 
+/** How far back a player's daily history is read: every chart and goal fits in it, and the read stays bounded. */
+const PLAYER_HISTORY_DAYS = 180;
+
 export async function getPlayerHistory(tagRaw: string): Promise<PlayerHistory | null> {
   const tag = bare(tagRaw);
   const db = await getDb();
   if (!db) return null;
+  const from = new Date(Date.now() - PLAYER_HISTORY_DAYS * 86_400_000).toISOString().slice(0, 10);
   try {
     const [stints, [tracked]] = await Promise.all([
       db.select().from(clanMembers).where(eq(clanMembers.playerTag, tag)).orderBy(desc(clanMembers.firstSeenAt)),
@@ -121,9 +125,17 @@ export async function getPlayerHistory(tagRaw: string): Promise<PlayerHistory | 
     const clanTags = [...new Set(stints.map((s) => s.clanTag))];
     const [clans, trophies, war, days] = await Promise.all([
       clanTags.length ? db.select({ tag: trackedClans.tag, name: trackedClans.name }).from(trackedClans).where(inArray(trackedClans.tag, clanTags)) : [],
-      db.select({ day: memberDaily.day, trophies: memberDaily.trophies }).from(memberDaily).where(eq(memberDaily.playerTag, tag)).orderBy(memberDaily.day),
-      db.select().from(warDays).where(and(eq(warDays.playerTag, tag), lte(warDays.day, 4))).orderBy(desc(warDays.week)),
-      tracked ? db.select().from(playerDaily).where(eq(playerDaily.playerTag, tag)).orderBy(playerDaily.day) : [],
+      db
+        .select({ day: memberDaily.day, trophies: memberDaily.trophies })
+        .from(memberDaily)
+        .where(and(eq(memberDaily.playerTag, tag), gte(memberDaily.day, from)))
+        .orderBy(memberDaily.day),
+      db
+        .select()
+        .from(warDays)
+        .where(and(eq(warDays.playerTag, tag), gte(warDays.week, from), lte(warDays.day, 4)))
+        .orderBy(desc(warDays.week)),
+      tracked ? db.select().from(playerDaily).where(and(eq(playerDaily.playerTag, tag), gte(playerDaily.day, from))).orderBy(playerDaily.day) : [],
     ]);
     const names = new Map(clans.map((c) => [c.tag, c.name]));
     // Clan and player snapshots can both hold the same day; keep the highest.
