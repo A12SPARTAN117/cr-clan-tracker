@@ -191,6 +191,7 @@ function NavView({ pathname: path }: { pathname: string | null }) {
           <span className={s.brandText}>
             CR·CLAN<span className={s.brandSlash}>/</span>TRACKER
           </span>
+          <span className={s.beta}>Beta</span>
         </HoverLink>
         <nav className={s.links} aria-label="Main">
           {LINKS.map((l) => (
