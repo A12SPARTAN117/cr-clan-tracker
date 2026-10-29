@@ -3,6 +3,7 @@
 import { HoverLink } from '@/components/ui/HoverLink';
 import { usePathname, useRouter } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { SocialLinks } from '@/components/SocialLinks';
 import { FEATURES } from '@/lib/features';
 import { checkTag, searchHref } from '@/lib/tags';
 import { getTheme, toggleTheme, type Theme } from './fx/motion';
@@ -236,6 +237,7 @@ function NavView({ pathname: path }: { pathname: string | null }) {
                 );
               })}
             </nav>
+            <SocialLinks className={s.sheetSocial} />
           </div>
         </>
       )}

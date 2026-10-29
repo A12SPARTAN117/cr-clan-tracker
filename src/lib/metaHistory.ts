@@ -63,10 +63,13 @@ export async function getTrends(meta: MetaSnapshot): Promise<Record<string, Mode
   }
 }
 
-/** Today's trends for every mode, cached for an hour (snapshots are daily, so they move slowly). */
+/**
+ * Today's trends for every mode, cached for an hour (snapshots are daily, so they move slowly).
+ * After two quiet hours they're rebuilt before showing, so a new day never opens on yesterday's.
+ */
 export async function getMetaTrends(): Promise<Record<string, ModeTrends>> {
   'use cache';
-  cacheLife('hours');
+  cacheLife({ stale: 300, revalidate: 3600, expire: 7200 });
   const meta = await getMeta();
   return meta ? getTrends(meta) : {};
 }

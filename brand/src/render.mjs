@@ -73,7 +73,24 @@ const poster = ({ top, logoW, size, gap }) => `<div class="scene" style="backgro
   <div class="url" style="font-size:${size * 0.46}px;margin-top:${gap}px">FREE · LINK IN BIO</div>
 </div>`;
 
+// The site's link preview (Open Graph / X card): the lockup over the arena, with what the site does.
+const og = `<div class="scene" style="background-position:50% 40%"></div>
+<div style="position:absolute;inset:0;background:linear-gradient(90deg, rgba(7,8,10,.94) 0%, rgba(7,8,10,.8) 55%, rgba(7,8,10,.55) 100%)"></div>
+<div class="vein"></div>
+<div style="position:absolute;inset:0;background:radial-gradient(ellipse 520px 340px at 24% 50%, rgba(58,160,255,.2), transparent 70%)"></div>
+<div class="logo" style="position:absolute;left:46px;top:115px;width:400px;height:400px;filter:drop-shadow(0 0 22px rgba(58,160,255,.5))">${logo}</div>
+<div style="position:absolute;left:470px;right:60px;top:150px">
+  <div class="word" style="font-size:56px;text-shadow:0 0 24px rgba(58,160,255,.45)">${word}</div>
+  <div class="tag" style="font-size:27px;margin-top:22px;color:#f3f4f6">Clash Royale stats &amp; clan management</div>
+  <div style="position:relative;height:2px;margin:30px 0 28px"><div class="strip" style="left:0;right:0;top:0"></div></div>
+  <div class="tag" style="font-size:21px;line-height:1.65">Who's active, who plays war, who's earned a promotion<br>Live meta decks from the top Path of Legends players</div>
+  <div class="url" style="font-size:20px;margin-top:30px">FREE · NO SIGN-UP · CR-CLAN-TRACKER.VERCEL.APP</div>
+</div>`;
+
 const jobs = {
+  // Link preview for every page, and the icon phones save to the home screen. Written into the app.
+  'opengraph-image': { w: 1200, h: 630, type: 'jpeg', html: og, dest: 'src/app' },
+  'apple-icon': { w: 180, h: 180, html: pfp, scale: 2, dest: 'src/app' },
   // Profile pictures. Every platform crops these to a circle.
   'x-pfp': { w: 400, h: 400, html: pfp },
   'instagram-pfp': { w: 1080, h: 1080, html: pfp },
@@ -105,7 +122,7 @@ for (const [name, job] of Object.entries(jobs)) {
   await page.setContent(`<!doctype html><html><head>${head}${bg}</head><body><div style="position:relative;width:100%;height:100%">${job.html}</div></body></html>`, { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
   const type = job.type ?? 'png';
-  const file = join(out, `${name}.${type === 'jpeg' ? 'jpg' : 'png'}`);
+  const file = join(job.dest ? join(root, job.dest) : out, `${name}.${type === 'jpeg' ? 'jpg' : 'png'}`);
   if (job.scale) {
     // Rendered at 2x and scaled back down for crisper small icons.
     const buf = await page.screenshot({ type: 'png' });

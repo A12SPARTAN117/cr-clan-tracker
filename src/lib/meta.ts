@@ -118,7 +118,8 @@ export async function getMeta(): Promise<MetaSnapshot | null> {
     return null;
   }
   await saveSnapshot('meta', built, new Date(built.generatedAt));
-  cacheLife('hours');
+  // Building reads thousands of battles, so hourly; never served more than two hours old.
+  cacheLife({ stale: 300, revalidate: 3600, expire: 7200 });
   return built;
 }
 

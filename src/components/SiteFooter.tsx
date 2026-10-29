@@ -1,6 +1,7 @@
 import { HoverLink } from '@/components/ui/HoverLink';
 import { FEATURES } from '@/lib/features';
-import { FEEDBACK_URL, SOCIAL } from '@/lib/social';
+import { SocialLinks } from '@/components/SocialLinks';
+import { FEEDBACK_URL } from '@/lib/social';
 import s from './SiteFooter.module.css';
 
 /** Global footer. The fan-content disclaimer is required, verbatim, on every page. */
@@ -25,13 +26,12 @@ export function SiteFooter() {
         <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
           Feedback
         </a>
-        {SOCIAL.slice(1).map((l) => (
-          <a key={l.id} href={l.url} target="_blank" rel="noopener noreferrer">
-            {l.label}
-          </a>
-        ))}
         <span className={s.muted}>CR Clan Tracker · Fan-made · Beta</span>
       </nav>
+      <div className={s.follow}>
+        <span className={s.muted}>Follow us</span>
+        <SocialLinks />
+      </div>
     </footer>
   );
 }

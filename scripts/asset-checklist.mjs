@@ -9,8 +9,8 @@
 // art already on disk. Everything the API and the data can't list is in MANUAL below.
 //
 // Badge levels the site has recorded from real profile views come from /api/badge-art on the
-// running site (SITE_URL, default http://localhost:3000); any we still need are saved as copies
-// in public/player-badges. Commit those so the site can fall back to them.
+// running site (SITE_URL, default http://localhost:3000). Copies of the art are saved, slowly, by
+// scripts/save-badge-art.mjs; this script only reports which levels are still missing.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -95,34 +95,8 @@ const live = new Set();
 await pool(urls, 16, async (u) => { const r = await fetch(u, { method: 'HEAD' }).catch(() => null); if (r?.ok) live.add(u); });
 console.log(`[assets] ${S.players} players, ${Object.keys(S.badges).length} badges, ${live.size}/${urls.length} badge images load, ${recorded?.count ?? 0} levels recorded by the site`);
 
-// Save a copy of every badge level we still need that a visitor's profile has shown us. Copies
-// are shrunk to 256 px (the site draws badges at 92 px) so the repo stays small; the Badges tab
-// falls back to them whenever Supercell's server doesn't load an image.
-const { createRequire } = await import('node:module');
-const sharp = createRequire(path.join(root, 'package.json'))('sharp');
-const badgeFile = (name, max, level) => `public/player-badges/${max > 1 ? `${name}_L${level}` : name}.png`;
-fs.mkdirSync(path.join(root, 'public/player-badges'), { recursive: true });
-let saved = 0;
-await pool(
-  Object.entries(seenLevels).flatMap(([name, levels]) => Object.entries(levels).map(([level, url]) => ({ name, level: +level, url }))),
-  6,
-  async ({ name, level, url }) => {
-    const b = S.badges[name];
-    const fromSample = b.levels[level] && live.has(b.levels[level]);
-    const file = path.join(root, badgeFile(name, b.maxLevel, level));
-    if (fromSample || fs.existsSync(file) || !live.has(url)) return;
-    const img = await fetch(url).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null);
-    if (!img) return;
-    await sharp(Buffer.from(img)).resize(256, 256, { fit: 'inside' }).png({ palette: true, quality: 90 }).toFile(file);
-    saved++;
-  },
-);
-if (saved) console.log(`[assets] saved ${saved} new badge copies to public/player-badges`);
-// The Badges tab only tries copies listed here, so it never requests one that isn't there.
-fs.writeFileSync(
-  path.join(root, 'data/player-badges.json'),
-  JSON.stringify(fs.readdirSync(path.join(root, 'public/player-badges')).filter((f) => f.endsWith('.png')).sort(), null, 1) + '\n',
-);
+// Our saved copies (scripts/save-badge-art.mjs), one WebP per badge level.
+const badgeFile = (name, level) => `public/player-badges/${name}_L${level}.webp`;
 
 const [emotes, consumables, gameModes, arenaData, clanBadges] = await Promise.all(
   ['emotes', 'consumables', 'game_modes', 'arenas', 'alliance_badges'].map(data),
@@ -163,11 +137,11 @@ const badgeRows = {};
 for (const [name, b] of Object.entries(S.badges).sort(([a], [c]) => a.localeCompare(c))) {
   const levels = Array.from({ length: Math.max(1, b.maxLevel) }, (_, i) => i + 1);
   // Have: the official image loads (from the sample), or we've saved a copy.
-  const have = levels.filter((l) => (b.levels[l] && live.has(b.levels[l])) || onDisk(badgeFile(name, b.maxLevel, l)));
+  const have = levels.filter((l) => (b.levels[l] && live.has(b.levels[l])) || onDisk(badgeFile(name, l)));
   const need = levels.filter((l) => !have.includes(l));
-  const file = b.maxLevel > 1 ? `public/player-badges/${name}_L<level>.png` : `public/player-badges/${name}.png`;
+  const file = `public/player-badges/${name}_L<level>.webp`;
   (badgeRows[badgeGroup(name)] ??= []).push([label(name), `\`${name}\``, b.maxLevel > 1 ? b.maxLevel : 1, have.join(', ') || '—', need.join(', ') || '—', need.length ? `\`${file}\`` : 'all set']);
-  for (const l of levels) add('Player badge', label(name), b.maxLevel > 1 ? `level ${l}` : '', have.includes(l), b.maxLevel > 1 ? `public/player-badges/${name}_L${l}.png` : `public/player-badges/${name}.png`);
+  for (const l of levels) add('Player badge', label(name), b.maxLevel > 1 ? `level ${l}` : '', have.includes(l), badgeFile(name, l));
 }
 
 // Emotes (2023 data: newer emotes aren't listed anywhere public)
@@ -293,7 +267,7 @@ md.push('', `**${T.toLocaleString('en-US')} assets in total: ${HV.toLocaleString
 
 h('## 1. Player badges');
 md.push(
-  `Every badge held by the ${S.players.toLocaleString('en-US')} players sampled. **Each level has its own art** (mastery frames, the ×10 → ×100 laurels…), so a badge with 10 levels is 10 images. "Have" lists the levels we already load from the official API or have saved a copy of. **These fill in by themselves:** whenever anyone opens a profile, the site records each badge level's art, and the next run of this script saves a copy of every level still missing (${recorded?.count ?? 0} levels recorded so far). Badges nobody has shown yet (very old or very rare ones) aren't listed; add any you know of as \`<Name>_L<level>.png\`.`,
+  `Every badge held by the ${S.players.toLocaleString('en-US')} players sampled. **Each level has its own art** (mastery frames, the ×10 → ×100 laurels…), so a badge with 10 levels is 10 images. "Have" lists the levels we already load from the official API or have saved a copy of. **These fill in by themselves:** whenever anyone opens a profile, the site records each badge level's art, and \`node scripts/save-badge-art.mjs\` saves a copy of every level still missing (${recorded?.count ?? 0} levels recorded so far). Badges nobody has shown yet (very old or very rare ones) aren't listed; add any you know of as \`<Name>_L<level>.webp\`.`,
 );
 for (const g of ['Achievements & milestones', 'Card mastery', 'Events, leagues & tournaments', 'Seasonal & yearly', 'Esports & special']) {
   if (!badgeRows[g]) continue;

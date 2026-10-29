@@ -139,7 +139,7 @@ export const FAQ: { q: string; a: string }[] = [
     a: 'Live from the official Clash Royale API, cached for a few minutes so the site stays fast. Press Refresh on a profile or dashboard for the newest numbers.',
   },
   {
-    q: 'Why does a player\'s battle history stop after 30 games?',
+    q: 'Why does a player\'s battle history stop after about 40 games?',
     a: 'The official API only returns each player\'s last 40 or so battles. Longer history is built from our own snapshots, which start the day a player or clan is first tracked.',
   },
   {
@@ -149,5 +149,9 @@ export const FAQ: { q: string; a: string }[] = [
   {
     q: 'Is this made by Supercell?',
     a: 'No. CR Clan Tracker is a free, independent fan project. It isn\'t affiliated with or endorsed by Supercell.',
+  },
+  {
+    q: 'How do I report a bug or suggest a feature?',
+    a: 'Message or comment on our Reddit, u/CRClanTracker (the Feedback link at the bottom of every page). We post updates on X (@CRClanTracker) and Instagram (@crclantracker) too.',
   },
 ];

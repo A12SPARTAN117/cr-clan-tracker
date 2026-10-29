@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { BadgeImg } from '@/components/BadgeImg';
 import { CardTile } from '@/components/CardTile';
 import { DeckBlock } from '@/components/DeckBlock';
 import { ModeFilter } from '@/components/ModeFilter';
@@ -194,17 +195,41 @@ describe('BadgesTab', () => {
     return r.container;
   };
 
-  it('falls back to our saved copy of a badge level the CDN lacks', async () => {
+  it('shows our small saved copy first, before the official art', async () => {
     const c = await tab(year(1));
-    expect(c.querySelector('img')).toHaveAttribute('src', 'https://example.test/dead.png');
-    fireEvent.error(c.querySelector('img')!);
-    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.png');
+    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.webp');
   });
 
-  it('shows that art for other levels too instead of a stand-in', async () => {
+  it('uses a nearby level of the same badge when this level has no art', async () => {
     const c = await tab(year(4));
+    expect(c.querySelector('img')).toHaveAttribute('src', 'https://example.test/dead.png');
     fireEvent.error(c.querySelector('img')!);
-    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.png');
+    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.webp');
+  });
+
+  it('ends on the universal placeholder badge, never a broken image', async () => {
+    const c = await tab({ id: 'SomeFutureEvent', label: 'Some Future Event', group: 'Tournament & events', level: null, maxLevel: null, progress: null, target: null, img: 'https://example.test/dead.png' });
+    fireEvent.error(c.querySelector('img')!);
+    expect(c.querySelector('img')).toHaveAttribute('src', '/ui/badge-placeholder.svg');
+    fireEvent.error(c.querySelector('img')!);
+    expect(c.querySelector('img')).toHaveAttribute('src', '/ui/badge-placeholder.svg');
+  });
+
+  it('shows the placeholder straight away for a badge with no art at all', async () => {
+    const c = await tab({ id: 'NoArt', label: 'No Art', group: 'Tournament & events', level: null, maxLevel: null, progress: null, target: null, img: null });
+    expect(c.querySelector('img')).toHaveAttribute('src', '/ui/badge-placeholder.svg');
+  });
+});
+
+describe('BadgeImg', () => {
+  it('walks saved copy → official → placeholder as each fails', () => {
+    const { container } = render(<BadgeImg id="2026YearBadge" level={1} official="https://example.test/official.png" alt="2026" />);
+    const img = () => container.querySelector('img')!;
+    expect(img()).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.webp');
+    fireEvent.error(img());
+    expect(img()).toHaveAttribute('src', 'https://example.test/official.png');
+    fireEvent.error(img());
+    expect(img()).toHaveAttribute('src', '/ui/badge-placeholder.svg');
   });
 });
 

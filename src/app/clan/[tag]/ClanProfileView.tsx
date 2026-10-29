@@ -3,6 +3,7 @@
 import { HoverLink } from '@/components/ui/HoverLink';
 import { useRouter } from 'next/navigation';
 import { Suspense, use, useState } from 'react';
+import { RefreshIfOld } from '@/components/Freshness';
 import { EmberField } from '@/components/fx/EmberField';
 import { RiverRace3D } from '@/components/fx/RiverRace3D';
 import { Fog } from '@/components/fx/Fog';
@@ -118,6 +119,7 @@ export function ClanProfileView({ c, levels }: { c: ClanProfile; levels?: Promis
 
   return (
     <>
+      <RefreshIfOld at={c.generatedAt} />
       <section style={{ position: 'relative', minHeight: 'clamp(480px,55vh,620px)', overflow: 'hidden', background: 'var(--void)', color: 'var(--text-1)', display: 'flex', flexDirection: 'column' }}>
         <div data-art="" style={{ position: 'absolute', inset: 0, background: 'var(--art-shields) center/cover', filter: 'grayscale(1) contrast(1.1) brightness(.55)' }} />
         <div style={{ position: 'absolute', left: '18%', top: '20%', width: 160, height: 240, background: 'radial-gradient(closest-side,rgba(255,180,90,.18),transparent)', animation: 'oaFlicker 2.6s infinite', pointerEvents: 'none' }} />

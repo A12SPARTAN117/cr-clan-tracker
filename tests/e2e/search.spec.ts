@@ -37,8 +37,8 @@ test.describe('search', () => {
     const box = visible(page, 'input[role="combobox"]').first();
     await box.fill(m.name);
     await box.press('Enter');
-    // Results stay on the players page and only list players.
-    await expect(page).toHaveURL(/\/players\?q=/);
+    // Name searches open the search page scoped to players, and only list players.
+    await expect(page).toHaveURL(/\/search\?q=.*type=player/);
     await expect(visible(page, `a[href="/player/${m.tag.replace('#', '')}"]`).first()).toBeVisible({ timeout: 60_000 });
     await expect(visible(page, 'a[href^="/clan/"]')).toHaveCount(0);
   });

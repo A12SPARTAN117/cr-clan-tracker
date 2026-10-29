@@ -2,6 +2,7 @@
 
 import { HoverLink } from '@/components/ui/HoverLink';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { RefreshIfOld } from '@/components/Freshness';
 import { SceneHeader } from '@/components/SceneHeader';
 import { ShareRecap } from '@/components/ShareRecap';
 import { Decode, Reveal } from '@/components/fx/Reveal';
@@ -106,6 +107,9 @@ export function PlayerView({ data }: { data: Packed<PlayerData> }) {
 
   return (
     <>
+      {/* An old cached copy, or the stored copy shown while the API was busy: ask again shortly. */}
+      <RefreshIfOld at={p.generatedAt} />
+      {stale && <RefreshIfOld at={stale} maxMinutes={0} delayMs={30_000} />}
       <SceneHeader
         // Black-and-white Knight on the battlements (Gemini); keep its blue rim light.
         scene="/scenes/player-knight.jpg"

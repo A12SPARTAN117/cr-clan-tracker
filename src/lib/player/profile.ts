@@ -42,7 +42,8 @@ export type CollectionCard = {
   mastery: number | null;
 };
 
-export type Mastery = { slug: string; name: string; level: number; maxLevel: number; progress: number | null; target: number | null; img: string | null };
+/** `badge`: the API's badge name (MasteryHogRider), which names our saved copy of its art. */
+export type Mastery = { slug: string; name: string; level: number; maxLevel: number; progress: number | null; target: number | null; img: string | null; badge?: string };
 
 /** Battle-log mode kinds for icons; the extra kinds cover games outside the public meta. */
 export type BattleKind = ModeKind | 'friendly' | 'boat' | 'training' | 'tournament';
@@ -163,7 +164,7 @@ function masteryOf(b: ApiBadge): Mastery | null {
   const slug = KEYS[b.name.slice(7).replace(/\s+/g, '')];
   const info = slug ? CARDS.find((c) => c.slug === slug) : undefined;
   if (!info) return null;
-  return { slug, name: info.name, level: b.level ?? 0, maxLevel: b.maxLevel ?? 10, progress: b.progress ?? null, target: b.target ?? null, img: b.iconUrls?.large ?? null };
+  return { slug, name: info.name, level: b.level ?? 0, maxLevel: b.maxLevel ?? 10, progress: b.progress ?? null, target: b.target ?? null, img: b.iconUrls?.large ?? null, badge: b.name };
 }
 
 export function battleKind(b: Battle): BattleKind {
