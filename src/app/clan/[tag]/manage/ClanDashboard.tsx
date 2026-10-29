@@ -3,6 +3,7 @@
 import { setUrlQuery, useUrlQuery } from '@/lib/urlQuery';
 import { HoverLink } from '@/components/ui/HoverLink';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { RefreshIfOld } from '@/components/Freshness';
 import { SceneHeader } from '@/components/SceneHeader';
 import { Portal } from '@/components/fx/Portal';
 import { Reveal } from '@/components/fx/Reveal';
@@ -120,6 +121,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
 
   return (
     <>
+      <RefreshIfOld at={data.generatedAt} />
       <SceneHeader
         // The same ruined tower as My Clan (which opens this dashboard once a clan is pinned).
         scene="/scenes/tower.jpg"
@@ -247,7 +249,7 @@ export function ClanDashboard({ data }: { data: Dashboard }) {
         {tab === 'score' && <ScoreTab clanName={data.clan.name} members={all} weights={weights} onChange={(w) => saveWeights(tag, w)} />}
 
         <p className="label-sm" style={{ lineHeight: 1.7, letterSpacing: '.1em' }}>
-          Data cached, refreshed at least every 5 min · War and 1v1 win rates use each member&apos;s last ~40 battles ({data.logsRead}/{n} logs read)
+          Data refreshes every 10 min (Refresh for the newest) · War and 1v1 win rates use each member&apos;s last ~40 battles ({data.logsRead}/{n} logs read)
         </p>
       </main>
 

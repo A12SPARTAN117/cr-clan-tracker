@@ -357,6 +357,9 @@
 .sheetLink span {
   color: var(--text-3);
 }
+.sheetSocial {
+  justify-content: center;
+}
 .sheetLink:hover {
   color: var(--text-1);
   background: var(--slate);

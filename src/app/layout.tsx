@@ -4,16 +4,26 @@ import { Analytics } from '@vercel/analytics/next';
 import { AmbientEmbers } from '@/components/fx/AmbientEmbers';
 import { MotionLayer } from '@/components/fx/MotionLayer';
 import { Grain } from '@/components/fx/Grain';
+import { RefreshOnReturn } from '@/components/Freshness';
 import { ServiceWorker } from '@/components/ServiceWorker';
 import { SiteNav } from '@/components/SiteNav';
 import { SiteFooter } from '@/components/SiteFooter';
+import { SITE_URL } from '@/lib/site';
+import { X_HANDLE } from '@/lib/social';
 import { mono, sans } from './fonts';
 import './globals.css';
 
+const DESCRIPTION =
+  'Free, fan-made Clash Royale stats: players, clans, meta decks, leaderboards, and clan management with an Asset Score for every member.';
+
 export const metadata: Metadata = {
+  // Link previews need absolute image URLs; Vercel names the production domain.
+  metadataBase: new URL(SITE_URL),
   title: { default: 'CR Clan Tracker', template: '%s · CR Clan Tracker' },
-  description:
-    'Free, fan-made Clash Royale stats: players, clans, meta decks, leaderboards, and clan management with an Asset Score for every member.',
+  description: DESCRIPTION,
+  // The preview card when a link is shared (the image is app/opengraph-image.jpg, drawn by brand/src/render.mjs).
+  openGraph: { type: 'website', siteName: 'CR Clan Tracker', title: 'CR Clan Tracker', description: DESCRIPTION, locale: 'en_US' },
+  twitter: { card: 'summary_large_image', site: X_HANDLE, creator: X_HANDLE },
 };
 
 export const viewport: Viewport = {
@@ -41,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           <MotionLayer />
         </Suspense>
         <ServiceWorker />
+        <RefreshOnReturn />
         {/* Visitor counts (cookieless). Only on Vercel: its script is served from our own origin
             there (/_vercel/insights), so the CSP needs no new host; locally it would 404. */}
         {process.env.VERCEL === '1' && (

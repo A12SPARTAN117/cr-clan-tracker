@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { HoverLink } from '@/components/ui/HoverLink';
 import { Reveal } from '@/components/fx/Reveal';
 import { SceneHeader } from '@/components/SceneHeader';
+import { SocialLinks } from '@/components/SocialLinks';
 import { DONATE_LINKS } from '@/lib/donate';
 import h from '../help/help.module.css';
 import s from './support.module.css';
@@ -109,9 +110,16 @@ export default function SupportPage() {
         </section>
 
         <section className={h.section}>
+          <h2 className={h.h2}>Follow us</h2>
+          <p className={h.intro}>New features, meta shifts and clan tips land on our socials first. Found a bug or have an idea? Tell us on Reddit.</p>
+          <SocialLinks variant="cards" />
+        </section>
+
+        <section className={h.section}>
           <h2 className={h.h2}>Other ways to help</h2>
           <ul className={h.list}>
             <li>Share the site with your clan. More clans tracked means more history and better meta stats for everyone.</li>
+            <li>Follow, like and share our posts on Reddit, X and Instagram. It helps other players find us.</li>
             <li>Pin your player and clan on their pages so Home opens straight to them.</li>
             <li>
               New here? The <HoverLink href="/help">Help page</HoverLink> walks through every feature.

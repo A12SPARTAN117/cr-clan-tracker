@@ -73,10 +73,13 @@ const nextConfig: NextConfig = {
     // Failed upstream calls: retry soon instead of caching the error.
     crError: { stale: 30, revalidate: 15, expire: 60 },
     // Per-member facts behind clan pages (levels, league, battle-log win rates): 100 calls per
-    // clan to rebuild, and none of them moves fast. War decks come from the race (crLive).
-    members: { stale: 300, revalidate: 1800, expire: 86400 },
-    // Stored snapshots the cron job rebuilds about hourly (meta decks): re-read every 10 minutes.
-    meta: { stale: 300, revalidate: 600, expire: 86400 },
+    // clan to rebuild, and none of them moves fast. War decks come from the race (crLive). After
+    // 6 quiet hours they're rebuilt before showing, rather than served a day old.
+    members: { stale: 300, revalidate: 1800, expire: 21600 },
+    // Stored snapshots the cron job rebuilds (meta decks): re-read every 10 minutes. Expiring after
+    // an hour stops a quiet page (Decks, Home) from showing a copy from the day before; re-reading
+    // the stored snapshot is one database query.
+    meta: { stale: 300, revalidate: 600, expire: 3600 },
     // Page lifetimes for routes rendered per param (components/PageLife). Stale is 5 minutes so
     // they count in the route's shell, which is where Vercel takes every such page's lifetime.
     // Clan and player pages: 10 minutes keeps renders (and API calls) down; Refresh is instant.
