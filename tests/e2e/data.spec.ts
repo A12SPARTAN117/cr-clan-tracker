@@ -16,7 +16,7 @@ test.describe('data shown on screen matches the API', () => {
     await expect(stat('DONATIONS / WK')).toHaveText(fmt(c.donationsPerWeek));
     await expect(stat('MEMBERS')).toHaveText(String(c.memberList.length));
     // Every stat has its icon.
-    for (const k of ['CLAN SCORE', 'WAR TROPHIES', 'REQUIRED', 'DONATIONS / WK', 'MEMBERS']) await expect(page.locator(`[data-stat="${k}"] svg`)).toHaveCount(1);
+    for (const k of ['CLAN SCORE', 'WAR TROPHIES', 'REQUIRED', 'DONATIONS / WK', 'MEMBERS']) await expect(page.locator(`[data-stat="${k}"] :is(svg, img.oa-icon)`)).toHaveCount(1);
 
     for (const m of c.memberList) {
       const row = page.locator(`tr[data-member="${m.tag.replace('#', '')}"]`);
@@ -63,7 +63,8 @@ test.describe('data shown on screen matches the API', () => {
     const seasonal = Object.entries(p.progress ?? {}).find(([k]) => k.startsWith('seasonal-trophy-road'))?.[1];
     const body = page.locator('body');
     await expect(body).toContainText(fmt(seasonal?.trophies ?? p.trophies));
-    await expect(body).toContainText(`BEST ${fmt(seasonal?.bestTrophies ?? p.bestTrophies)}`);
+    // The API can report a seasonal best below the current trophies (0 early in a season); the site shows the higher.
+    await expect(body).toContainText(`BEST ${fmt(seasonal ? Math.max(seasonal.bestTrophies ?? 0, seasonal.trophies) : p.bestTrophies)}`);
   });
 
   test('Path of Legends top 5 on the home page, with medals', async ({ page }) => {
