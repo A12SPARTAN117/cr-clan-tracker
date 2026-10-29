@@ -17,15 +17,10 @@ import { fmt } from '@/lib/format';
 import { useEventRanks } from '@/lib/eventRanksClient';
 import { polLabel } from '@/lib/leagues';
 import type { Badge, BadgeGroup, PlayerProfile } from '@/lib/player/profile';
-import extraBadges from '../../../../data/badge-art.json';
-import savedBadges from '../../../../data/player-badges.json';
+import { BADGE_PLACEHOLDER, badgeCopy, badgeCopyNearest } from '@/lib/badgeCopies';
 import s from './badges.module.css';
 
 const GROUP_ORDER: BadgeGroup[] = ['Milestones', 'Collection', 'Tournament & events', 'Seasonal', 'Mastery'];
-/** Local copies of badge art the official CDN no longer serves (see data/badge-art.json). */
-const EXTRA = extraBadges as Record<string, string>;
-/** Badge levels we keep our own copy of (written by scripts/asset-checklist.mjs). */
-const SAVED = new Set<string>(savedBadges as string[]);
 
 /** The number the game prints on a badge: its progress (wins, years, donations…) or level. */
 function pillOf(b: Badge): string | null {
@@ -51,40 +46,24 @@ function standIn(b: Badge): { src: string; year?: string } | null {
   return null;
 }
 
-/** Our saved copy of this badge level (public/player-badges, saved by scripts/asset-checklist.mjs). */
-function savedCopy(b: Badge): string | null {
-  const file = (b.maxLevel ?? 1) > 1 ? `${b.id}_L${b.level ?? 1}.png` : `${b.id}.png`;
-  return SAVED.has(file) ? `/player-badges/${file}` : null;
-}
-
 function BadgeArt({ b }: { b: Badge }) {
-  // Official art first, then our saved copy, then older local art; each one that fails to load
-  // moves on to the next, and the game-art stand-in or initials come last.
-  const sources = [b.img, savedCopy(b), EXTRA[b.id]].filter((x): x is string => !!x);
+  // Our small saved copy first, then the official art, then our copy of a nearby level, then the
+  // game-art stand-in; each one that fails to load moves on to the next, and the universal
+  // placeholder badge comes last.
+  const alt = standIn(b);
+  const sources = [...new Set([badgeCopy(b.id, b.level), b.img, badgeCopyNearest(b.id, b.level), alt?.src].filter((x): x is string => !!x))];
   const [step, setStep] = useState(0);
-  const src = sources[step];
-  const alt = !src ? standIn(b) : null;
-  if (alt)
+  const src = sources[step] ?? BADGE_PLACEHOLDER;
+  // eslint-disable-next-line @next/next/no-img-element -- badge art with local fallbacks
+  const img = <img key={src} src={src} alt="" loading="lazy" decoding="async" onError={() => src !== BADGE_PLACEHOLDER && setStep((n) => n + 1)} />;
+  if (alt && src === alt.src)
     return (
       <span className={s.standIn}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- game art stand-in */}
-        <img src={alt.src} alt="" loading="lazy" />
+        {img}
         {alt.year && <b>{alt.year}</b>}
       </span>
     );
-  if (!src)
-    return (
-      <span className={s.placeholder} aria-hidden>
-        {b.label
-          .split(/\s+/)
-          .slice(0, 2)
-          .map((w) => w[0])
-          .join('')
-          .toUpperCase()}
-      </span>
-    );
-  // eslint-disable-next-line @next/next/no-img-element -- official badge art with local fallbacks
-  return <img key={src} src={src} alt="" loading="lazy" onError={() => setStep((n) => n + 1)} />;
+  return img;
 }
 
 function BadgeItem({ b }: { b: Badge }) {

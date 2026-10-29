@@ -5,8 +5,8 @@ import { limitRequest } from '@/lib/ratelimit';
 
 /**
  * Every player badge level the site has seen, with its official image link (public data from
- * the Clash Royale API). Read by scripts/asset-checklist.mjs, which saves copies of the levels
- * the site is still missing. Behind CRON_SECRET: it's a maintenance tool, not a public API.
+ * the Clash Royale API). Read by scripts/save-badge-art.mjs, which saves small copies of them,
+ * and scripts/asset-checklist.mjs. Behind CRON_SECRET: it's a maintenance tool, not a public API.
  */
 export async function GET(req: Request) {
   if (!cronAuthorized(req)) return Response.json({ error: 'unauthorized' }, { status: 401 });

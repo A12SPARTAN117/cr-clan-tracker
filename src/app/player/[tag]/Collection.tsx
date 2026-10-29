@@ -1,8 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { BadgeImg } from '@/components/BadgeImg';
 import { CardTile } from '@/components/CardTile';
 import { CardsIcon } from '@/components/ui/icons';
+import { badgeCopy } from '@/lib/badgeCopies';
 import type { Rarity } from '@/lib/cards';
 import { fmt } from '@/lib/format';
 import type { CollectionCard, Mastery, PlayerProfile } from '@/lib/player/profile';
@@ -328,9 +330,8 @@ function MasteryView({ p }: { p: PlayerProfile }) {
       <div className={s.masteryGrid}>
         {rows.map((m) => (
           <div key={m.slug} className={s.mastery} title={`${m.name} · mastery ${m.level}/${m.maxLevel}${m.progress != null && m.target ? ` · ${m.progress}/${m.target}` : ''}`}>
-            {m.img ? (
-              // eslint-disable-next-line @next/next/no-img-element -- official badge art
-              <img src={m.img} alt={`${m.name} mastery`} loading="lazy" />
+            {'badge' in m && m.badge && (m.img || badgeCopy(m.badge, m.level)) ? (
+              <BadgeImg id={m.badge} level={m.level} official={m.img} alt={`${m.name} mastery`} />
             ) : (
               <span className={s.masteryNone}>
                 <CardTile slug={m.slug} label={m.name} owned={false} size="fluid" />

@@ -4,8 +4,8 @@ import { enqueue, getDb, schema } from './db';
 /**
  * Records the art of every player badge level the site sees. Each badge has its own image per
  * level, and the API only hands out the level a player owns, so the full set fills in as players
- * are looked up. scripts/asset-checklist.mjs reads the record (via /api/badge-art) and saves
- * copies of the levels still missing. Best-effort: never throws, and skips levels this server
+ * are looked up. scripts/save-badge-art.mjs reads the record (via /api/badge-art) and slowly saves
+ * a small copy of every level. Best-effort: never throws, and skips levels this server
  * has already written.
  */
 

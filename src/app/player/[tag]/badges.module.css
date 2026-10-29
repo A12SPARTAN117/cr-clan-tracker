@@ -58,17 +58,6 @@
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(var(--shade-rgb), 0.6);
 }
-.placeholder {
-  width: 72px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  clip-path: polygon(50% 0, 100% 22%, 100% 78%, 50% 100%, 0 78%, 0 22%);
-  background: linear-gradient(160deg, #3a3d44, #1a1c20);
-  font: 800 20px/1 var(--mono);
-  color: var(--gold-hi);
-}
 .name {
   max-width: 100%;
   font: 600 12px/1.25 var(--sans);
