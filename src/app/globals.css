@@ -476,6 +476,12 @@ img {
   color: var(--text-1);
   border-color: rgba(var(--glow-rgb), 0.5);
 }
+.chip:disabled {
+  opacity: 0.35;
+  cursor: default;
+  color: var(--text-2);
+  border-color: var(--hair);
+}
 .chip[aria-pressed='true'] {
   border-color: rgba(var(--glow-rgb), 0.7);
   background: rgba(var(--glow-rgb), 0.12);

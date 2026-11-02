@@ -26,13 +26,15 @@ async function Hero() {
 
 async function TopDecks() {
   const meta = await getMeta();
-  if (!meta?.modes.pol?.decks.length)
+  // Right after a season reset ranked can be empty while ladder and war already have decks.
+  const keys = meta?.order.filter((k) => meta.modes[k]?.decks.length) ?? [];
+  if (!meta || !keys.length)
     return (
       <p className="body" style={{ padding: '24px 0' }}>
         The meta snapshot is still being built. Check back in a few minutes.
       </p>
     );
-  const modes: HomeMode[] = meta.order.map((k) => {
+  const modes: HomeMode[] = keys.map((k) => {
     const m = meta.modes[k];
     return {
       key: k,

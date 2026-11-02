@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BADGE_PLACEHOLDER, badgeCopy, badgeCopyNearest } from '@/lib/badgeCopies';
+import { BADGE_PLACEHOLDER, badgeCopy, badgeCopyNearest, liveOfficial, markDeadOfficial } from '@/lib/badgeCopies';
 
 /**
  * A player badge's art: our small saved copy first, then the official image, then our copy of the
@@ -9,9 +9,14 @@ import { BADGE_PLACEHOLDER, badgeCopy, badgeCopyNearest } from '@/lib/badgeCopie
  * universal placeholder badge comes last, so a badge is never a broken image.
  */
 export function BadgeImg({ id, level, official, alt = '' }: { id: string; level: number | null | undefined; official: string | null; alt?: string }) {
-  const sources = [...new Set([badgeCopy(id, level), official, badgeCopyNearest(id, level)].filter((x): x is string => !!x))];
+  const [live] = useState(() => liveOfficial(official));
+  const sources = [...new Set([badgeCopy(id, level), live, badgeCopyNearest(id, level)].filter((x): x is string => !!x))];
   const [step, setStep] = useState(0);
   const src = sources[step] ?? BADGE_PLACEHOLDER;
+  const fail = () => {
+    if (src === live) markDeadOfficial(src);
+    if (src !== BADGE_PLACEHOLDER) setStep((n) => n + 1);
+  };
   // eslint-disable-next-line @next/next/no-img-element -- badge art with local fallbacks
-  return <img key={src} src={src} alt={alt} loading="lazy" decoding="async" onError={() => src !== BADGE_PLACEHOLDER && setStep((n) => n + 1)} />;
+  return <img key={src} src={src} alt={alt} loading="lazy" decoding="async" onError={fail} />;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { HoverLink } from '@/components/ui/HoverLink';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CardTile } from '@/components/CardTile';
 import { EmptyState } from '@/components/EmptyState';
 import { CrownIcon, CycleIcon, ElixirIcon, TrophyIcon } from '@/components/ui/icons';
@@ -97,19 +97,35 @@ function Battle({ b }: { b: BattleRow }) {
   );
 }
 
+/** Battles per page: the log holds up to ~40, and a phone shows about one per screen. */
+const PER_PAGE = 6;
+
 export function BattlesTab({ p }: { p: PlayerProfile }) {
   const kinds = [...new Set(p.battles.map((b) => b.kind))] as BattleKind[];
   const [kind, setKind] = useState<BattleKind | 'all'>('all');
+  const [page, setPage] = useState(0);
+  const top = useRef<HTMLDivElement>(null);
   const list = p.battles.filter((b) => kind === 'all' || b.kind === kind);
+  const pages = Math.ceil(list.length / PER_PAGE);
+  const at = Math.min(page, Math.max(pages - 1, 0));
+  const pick = (k: BattleKind | 'all') => {
+    setKind(k);
+    setPage(0);
+  };
+  const go = (n: number) => {
+    setPage(n);
+    // The pager sits under the list, so the new page starts back at its top.
+    if (top.current && top.current.getBoundingClientRect().top < 0) top.current.scrollIntoView({ block: 'start' });
+  };
   if (!p.battles.length) return <EmptyState text="No battles in the log yet." />;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+    <div ref={top} style={{ display: 'flex', flexDirection: 'column', gap: 18, scrollMarginTop: 120 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-        <button type="button" className="chip" aria-pressed={kind === 'all'} onClick={() => setKind('all')}>
+        <button type="button" className="chip" aria-pressed={kind === 'all'} onClick={() => pick('all')}>
           All {p.battles.length}
         </button>
         {kinds.map((k) => (
-          <button key={k} type="button" className="chip" aria-pressed={kind === k} onClick={() => setKind(k)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <button key={k} type="button" className="chip" aria-pressed={kind === k} onClick={() => pick(k)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <BattleKindIcon kind={k} size={14} />
             {KIND_LABEL[k]} {p.battles.filter((b) => b.kind === k).length}
           </button>
@@ -118,9 +134,24 @@ export function BattlesTab({ p }: { p: PlayerProfile }) {
           Battle log holds the last ~40 battles
         </span>
       </div>
-      {list.map((b) => (
+      {list.slice(at * PER_PAGE, (at + 1) * PER_PAGE).map((b) => (
         <Battle key={b.id} b={b} />
       ))}
+      {pages > 1 && (
+        <nav aria-label="Battle pages" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', justifyContent: 'center' }}>
+          <button type="button" className="chip" disabled={at === 0} onClick={() => go(at - 1)} aria-label="Previous page">
+            ←
+          </button>
+          {Array.from({ length: pages }, (_, i) => (
+            <button key={i} type="button" className="chip" aria-pressed={i === at} aria-current={i === at ? 'page' : undefined} onClick={() => go(i)} style={{ minWidth: 36 }}>
+              {i + 1}
+            </button>
+          ))}
+          <button type="button" className="chip" disabled={at === pages - 1} onClick={() => go(at + 1)} aria-label="Next page">
+            →
+          </button>
+        </nav>
+      )}
     </div>
   );
 }
