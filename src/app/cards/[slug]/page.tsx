@@ -16,7 +16,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<'/cards/[slug]'>): Promise<Metadata> {
   const c = cardBySlug((await params).slug);
-  return c ? { title: c.name, description: `${c.name}: ${c.rarity} ${c.type.toLowerCase()} with live usage and win rates.` } : { title: 'Card' };
+  return c ? { title: c.name, description: `${c.name}: ${c.rarity} ${c.type.toLowerCase()} with live usage and win rates.` } : { title: 'Card not found' };
 }
 
 const pct = (n: number) => n.toFixed(1);
