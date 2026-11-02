@@ -11,7 +11,8 @@ export const metadata: Metadata = { title: 'Players' };
 
 async function TopPlayers() {
   const r = await getPolLeaderboard('global', 10);
-  if (!r.ok) return null;
+  if (!r.ok) return <p className="body">Leaderboard unavailable right now.</p>;
+  if (!r.data.items.length) return <p className="body">Nobody is ranked yet. The ladder empties at each season reset and fills as players reach the top league.</p>;
   return (
     <div className="cells" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%,320px),1fr))' }}>
       {r.data.items.map((p) => (
@@ -56,9 +57,9 @@ export default function PlayersPage() {
       </header>
       <PinnedPlayer />
       <section style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px 16px' }}>
           <span className="label">Path of Legends · global top 10</span>
-          <HoverLink href="/leaderboards" className="link-mono" style={{ fontSize: 10 }}>
+          <HoverLink href="/leaderboards" className="link-mono" style={{ fontSize: 10, whiteSpace: 'nowrap' }}>
             Full leaderboard →
           </HoverLink>
         </div>

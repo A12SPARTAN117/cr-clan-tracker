@@ -50,6 +50,7 @@ async function TopDecks() {
 async function PolTop() {
   const r = await getPolLeaderboard('global', 5);
   if (!r.ok) return <p className="body">Leaderboard unavailable right now.</p>;
+  if (!r.data.items.length) return <p className="body">Nobody is ranked yet. The ladder empties at each season reset and fills as players reach the top league.</p>;
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       {r.data.items.map((p, i) => (

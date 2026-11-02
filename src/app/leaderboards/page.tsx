@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 import { getClanRankings, getClanWarRankings, getLocations, getPolLeaderboard } from '@/lib/cr/api';
 import { liveEventBoards } from '@/lib/events';
@@ -13,9 +14,14 @@ const t = (x: string) => x.replace('#', '');
 
 async function polBoard(loc: string): Promise<Board> {
   const r = await getPolLeaderboard(loc, 100);
+  // Regions (Europe, International...) have no Path of Legends ladder: the API answers 404.
+  const noLadder = !r.ok && r.status === 404;
   return {
-    ok: r.ok,
+    ok: r.ok || noLadder,
     note: 'Path of Legends is the only ranked ladder in the API. Rating = Path of Legends trophies in the top league.',
+    empty: noLadder
+      ? 'Path of Legends is only ranked globally and per country. Pick a country, or Global.'
+      : 'Nobody is ranked here yet. The ladder empties at each season reset and fills as players reach the top league.',
     rows: r.ok
       ? r.data.items.map((p) => ({ rank: p.rank, move: null, tag: t(p.tag), name: p.name, sub: p.clan?.name ?? 'No clan', cc: null, badgeId: p.clan?.badgeId ?? null, score: p.eloRating, href: `/player/${t(p.tag)}` }))
       : [],
@@ -51,6 +57,7 @@ async function clanBoard(kind: 'clans' | 'war', loc: string): Promise<Board> {
 export async function Boards({ loc }: { loc: string }) {
   const [locs, pol, clans, war, live] = await Promise.all([getLocations(), polBoard(loc), clanBoard('clans', loc), clanBoard('war', loc), liveEventBoards()]);
   const locations = locs.ok ? locs.data.items.map((l) => ({ id: String(l.id), name: l.name, isCountry: l.isCountry })) : [];
+  if (locs.ok && loc !== 'global' && !locations.some((l) => l.id === loc)) redirect('/leaderboards');
   // Event boards load when their tab is opened (/api/events/[id]): seven of them doubled the page.
 
   return (
