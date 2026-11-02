@@ -128,11 +128,15 @@ export async function getMeta(): Promise<MetaSnapshot | null> {
  * on an empty database) calls this.
  */
 export async function buildMeta(sampleSize = 100): Promise<MetaSnapshot | null> {
-  const [top, warTop] = await Promise.all([getPolLeaderboard('global', sampleSize), getClanWarRankings('global', 3)]);
-  if (!top.ok || !top.data.items.length) return null;
+  const [top, warTop] = await Promise.all([getPolLeaderboard('global', sampleSize), getClanWarRankings('global', 6)]);
+  const ranked = top.ok ? top.data.items : [];
   // Members of the top war clans play ladder, war and events far more than the ranked top 100.
-  const clans = warTop.ok ? await Promise.all(warTop.data.items.map((c) => getClan(c.tag.replace('#', '')))) : [];
-  const tags = [...new Set([...top.data.items.map((p) => p.tag), ...clans.flatMap((c) => (c.ok ? c.data.memberList.map((m) => m.tag) : []))])];
+  // The ranked ladder is empty right after a season reset, so then twice as many clans carry the sample.
+  const warClans = warTop.ok ? warTop.data.items.slice(0, ranked.length ? 3 : 6) : [];
+  if (!ranked.length && !warClans.length) return null;
+  const clans = await Promise.all(warClans.map((c) => getClan(c.tag.replace('#', ''))));
+  const tags = [...new Set([...ranked.map((p) => p.tag), ...clans.flatMap((c) => (c.ok ? c.data.memberList.map((m) => m.tag) : []))])];
+  if (!tags.length) return null;
   // The shared API gate (cr/limiter) paces these; 10 at a time leaves room for visitors' pages.
   // Uncached: about 10 MB of logs that nothing reads again would push pages out of the cache.
   const logs = await pool(tags, 10, (t) => fetchBattleLog(t.replace('#', '')));
