@@ -250,9 +250,9 @@ export function modeLabel(b: Battle): string {
   return 'Event';
 }
 
-/** "MasteryGoblinGiant" → "Goblin Giant", "SeasonalBadge_202510" → "Season Oct 2026". */
+/** "MasteryGoblinGiant" → "Goblin Giant", "SeasonalBadge_202510" → "Season Oct 2025". */
 function badgeLabel(name: string): string {
-  const season = /^SeasonalBadge_(\d{4})(\d{2})$/.exec(name);
+  const season = /^SeasonalBadge_(\d{4})(\d{2})(_v\d+)?$/.exec(name);
   if (season) {
     const mon = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+season[2] - 1];
     return `Season ${mon} ${season[1]}`;
