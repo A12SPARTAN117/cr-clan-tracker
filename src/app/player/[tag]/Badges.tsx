@@ -17,7 +17,7 @@ import { fmt } from '@/lib/format';
 import { useEventRanks } from '@/lib/eventRanksClient';
 import { polLabel } from '@/lib/leagues';
 import type { Badge, BadgeGroup, PlayerProfile } from '@/lib/player/profile';
-import { BADGE_PLACEHOLDER, badgeCopy, badgeCopyNearest } from '@/lib/badgeCopies';
+import { BADGE_PLACEHOLDER, badgeCopy, badgeCopyNearest, liveOfficial, markDeadOfficial } from '@/lib/badgeCopies';
 import s from './badges.module.css';
 
 const GROUP_ORDER: BadgeGroup[] = ['Milestones', 'Collection', 'Tournament & events', 'Seasonal', 'Mastery'];
@@ -50,11 +50,16 @@ function BadgeArt({ b }: { b: Badge }) {
   // game-art stand-in; each one that fails to load moves on to the next, and the universal
   // placeholder badge comes last.
   const alt = standIn(b);
-  const sources = [...new Set([badgeCopy(b.id, b.level), b.img, badgeCopyNearest(b.id, b.level), alt?.src].filter((x): x is string => !!x))];
+  const [live] = useState(() => liveOfficial(b.img));
+  const sources = [...new Set([badgeCopy(b.id, b.level), live, badgeCopyNearest(b.id, b.level), alt?.src].filter((x): x is string => !!x))];
   const [step, setStep] = useState(0);
   const src = sources[step] ?? BADGE_PLACEHOLDER;
+  const fail = () => {
+    if (src === live) markDeadOfficial(src);
+    if (src !== BADGE_PLACEHOLDER) setStep((n) => n + 1);
+  };
   // eslint-disable-next-line @next/next/no-img-element -- badge art with local fallbacks
-  const img = <img key={src} src={src} alt="" loading="lazy" decoding="async" onError={() => src !== BADGE_PLACEHOLDER && setStep((n) => n + 1)} />;
+  const img = <img key={src} src={src} alt="" loading="lazy" decoding="async" onError={fail} />;
   if (alt && src === alt.src)
     return (
       <span className={s.standIn}>
