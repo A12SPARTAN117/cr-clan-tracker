@@ -13,7 +13,8 @@ import type { BoardRow } from './rows';
 import s from './leaderboards.module.css';
 
 export type Tab = 'pol' | 'clans' | 'war' | 'events';
-export type Board = { rows: BoardRow[]; ok: boolean; note: string };
+/** `empty` replaces the default text shown when a board that answered has no rows. */
+export type Board = { rows: BoardRow[]; ok: boolean; note: string; empty?: string };
 
 const TABS: Tab[] = ['pol', 'clans', 'war', 'events'];
 const SCORE_HEAD: Record<Tab, string> = { pol: 'RATING', clans: 'CLAN SCORE', war: 'WAR TROPHIES', events: 'POINTS' };
@@ -64,7 +65,7 @@ export function BoardView({
     };
   }, [ev, evBoard]);
   const loading = tab === 'events' && ev != null && !evBoard;
-  const { rows, ok, note } = tab === 'events' ? (ev != null ? (evBoard ?? LOADING) : NO_EVENTS) : boards[tab];
+  const { rows, ok, note, empty } = tab === 'events' ? (ev != null ? (evBoard ?? LOADING) : NO_EVENTS) : boards[tab];
   const isClan = tab === 'clans' || tab === 'war';
 
   return (
@@ -107,7 +108,7 @@ export function BoardView({
             ))}
           </div>
         ) : (
-          <EmptyState text={tab === 'events' && ev == null ? 'No event leaderboards are live in the game right now.' : 'This leaderboard is empty for that location.'} />
+          <EmptyState text={tab === 'events' && ev == null ? 'No event leaderboards are live in the game right now.' : (empty ?? 'This leaderboard is empty for that location.')} />
         )}
         <span style={{ font: '500 10px/1.5 var(--mono)', letterSpacing: '.08em', color: 'var(--text-3)' }}>{note}</span>
       </main>

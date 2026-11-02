@@ -1,9 +1,16 @@
 import { HoverLink } from '@/components/ui/HoverLink';
 import type { ReactNode } from 'react';
+import { checkTag } from '@/lib/tags';
 import { Fog } from './fx/Fog';
 import { Reveal } from './fx/Reveal';
 
 type Variant = 'route' | 'player' | 'clan' | 'error' | 'crash';
+
+/** What to check in a tag nobody has: the letters it can't contain, or (if it could be real) a typo. */
+const tagHint = (t?: string) =>
+  t && checkTag(t).kind === 'invalid'
+    ? ` Tags only use 0 2 8 9 P Y L Q G R J C U V${t.includes('O') ? ', so an O is usually a 0' : ''}.`
+    : ' Check it against the tag under the name in-game.';
 
 const COPY: Record<Variant, { kicker: (t?: string) => string; big: string; headline: string; body: (t?: string) => string; bad: boolean }> = {
   route: {
@@ -17,15 +24,14 @@ const COPY: Record<Variant, { kicker: (t?: string) => string; big: string; headl
     kicker: (t) => `● LOOKUP FAILED${t ? ` · #${t}` : ''}`,
     big: '?',
     headline: 'PLAYER NOT FOUND',
-    body: (t) =>
-      `No player or clan has the tag${t ? ` #${t}` : ''}. Tags only use 0 2 8 9 P Y L Q G R J C U V, so an O is usually a 0.`,
+    body: (t) => `No player or clan has the tag${t ? ` #${t}` : ''}.${tagHint(t)}`,
     bad: true,
   },
   clan: {
     kicker: (t) => `● LOOKUP FAILED${t ? ` · #${t}` : ''}`,
     big: '?',
     headline: 'CLAN NOT FOUND',
-    body: (t) => `No clan has the tag${t ? ` #${t}` : ''}. Tags only use 0 2 8 9 P Y L Q G R J C U V, so an O is usually a 0.`,
+    body: (t) => `No clan has the tag${t ? ` #${t}` : ''}.${tagHint(t)}`,
     bad: true,
   },
   error: {
