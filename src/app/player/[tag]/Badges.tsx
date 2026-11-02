@@ -30,8 +30,8 @@ function pillOf(b: Badge): string | null {
 }
 
 /**
- * Real game art for badges the official CDN doesn't serve: a mastery badge shows its card, a year
- * badge the experience star with the year on it, and event completions the chest they reward.
+ * Real game art for badges the official CDN doesn't serve: a mastery badge shows its card and a
+ * year badge the experience star with the year on it. Anything else gets the placeholder badge.
  */
 function standIn(b: Badge): { src: string; year?: string } | null {
   const mastery = /^Mastery(.+)$/.exec(b.id);
@@ -42,7 +42,6 @@ function standIn(b: Badge): { src: string; year?: string } | null {
   }
   const year = /^(\d{4})YearBadge$/.exec(b.id);
   if (year) return { src: '/ui/experience.webp', year: year[1] };
-  if (/Completion$/.test(b.id)) return { src: /Draft/.test(b.id) ? '/ui/chest-draft.webp' : '/ui/chest-kinglegendary.webp' };
   return null;
 }
 

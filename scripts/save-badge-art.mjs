@@ -93,14 +93,45 @@ async function api(p) {
 }
 const enc = (t) => encodeURIComponent(`#${t.replace('#', '')}`);
 
-// ---------- 0. Older copies (PNG, or named without a level) become 192 px WebP ----------
+/**
+ * Writes the 192 px WebP copy. Official art sits in the game's padded frame (about 70% of the
+ * canvas, resting near the bottom); a few badges come cropped to their edges and would draw bigger
+ * than the rest, so those are shrunk into that frame.
+ */
+async function saveCopy(input, out) {
+  const art = (await edgeToEdge(input)) ? await reframe(input) : input;
+  await sharp(art).resize(192, 192, { fit: 'inside' }).webp({ quality: 82, alphaQuality: 90, effort: 6 }).toFile(out);
+}
+/** Whether the art fills its canvas instead of sitting in the game's padded frame. */
+async function edgeToEdge(input) {
+  const meta = await sharp(input).metadata();
+  const { info } = await sharp(input).ensureAlpha().trim().toBuffer({ resolveWithObject: true });
+  return info.width > meta.width * 0.85 || info.height > meta.height * 0.85;
+}
+async function reframe(input) {
+  const { data, info } = await sharp(input).ensureAlpha().trim().resize(140, 140, { fit: 'inside' }).png().toBuffer({ resolveWithObject: true });
+  const left = Math.floor((192 - info.width) / 2);
+  const top = 170 - info.height;
+  return sharp(data)
+    .extend({ left, right: 192 - info.width - left, top, bottom: 192 - info.height - top, background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer();
+}
+
+// ---------- 0. Older copies (PNG, or named without a level) become 192 px WebP, in the frame ----------
 for (const f of fs.readdirSync(DIR)) {
   const m = /^([A-Za-z0-9_]+?)(?:_L(\d+))?\.png$/.exec(f);
   if (!m) continue;
   const out = fileOf(m[1], Number(m[2] ?? 1));
-  if (!fs.existsSync(out)) await sharp(path.join(DIR, f)).resize(192, 192, { fit: 'inside' }).webp({ quality: 82, alphaQuality: 90, effort: 6 }).toFile(out);
+  if (!fs.existsSync(out)) await saveCopy(path.join(DIR, f), out);
   fs.rmSync(path.join(DIR, f));
   console.log(`[badges] converted ${f}`);
+}
+for (const f of fs.readdirSync(DIR).filter((f) => f.endsWith('.webp'))) {
+  const buf = fs.readFileSync(path.join(DIR, f));
+  if (!(await edgeToEdge(buf))) continue;
+  await saveCopy(buf, path.join(DIR, f));
+  console.log(`[badges] reframed ${f}`);
 }
 
 // ---------- 1. Links the site recorded from profile views ----------
@@ -170,7 +201,7 @@ for (const x of want.slice(0, MAX)) {
     console.log(`[badges] ${x.name} level ${x.level}: ${r ? r.status : 'no answer'} (try ${state.failed[x.url]} of 3)`);
     continue;
   }
-  await sharp(buf).resize(192, 192, { fit: 'inside' }).webp({ quality: 82, alphaQuality: 90, effort: 6 }).toFile(fileOf(x.name, x.level));
+  await saveCopy(buf, fileOf(x.name, x.level));
   if (++saved % 25 === 0) {
     writeManifest();
     saveState();
