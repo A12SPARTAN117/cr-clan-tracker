@@ -109,9 +109,9 @@ async function edgeToEdge(input) {
   return info.width > meta.width * 0.85 || info.height > meta.height * 0.85;
 }
 async function reframe(input) {
-  const { data, info } = await sharp(input).ensureAlpha().trim().resize(140, 140, { fit: 'inside' }).png().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(input).ensureAlpha().trim().resize(128, 128, { fit: 'inside' }).png().toBuffer({ resolveWithObject: true });
   const left = Math.floor((192 - info.width) / 2);
-  const top = 170 - info.height;
+  const top = 168 - info.height;
   return sharp(data)
     .extend({ left, right: 192 - info.width - left, top, bottom: 192 - info.height - top, background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()
@@ -131,7 +131,7 @@ for (const f of fs.readdirSync(DIR).filter((f) => f.endsWith('.webp'))) {
   const buf = fs.readFileSync(path.join(DIR, f));
   if (!(await edgeToEdge(buf))) continue;
   await saveCopy(buf, path.join(DIR, f));
-  console.log(`[badges] reframed ${f}`);
+  console.log(`[badges] reframed ${f} (bump ART in src/lib/badgeCopies.ts so browsers drop the old copy)`);
 }
 
 // ---------- 1. Links the site recorded from profile views ----------

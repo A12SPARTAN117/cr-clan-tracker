@@ -7,13 +7,19 @@ import saved from '../../data/player-badges.json';
  */
 const SAVED = saved as Record<string, number[]>;
 
+/**
+ * Browsers keep badge art for a week, so a copy redrawn under the same name would keep showing
+ * the old one. Bump this whenever saved copies or the placeholder are redrawn.
+ */
+const ART = '?v=2';
+
 /** Shown when a badge has no art anywhere: no copy, the official image failed, no game-art stand-in. */
-export const BADGE_PLACEHOLDER = '/ui/badge-placeholder.svg';
+export const BADGE_PLACEHOLDER = `/ui/badge-placeholder.svg${ART}`;
 
 /** Our copy of this badge level, if we have one. Badges without levels are level 1. */
 export function badgeCopy(id: string, level: number | null | undefined): string | null {
   const l = level ?? 1;
-  return SAVED[id]?.includes(l) ? `/player-badges/${id}_L${l}.webp` : null;
+  return SAVED[id]?.includes(l) ? `/player-badges/${id}_L${l}.webp${ART}` : null;
 }
 
 /**
@@ -23,5 +29,5 @@ export function badgeCopy(id: string, level: number | null | undefined): string 
 export function badgeCopyNearest(id: string, level: number | null | undefined): string | null {
   const l = level ?? 1;
   const near = SAVED[id]?.filter((x) => x !== l).sort((a, b) => Math.abs(a - l) - Math.abs(b - l) || b - a)[0];
-  return near == null ? null : `/player-badges/${id}_L${near}.webp`;
+  return near == null ? null : `/player-badges/${id}_L${near}.webp${ART}`;
 }

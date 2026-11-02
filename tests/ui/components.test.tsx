@@ -197,27 +197,27 @@ describe('BadgesTab', () => {
 
   it('shows our small saved copy first, before the official art', async () => {
     const c = await tab(year(1));
-    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.webp');
+    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.webp?v=2');
   });
 
   it('uses a nearby level of the same badge when this level has no art', async () => {
     const c = await tab(year(4));
     expect(c.querySelector('img')).toHaveAttribute('src', 'https://example.test/dead.png');
     fireEvent.error(c.querySelector('img')!);
-    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.webp');
+    expect(c.querySelector('img')).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.webp?v=2');
   });
 
   it('ends on the universal placeholder badge, never a broken image', async () => {
     const c = await tab({ id: 'SomeFutureEvent', label: 'Some Future Event', group: 'Tournament & events', level: null, maxLevel: null, progress: null, target: null, img: 'https://example.test/dead.png' });
     fireEvent.error(c.querySelector('img')!);
-    expect(c.querySelector('img')).toHaveAttribute('src', '/ui/badge-placeholder.svg');
+    expect(c.querySelector('img')).toHaveAttribute('src', '/ui/badge-placeholder.svg?v=2');
     fireEvent.error(c.querySelector('img')!);
-    expect(c.querySelector('img')).toHaveAttribute('src', '/ui/badge-placeholder.svg');
+    expect(c.querySelector('img')).toHaveAttribute('src', '/ui/badge-placeholder.svg?v=2');
   });
 
   it('shows the placeholder straight away for a badge with no art at all', async () => {
     const c = await tab({ id: 'NoArt', label: 'No Art', group: 'Tournament & events', level: null, maxLevel: null, progress: null, target: null, img: null });
-    expect(c.querySelector('img')).toHaveAttribute('src', '/ui/badge-placeholder.svg');
+    expect(c.querySelector('img')).toHaveAttribute('src', '/ui/badge-placeholder.svg?v=2');
   });
 });
 
@@ -225,11 +225,11 @@ describe('BadgeImg', () => {
   it('walks saved copy → official → placeholder as each fails', () => {
     const { container } = render(<BadgeImg id="2026YearBadge" level={1} official="https://example.test/official.png" alt="2026" />);
     const img = () => container.querySelector('img')!;
-    expect(img()).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.webp');
+    expect(img()).toHaveAttribute('src', '/player-badges/2026YearBadge_L1.webp?v=2');
     fireEvent.error(img());
     expect(img()).toHaveAttribute('src', 'https://example.test/official.png');
     fireEvent.error(img());
-    expect(img()).toHaveAttribute('src', '/ui/badge-placeholder.svg');
+    expect(img()).toHaveAttribute('src', '/ui/badge-placeholder.svg?v=2');
   });
 });
 

@@ -20,6 +20,8 @@
       <stop offset="1" stop-color="#AEB6C2"/>
     </linearGradient>
   </defs>
+  <!-- Drawn at 70%, resting near the bottom: the padded frame the official badge art sits in. -->
+  <g transform="translate(14.4 19.6) scale(.7)">
   <path d="M48 4 85 17v29c0 23-15.5 39-37 46C26.5 85 11 69 11 46V17Z" fill="url(#rim)" stroke="#5A3A08" stroke-width="2" stroke-linejoin="round"/>
   <path d="M48 11.5 78.5 22v24c0 19.2-12.6 32.6-30.5 38.8C30.1 78.6 17.5 65.2 17.5 46V22Z" fill="url(#face)"/>
   <path d="M48 11.5 78.5 22v24c0 19.2-12.6 32.6-30.5 38.8C30.1 78.6 17.5 65.2 17.5 46V22Z" fill="url(#glow)"/>
@@ -29,4 +31,5 @@
     <rect x="29" y="58" width="38" height="7" rx="2" fill="url(#crown)"/>
   </g>
   <circle cx="48" cy="44" r="3" fill="#3AA0FF"/>
+  </g>
 </svg>
